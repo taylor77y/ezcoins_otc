@@ -1,0 +1,22 @@
+server:
+  port: 18168
+  servlet:
+    context-path: /api-ezcoins
+  tomcat:
+    uri-encoding: UTF-8
+
+spring:
+  application:
+    name: ZIP-EZCOINS
+  profiles:
+    active: local
+
+  messages:
+    basename: i18n/messages
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+  devtools:
+    restart:
+      enabled: true

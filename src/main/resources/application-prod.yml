@@ -1,0 +1,147 @@
+tt:
+  name: taskezcoins项目
+  # 文件路径 示例（ Windows配置D:/ht/uploadPath，Linux配置 /data/ht/uploadPath）
+  profile: /data/ezcoins/uploadPath
+  addressEnabled: false
+  captchaType: math
+
+# 优盾支付配置
+#线上环境 02763
+bipay:
+  #商户号
+  merchantId: 3
+  #key为接口授权码APIKEY，由网关分配给商户
+  merchantKey: 47023067b4ac0b6d3cab1f667acc81c7
+  #优盾钱包网关香港
+  gateway: https://hk06-hk-node.uduncloud.com
+  #结果回调地址
+  host: http://Hotelmillionaire.com
+  supported-coins: BTC,ETH,TRX
+
+server:
+  port: 8080
+  servlet:
+    context-path: /
+  tomcat:
+    uri-encoding: UTF-8
+
+logging:
+  level:
+    com.ht: debug
+    org.springframework: warn
+    io.lettuce.core.protocol: error
+    
+spring:
+  messages:
+    basename: i18n/messages
+  profiles: 
+    active: druid
+  servlet:
+     multipart:
+       max-file-size:  10MB
+       max-request-size:  20MB
+  devtools:
+    restart:
+      enabled: true
+  redis:  #"tIWdmMdxkpKQXkt9"  "@we&dse34%&434*P"
+    host: 127.0.0.1
+    port: 6379
+    database: 0
+    password: wanglei
+    timeout: 15s
+    lettuce:
+      pool:
+        min-idle: 0
+        max-idle: 8
+        max-active: 11
+        max-wait: -1ms
+
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driverClassName: com.mysql.cj.jdbc.Driver
+    druid:
+      master:
+        url: jdbc:mysql://127.0.0.1:3306/db_ht?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=Asia/Shanghai
+        username: root
+        password: wanglei
+      # 从库数据源
+      slave:
+        # 从数据源开关/默认关闭
+        enabled: false
+        url:
+        username:
+        password:
+      initialSize: 5
+      minIdle: 10
+      maxActive: 30
+      maxWait: 60000
+      timeBetweenEvictionRunsMillis: 60000
+      minEvictableIdleTimeMillis: 300000
+      maxEvictableIdleTimeMillis: 900000
+      validationQuery: SELECT 1 FROM DUAL
+      testWhileIdle: true
+      testOnBorrow: false
+      testOnReturn: false
+      webStatFilter:
+        enabled: true
+      statViewServlet:
+        enabled: true
+        allow:
+        url-pattern: /druid/*
+        login-username:
+        login-password:
+      filter:
+        stat:
+          enabled: true
+          log-slow-sql: true
+          slow-sql-millis: 1000
+          merge-sql: true
+        wall:
+          config:
+            multi-statement-allow: true
+  mail:
+    #服务器
+    host: 123.58.177.181
+    #邮箱发件人
+    username: hotel.happy@vip.163.com
+    #授权码
+    password: hotel123456
+    properties:
+      mail:
+        smtp:
+          socketFactory:
+            port: 587
+            class: javax.net.ssl.SSLSocketFactory
+            fallback: false
+          # 必须进行授权认证，它的目的就是阻止他人任意乱发邮件
+          auth: true
+          starttls:
+            enable: true
+            required: true
+    port: 587
+
+token:
+    header: Authorization
+    secret: abcdefghijklmnopqrstuvwxyz
+    # 令牌有效期（默认30分钟）（7天=10080分钟）
+    expireTime: 10080
+  
+mybatis:
+    typeAliasesPackage: com.ezcoins.project.**.domain
+    mapperLocations: classpath*:mybatis/**/*Mapper.xml
+    configLocation: classpath:mybatis/mybatis-config.xml
+
+pagehelper: 
+  helperDialect: mysql
+  reasonable: true
+  supportMethodsArguments: true
+  params: count=countSql 
+
+aliyun:
+  oss:
+    file:
+      endpoint: oss-cn-hongkong.aliyuncs.com
+      keysecret: TPsafSxWx3cL7RcysEjNv2PmnWFVLQ
+      keyid: LTAI5tLymnkxKkzbnu6Jpdmh
+      bucketname: hotel-app-static
+

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ezcoins.project.acl.mapper.MenuMapper">
+
+    <select id="selectCodeValueByUserId">
+        select
+         p.code
+        from acl_user_role ur
+                     inner join acl_role_menu rp on rp.role_id = ur.role_id
+                     inner join acl_menu p on p.menu_id = rp.menu_id
+        where ur.admin_id = #{userId}
+    </select>
+</mapper>

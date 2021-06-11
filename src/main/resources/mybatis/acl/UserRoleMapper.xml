@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ezcoins.project.acl.mapper.UserRoleMapper">
+    <select id="selectAdminRoleMenu" resultType="com.ezcoins.project.acl.entity.Menu">
+        SELECT m.*
+        FROM acl_role r
+                     LEFT JOIN acl_user_role ar ON ar.role_id = r.role_id
+                     LEFT JOIN acl_role_menu rm ON rm.role_id = r.role_id
+                     LEFT JOIN acl_menu m ON m.menu_id = rm.menu_id
+        WHERE ar.admin_id = #{adminId}
+        ORDER BY m.menu_id
+    </select>
+</mapper>
