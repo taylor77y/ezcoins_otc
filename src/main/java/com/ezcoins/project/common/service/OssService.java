@@ -41,7 +41,7 @@ public class OssService {
                 fileName=file.getOriginalFilename();
                 SimpleDateFormat sdf=new SimpleDateFormat("yyyyMMddHHmm");
                 String str=sdf.format(new Date());
-                fileName = "taskezcoins"+"/"+model+"/"+str+"-"+fileName;
+                fileName = "ezcoins"+"/"+model+"/"+str+"-"+fileName;
 
             }else {
                 //1 在文件名称里面添加随机唯一的值
@@ -54,7 +54,7 @@ public class OssService {
                 String datePath = DateUtils.datePath();
                 //拼接
                 //  2019/11/12/ewtqr313401.jpg
-                fileName = "taskezcoins"+"/"+model+"/"+datePath+"/"+fileName;
+                fileName = "ezcoins"+"/"+model+"/"+datePath+"/"+fileName;
             }
 
 

@@ -36,7 +36,7 @@ public class EzSysLogController {
     @Autowired
     private EzSysLogService ezSysLogService;
 
-    @GetMapping("getSysLog")
+    @PostMapping("getSysLog")
     @ApiOperation(value = "条件查询系统日志")
     @AuthToken
     public ResponsePageList<EzSysLog> getSysLog(@RequestBody SearchModel<EzSysLog> searchModel){

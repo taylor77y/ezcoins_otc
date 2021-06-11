@@ -46,9 +46,9 @@ public class Knife4jConfiguration {
 
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
-                .title("Task ezcoins项目接口文档")
-                .description("swagger之knife4j接口UI")
-                .termsOfServiceUrl("http://localhost:16668/")
+                .title("ezcoins  项目接口文档(王)")
+                .description("本 api 提供了亿智app  包括前端 后端 （有需要请联系：永锋）")
+                .termsOfServiceUrl("http://localhost:18168/")
                 .version("1.0")
                 .build();
     }

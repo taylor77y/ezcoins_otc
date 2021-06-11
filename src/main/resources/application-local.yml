@@ -27,7 +27,7 @@ spring:
   redis:
     host: 127.0.0.1
     port: 6379
-    database: 8
+    database: 9
     password: wanglei
     timeout: 15s
     lettuce:
