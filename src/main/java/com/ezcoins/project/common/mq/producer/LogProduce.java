@@ -110,7 +110,7 @@ public class LogProduce{
             // 处理设置注解上的参数
             getControllerMethodDescription(joinPoint, controllerLog, operLog);
             // 保存数据库
-            amqpTemplate.convertAndSend(RabbitMQConfig.ezcoins_OPERLOG_QUEUE, "", operLog);
+            amqpTemplate.convertAndSend(RabbitMQConfig.EZCOINS_OPERLOG_QUEUE, "", operLog);
         }catch (Exception exp){
             // 记录本地异常日志
             log.error("==前置通知异常==");

@@ -13,7 +13,7 @@ import org.apache.ibatis.annotations.Param;
  * @since 2021-05-26
  */
 public interface EzUserMapper extends BaseMapper<EzUser> {
-    int checkUserUnique(@Param("userName") String userName, @Param("phone")String phone, @Param("email")String email, @Param("inviteCode") String inviteCode);
+    int checkUserUnique(@Param("userName") String userName, @Param("phone")String phone,@Param("phoneArea")String phoneArea, @Param("email")String email, @Param("inviteCode") String inviteCode);
 
-   EzUser selectUserBy(@Param("userName") String userName, @Param("phone")String phone, @Param("email")String email, @Param("inviteCode") String inviteCode);
+   EzUser selectUserBy(@Param("userName") String userName, @Param("phone")String phone,@Param("phoneArea")String phoneArea, @Param("email")String email, @Param("inviteCode") String inviteCode);
 }

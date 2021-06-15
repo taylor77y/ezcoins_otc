@@ -1,9 +1,11 @@
 package com.ezcoins.project.common.service;
 
+import com.ezcoins.base.BaseException;
 import com.ezcoins.project.config.entity.EzSmsConfig;
 import com.ezcoins.project.config.service.EzSmsConfigService;
 import com.ezcoins.redis.RedisCache;
 import com.ezcoins.utils.HttpUtils;
+import com.ezcoins.utils.MessageUtils;
 import com.ezcoins.utils.RandomUtil;
 import com.ezcoins.utils.StringUtils;
 import com.ezcoins.constant.interf.RedisConstants;
@@ -58,12 +60,7 @@ public class PhoneService {
         return new BigDecimal(s1);
     }
 
-    public String send(String key,String phone) {
-        if (StringUtils.isEmpty(phone) || StringUtils.isEmpty(key)) {
-            return null;
-        }
-        //随机产生6位数字
-        String sixBitRandom = RandomUtil.getSixBitRandom();
+    public void send(String key,String code,String phone) {
         EzSmsConfig config = redisCache.getCacheObject(RedisConstants.SMS_CONFIG_KEY);
         if (null == config) {
             config = ezSmsConfigService.getById("1");
@@ -71,15 +68,14 @@ public class PhoneService {
         }
         String un = config.getUn();
         String pwd = config.getPwd();
-        String msg = config.getMsg()+sixBitRandom;
+        String msg = config.getMsg()+code;
         String sendid = config.getSendid();
         String agreedterm = config.getAgreedterm();
         String s = HttpUtils.sendGet(SMSAPI, "un=" + un + "&pwd=" + pwd + "&dstno=" + phone + "&msg=" + msg + "&type=" + "1" + "&sendid=" + sendid + "&agreedterm=" + agreedterm);
         if (!s.contains(SUCCESS)){
             log.info("发送邮件失败-异常 {}", s);
-            return null;
+            throw new BaseException(MessageUtils.message("短信发送失败"));
         }
-        redisCache.setCacheObject(key+phone,sixBitRandom,5, TimeUnit.MINUTES);
-        return sixBitRandom;
+        redisCache.setCacheObject(key+phone,code,TIMEOUT, TimeUnit.MINUTES);
     }
 }

@@ -17,6 +17,7 @@ import com.ezcoins.response.ResponsePageList;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -49,7 +50,7 @@ public class EzAppAnnouncementController {
     @AuthToken
     @NoRepeatSubmit
     @Log(title = "发布公告",businessType = BusinessType.INSERT,operatorType= OperatorType.MANAGE)
-    public BaseResponse announce(@RequestBody AnnouncementReqDto announcementReqDto){
+    public BaseResponse announce(@RequestBody @Validated AnnouncementReqDto announcementReqDto){
         announcementService.announce(announcementReqDto);
         return BaseResponse.success();
     }

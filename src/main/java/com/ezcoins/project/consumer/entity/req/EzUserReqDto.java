@@ -26,14 +26,20 @@ public class EzUserReqDto {
     @NotBlank(message = "{密码不能为空}")
     private String password;
 
-    @ApiModelProperty(value = "电话",required = true)
-    @NotBlank(message = "{电话不能为空}")
+    @ApiModelProperty(value = "电话")
     private String phone;
 
+    @ApiModelProperty(value = "电话国际区号")
+    private String phoneArea;
 
-    @ApiModelProperty(value = "验证码",required = true)
+
+    @ApiModelProperty(value = "验证方式",required = true)
     @NotBlank(message = "{验证码不能为空}")
     private String code;
+
+    @NotBlank(message ="{验证方式为空}")
+    @ApiModelProperty(value = "验证方式  1：手机验证  2：邮箱验证",required = true)
+    private String type;
 
 
     @ApiModelProperty(value = "邮箱")
@@ -45,7 +51,6 @@ public class EzUserReqDto {
     @ApiModelProperty(value = "安全密码",required = true)
     @NotBlank(message = "{安全密码不能为空}")
     private String securityPassword;
-
 
     @ApiModelProperty(value = "备注")
     private String remark;

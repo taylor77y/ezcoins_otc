@@ -14,7 +14,6 @@ import java.util.List;
  * @Version:1.0
  */
 @Data
-@Deprecated
 @AllArgsConstructor
 @NoArgsConstructor
 public class MailBean{
@@ -28,10 +27,6 @@ public class MailBean{
      */
     private String topic;
 
-    /**
-     * 邮件内容
-     */
-    private String content;
 
     /**
      * 邮件内容
@@ -47,7 +42,6 @@ public class MailBean{
     public MailBean(String recName, String topic, String content,String code) {
         this.recName = recName;
         this.topic = topic;
-        this.content = content;
         this.code=code;
     }
 

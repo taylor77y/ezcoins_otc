@@ -3,9 +3,9 @@ package com.ezcoins.project.consumer.controller.app;
 
 import com.ezcoins.aspectj.lang.annotation.NoRepeatSubmit;
 import com.ezcoins.base.BaseController;
+import com.ezcoins.project.consumer.entity.req.VerificationCodeReqDto;
 import com.ezcoins.redis.RedisCache;
 import com.ezcoins.project.acl.entity.req.JwtAuthenticationRequest;
-import com.ezcoins.project.consumer.entity.req.PhoneCaptchaReqDto;
 import com.ezcoins.project.consumer.entity.req.EzUserReqDto;
 import com.ezcoins.project.consumer.entity.req.UserKycReqDto;
 import com.ezcoins.project.consumer.service.EzUserKycService;
@@ -35,25 +35,25 @@ public class ConsumerController extends BaseController {
     private RedisCache redisCache;
 
     @Autowired
-    private EzUserService EzUserService;
+    private EzUserService ezUserService;
 
     @Autowired
     private EzUserKycService kycService;
 
 
-    @ApiOperation(value = "发送短信验证码")
+    @ApiOperation(value = "发送短信/邮箱验证码")
     @PostMapping("sendMsm")
     @NoRepeatSubmit
-    public BaseResponse sendMsm(@RequestBody @Validated PhoneCaptchaReqDto captchaReqDto) {
-        EzUserService.sendMsm(captchaReqDto);
+    public BaseResponse sendMsm(@RequestBody @Validated VerificationCodeReqDto codeReqDto) {
+        ezUserService.sendMsm(codeReqDto);
         return BaseResponse.success();
     }
 
     @ApiOperation(value = "用户注册")
     @PostMapping("register")
     @NoRepeatSubmit
-    public BaseResponse registerUser(@RequestBody @Validated EzUserReqDto EzUserDto) {
-        EzUserService.addUser(EzUserDto);
+    public BaseResponse registerUser(@RequestBody @Validated EzUserReqDto ezUserDto) {
+        ezUserService.addUser(ezUserDto);
         return BaseResponse.success();
     }
 
@@ -61,7 +61,7 @@ public class ConsumerController extends BaseController {
     @PostMapping("login")
     @NoRepeatSubmit
     public BaseResponse login(@RequestBody @Validated JwtAuthenticationRequest jwtAuthenticationRequest) {
-        return BaseResponse.success().message("登录成功").data("token",EzUserService.login(jwtAuthenticationRequest));
+        return BaseResponse.success().message("登录成功").data("token",ezUserService.login(jwtAuthenticationRequest));
     }
 
 //
@@ -79,7 +79,7 @@ public class ConsumerController extends BaseController {
     @ApiOperation(value = "根据token获取用户信息")
     @GetMapping("getMemberInfo")
     public BaseResponse getEzUserInfo() {
-        EzUserService.getById(getUserId());
+        ezUserService.getById(getUserId());
         return BaseResponse.success();
     }
 //

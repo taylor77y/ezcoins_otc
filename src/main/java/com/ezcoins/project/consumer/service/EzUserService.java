@@ -3,9 +3,9 @@ package com.ezcoins.project.consumer.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ezcoins.project.acl.entity.req.JwtAuthenticationRequest;
 import com.ezcoins.project.consumer.entity.EzUser;
-import com.ezcoins.project.consumer.entity.req.PhoneCaptchaReqDto;
 import com.ezcoins.project.consumer.entity.req.EzUserReqDto;
 import com.ezcoins.project.consumer.entity.req.UserLimitReqDto;
+import com.ezcoins.project.consumer.entity.req.VerificationCodeReqDto;
 
 /**
  * <p>
@@ -25,7 +25,7 @@ public interface EzUserService extends IService<EzUser> {
      * @param inviteCode
      * @return
      */
-    boolean checkUserUnique(String userName,String phone,String email,String inviteCode);
+    boolean checkUserUnique(String userName,String phone,String phoneArea,String email,String inviteCode);
 
 
     /**
@@ -41,13 +41,13 @@ public interface EzUserService extends IService<EzUser> {
      * @param phone
      * @return
      */
-    EzUser selectUserBy(String userName, String phone, String email, String inviteCode);
+    EzUser selectUserBy(String userName, String phone, String phoneArea,String email, String inviteCode);
 
     /**
      * 发送验证码
-     * @param captchaReqDto
+     * @param codeReqDto
      */
-    void sendMsm(PhoneCaptchaReqDto captchaReqDto);
+    void sendMsm(VerificationCodeReqDto codeReqDto);
 
     /**
      * 注册用户

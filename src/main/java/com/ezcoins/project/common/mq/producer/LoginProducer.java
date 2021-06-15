@@ -55,7 +55,7 @@ public class LoginProducer {
         ezSysLogininfor.setBrowser(browser);
         ezSysLogininfor.setCreateTime(new Date());
         // 使用rabbitmq投递消息
-        amqpTemplate.convertAndSend(RabbitMQConfig.ezcoins_USERLOGIN_QUEUE, "", ezSysLogininfor);
+        amqpTemplate.convertAndSend(RabbitMQConfig.EZCOINS_USERLOGIN_QUEUE, "", ezSysLogininfor);
         log.info(">>>会员服务登录后续，投递消息到mq成功.<<<");
     }
 }

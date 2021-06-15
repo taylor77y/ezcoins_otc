@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 /**
@@ -122,8 +123,8 @@ public class AclRoleMenuController extends BaseController {
     @ApiOperation(value = "修改角色")
     @PostMapping("/updateAclRole")
     @AuthToken
-    @Log(title = "修改角色", businessType = BusinessType.INSERT, operatorType = OperatorType.MANAGE)
-    public BaseResponse updateAclRole(@RequestBody AclRoleReqDto aclRoleReqDto) {
+    @Log(title = "修改角色", businessType = BusinessType.UPDATE, operatorType = OperatorType.MANAGE)
+    public BaseResponse updateAclRole(@RequestBody @Validated AclRoleReqDto aclRoleReqDto) {
         roleService.updateAclRole(aclRoleReqDto);
         return BaseResponse.success();
     }

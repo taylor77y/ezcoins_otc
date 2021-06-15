@@ -16,11 +16,11 @@ public class RabbitMQConfig {
     /**
      * 日志队列
      */
-    public static final String ezcoins_OPERLOG_QUEUE = "fanout_operlog_queue";
+    public static final String EZCOINS_OPERLOG_QUEUE = "fanout_operlog_queue";
     /**
      * 唯一登录队列
      */
-    public static final String ezcoins_USERLOGIN_QUEUE = "fanout_userlogin_queue";
+    public static final String EZCOINS_USERLOGIN_QUEUE = "fanout_userlogin_queue";
     /**
      * 配置fanout_log_queue
      *
@@ -28,7 +28,7 @@ public class RabbitMQConfig {
      */
     @Bean
     public Queue fanoutOperLogQueue() {
-        return new Queue(ezcoins_OPERLOG_QUEUE);
+        return new Queue(EZCOINS_OPERLOG_QUEUE);
     }
     /**
      * 配置MAYIKT_UNIQUELOGIN_QUEUE
@@ -37,7 +37,7 @@ public class RabbitMQConfig {
      */
     @Bean
     public Queue fanoutUserLoginQueue() {
-        return new Queue(ezcoins_USERLOGIN_QUEUE);
+        return new Queue(EZCOINS_USERLOGIN_QUEUE);
     }
     /**
      * 配置fanoutExchange
@@ -46,7 +46,7 @@ public class RabbitMQConfig {
      */
     @Bean
     private FanoutExchange fanoutOperLogExchange() {
-        return new FanoutExchange(ezcoins_OPERLOG_QUEUE,false,true);
+        return new FanoutExchange(EZCOINS_OPERLOG_QUEUE,false,true);
     }
     /**
      * 配置fanoutExchange
@@ -55,7 +55,7 @@ public class RabbitMQConfig {
      */
     @Bean
     public FanoutExchange fanoutUserLoginExchange() {
-        return new FanoutExchange(ezcoins_USERLOGIN_QUEUE,false,true);
+        return new FanoutExchange(EZCOINS_USERLOGIN_QUEUE,false,true);
     }
 
     // 绑定交换机 Log

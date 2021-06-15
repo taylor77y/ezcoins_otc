@@ -46,6 +46,9 @@ public class EzUser implements Serializable {
     @ApiModelProperty(value = "电话")
     private String phone;
 
+    @ApiModelProperty(value = "电话国际区号")
+    private String phoneArea;
+
     @ApiModelProperty(value = "邮箱")
     private String email;
 
@@ -63,7 +66,6 @@ public class EzUser implements Serializable {
 
     @ApiModelProperty(value = "状态 0 正常 1禁止")
     private String status;
-
 
     @ApiModelProperty(value = "逻辑删除 1（true）已删除， 0（false）未删除")
     @TableLogic(value = "0",delval = "1")

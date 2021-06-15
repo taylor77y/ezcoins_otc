@@ -112,6 +112,7 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
     }
 
     @Override
+
     public void updateAclRole(AclRoleReqDto aclRoleReqDto) {
         String roleId = aclRoleReqDto.getRoleId();
         String name = aclRoleReqDto.getName();
@@ -146,7 +147,7 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
         LambdaQueryWrapper<RoleMenu> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(RoleMenu::getRoleId, roleId);
         List<RoleMenu> list1 = roleMenuMapper.selectList(queryWrapper);
-        List<String> list2 = list1.stream().map(item -> item.getMenuId()).collect(Collectors.toList());
+        List<String> list2 = list1.stream().map(RoleMenu::getMenuId).collect(Collectors.toList());
 
         List<Integer> menuIds = new ArrayList<>();
         if (aclRoleReqDto.getMenuIds() != null) {

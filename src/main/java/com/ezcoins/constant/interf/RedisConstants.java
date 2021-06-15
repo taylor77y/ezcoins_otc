@@ -28,12 +28,11 @@ public interface RedisConstants {
     /**
      * Verification code
      */
-    public static final String REGISTER_SMS_KEY = "register_sms_key:";//注册发送手机验证
+    public static final String PHONE_REGISTER_SMS_KEY = "phone_register_sms_key:";//注册发送手机验证
+    public static final String EMAIL_REGISTER_SMS_KEY = "email_register_sms_key:";//注册发送邮箱验证
 
-
-    public static final String RETRIEVE_PASSWORD_SMS_KEY = "retrieve_password_sms_key:";//找回发送手机验证
-
-
+    public static final String PHONE_RETRIEVE_PASSWORD_SMS_KEY = "phone_retrieve_password_sms_key:";//找回发送手机验证
+    public static final String EMAIL_RETRIEVE_PASSWORD_SMS_KEY = "email_retrieve_password_sms_key:";//找回发送邮箱验证
 
 
 
