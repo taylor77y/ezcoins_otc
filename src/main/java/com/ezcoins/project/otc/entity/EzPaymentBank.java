@@ -46,7 +46,7 @@ public class EzPaymentBank implements Serializable {
     @ApiModelProperty(value = "账户号")
     private String number;
 
-    @ApiModelProperty(value = "状态(0:正常)")
+    @ApiModelProperty(value = "状态(0:已激活 1：未激活)")
     private String status;
 
     @ApiModelProperty(value = "创建时间")

@@ -1,7 +1,6 @@
 package com.ezcoins.project.otc.entity.resp;
 
 import com.ezcoins.project.otc.entity.EzPaymentBank;
-import com.ezcoins.project.otc.entity.EzUserWechat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -20,6 +19,5 @@ public class PaymentMethodRespDto {
     @ApiModelProperty(value = "银行收款方式信息")
     private EzPaymentBank EzPaymentBank;
 
-    @ApiModelProperty(value = "微信收款方式信息")
-    private EzUserWechat ezUserWechat;
+
 }

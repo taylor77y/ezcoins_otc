@@ -39,6 +39,9 @@ public class EzCountryConfig implements Serializable {
     @ApiModelProperty(value = "国家编号")
     private String countryCode;
 
+    @ApiModelProperty(value = "货币代码")
+    private String currencyCode;
+
     @ApiModelProperty(value = "国家电话区号")
     private String countryTelCode;
 
