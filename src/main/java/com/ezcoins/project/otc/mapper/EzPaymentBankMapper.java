@@ -1,6 +1,6 @@
 package com.ezcoins.project.otc.mapper;
 
-import com.ezcoins.project.otc.entity.EzUserWechat;
+import com.ezcoins.project.otc.entity.EzPaymentBank;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
@@ -11,6 +11,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @author wanglei
  * @since 2021-06-15
  */
-public interface EzUserWechatMapper extends BaseMapper<EzUserWechat> {
+public interface EzPaymentBankMapper extends BaseMapper<EzPaymentBank> {
 
 }

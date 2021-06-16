@@ -1,6 +1,6 @@
 package com.ezcoins.project.otc.service;
 
-import com.ezcoins.project.otc.entity.EzUserBank;
+import com.ezcoins.project.otc.entity.EzPaymentBank;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ezcoins.project.otc.entity.req.BankReqDto;
 
@@ -12,7 +12,7 @@ import com.ezcoins.project.otc.entity.req.BankReqDto;
  * @author wanglei
  * @since 2021-06-15
  */
-public interface EzUserBankService extends IService<EzUserBank> {
+public interface EzPaymentBankService extends IService<EzPaymentBank> {
 
     /***
     * @Description: 添加/修改 银行收款方式

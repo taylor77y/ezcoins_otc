@@ -1,6 +1,6 @@
 package com.ezcoins.project.otc.mapper;
 
-import com.ezcoins.project.otc.entity.EzUserAlipay;
+import com.ezcoins.project.otc.entity.EzPaymentQrcode;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
@@ -11,6 +11,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @author wanglei
  * @since 2021-06-15
  */
-public interface EzUserAlipayMapper extends BaseMapper<EzUserAlipay> {
+public interface EzPaymentQrcodeMapper extends BaseMapper<EzPaymentQrcode> {
 
 }

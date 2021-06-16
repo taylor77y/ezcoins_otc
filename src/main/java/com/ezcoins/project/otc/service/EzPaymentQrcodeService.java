@@ -1,8 +1,9 @@
 package com.ezcoins.project.otc.service;
 
-import com.ezcoins.project.otc.entity.EzUserAlipay;
+
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.ezcoins.project.otc.entity.req.AlipayWechatReqDto;
+import com.ezcoins.project.otc.entity.EzPaymentQrcode;
+import com.ezcoins.project.otc.entity.req.PaymentQrcodeTypeReqDto;
 
 /**
  * <p>
@@ -12,7 +13,7 @@ import com.ezcoins.project.otc.entity.req.AlipayWechatReqDto;
  * @author wanglei
  * @since 2021-06-15
  */
-public interface EzUserAlipayService extends IService<EzUserAlipay> {
+public interface EzPaymentQrcodeService extends IService<EzPaymentQrcode> {
 
 
 
@@ -24,5 +25,5 @@ public interface EzUserAlipayService extends IService<EzUserAlipay> {
     * @Author: Wanglei
     * @Date: 2021/6/15
     */
-    void alipayPaymentMethod(AlipayWechatReqDto alipayWechatReqDto);
+    void alipayPaymentMethod(PaymentQrcodeTypeReqDto qrcodeTypeReqDto);
 }

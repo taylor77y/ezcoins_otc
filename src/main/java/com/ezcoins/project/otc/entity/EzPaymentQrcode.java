@@ -22,18 +22,20 @@ import lombok.EqualsAndHashCode;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@TableName("ez_user_alipay")
-@ApiModel(value="EzUserAlipay对象", description="用户 支付宝信息")
-public class EzUserAlipay implements Serializable {
-
+@TableName("ez_payment_qrcode")
+@ApiModel(value="EzPaymentQrcode对象", description="用户 二维码 类型的收款方式")
+public class EzPaymentQrcode implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    @ApiModelProperty(value = "支付宝表编号")
+    @ApiModelProperty(value = "二维码收款方式编号")
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
 
     @ApiModelProperty(value = "用户id")
     private String userId;
+
+    @ApiModelProperty(value = "收款二维码类型id： 2：支付宝 3：微信")
+    private String paymentMethodId;
 
     @ApiModelProperty(value = "卖家姓名")
     private String realName;

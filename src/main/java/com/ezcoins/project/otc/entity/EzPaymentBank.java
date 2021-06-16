@@ -21,9 +21,9 @@ import lombok.EqualsAndHashCode;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@TableName("ez_user_bank")
-@ApiModel(value="EzUserBank对象", description="")
-public class EzUserBank implements Serializable {
+@TableName("ez_payment_bank")
+@ApiModel(value="EzPaymentBank对象", description="")
+public class EzPaymentBank implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

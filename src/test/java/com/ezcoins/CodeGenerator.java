@@ -64,7 +64,7 @@ public class CodeGenerator {
         // 5、策略配置
         StrategyConfig strategy = new StrategyConfig();
 
-        strategy.setInclude("ez_user_alipay","ez_user_bank","ez_user_wechat");
+        strategy.setInclude("ez_payment_method");
 
         strategy.setNaming(NamingStrategy.underline_to_camel);//数据库表映射到实体的命名策略
         strategy.setTablePrefix(pc.getModuleName() + "_"); //生成实体时去掉表前缀

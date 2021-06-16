@@ -4,11 +4,10 @@ import com.ezcoins.base.BaseException;
 import com.ezcoins.context.ContextHandler;
 import com.ezcoins.project.consumer.entity.EzUserKyc;
 import com.ezcoins.project.consumer.service.EzUserKycService;
-import com.ezcoins.project.otc.entity.EzUserAlipay;
-import com.ezcoins.project.otc.entity.EzUserBank;
+import com.ezcoins.project.otc.entity.EzPaymentBank;
 import com.ezcoins.project.otc.entity.req.BankReqDto;
-import com.ezcoins.project.otc.mapper.EzUserBankMapper;
-import com.ezcoins.project.otc.service.EzUserBankService;
+import com.ezcoins.project.otc.mapper.EzPaymentBankMapper;
+import com.ezcoins.project.otc.service.EzPaymentBankService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ezcoins.utils.BeanUtils;
 import com.ezcoins.utils.MessageUtils;
@@ -25,7 +24,7 @@ import org.springframework.stereotype.Service;
  * @since 2021-06-15
  */
 @Service
-public class EzUserBankServiceImpl extends ServiceImpl<EzUserBankMapper, EzUserBank> implements EzUserBankService {
+public class EzPaymentBankServiceImpl extends ServiceImpl<EzPaymentBankMapper, EzPaymentBank> implements EzPaymentBankService {
 
     @Autowired
     private EzUserKycService kycService;
@@ -52,12 +51,12 @@ public class EzUserBankServiceImpl extends ServiceImpl<EzUserBankMapper, EzUserB
         }
         String id = bankReqDto.getId();
 
-        EzUserBank ezUserBank = new EzUserBank();
-        BeanUtils.copyBeanProp(ezUserBank, bankReqDto);
+        EzPaymentBank EzPaymentBank = new EzPaymentBank();
+        BeanUtils.copyBeanProp(EzPaymentBank, bankReqDto);
         if (StringUtils.isEmpty(id)){//添加
-            baseMapper.insert(ezUserBank);
+            baseMapper.insert(EzPaymentBank);
         }else {//修改
-            baseMapper.updateById(ezUserBank);
+            baseMapper.updateById(EzPaymentBank);
         }
     }
 }

@@ -18,9 +18,9 @@ import java.util.Date;
  * @Version:1.0
  */
 @Data
-public class AlipayWechatReqDto {
-    @ApiModelProperty(value = "类型 1：支付宝  2：微信")
-    private String type;
+public class PaymentQrcodeTypeReqDto {
+    @ApiModelProperty(value = "类型 2：支付宝  3：微信 .....")
+    private int paymentMethodId;
 
     @ApiModelProperty(value = "支付宝表编号")
     private String id;
