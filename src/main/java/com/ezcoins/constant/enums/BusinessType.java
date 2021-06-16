@@ -1,5 +1,7 @@
 package com.ezcoins.constant.enums;
 
+import javax.ws.rs.DELETE;
+
 /**
  * 业务操作类型
  * 

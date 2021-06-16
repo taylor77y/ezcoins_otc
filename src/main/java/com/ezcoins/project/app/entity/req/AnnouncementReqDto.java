@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
@@ -37,7 +38,7 @@ public class AnnouncementReqDto implements Serializable {
     private String userType;
 
     @ApiModelProperty(value = "优先级（1：紧急:2：高, 3：普通.）")
-    @NotBlank(message = "{优先级不能为空}")
+    @NotNull(message = "{优先级不能为空}")
     private Integer priority;
 
     @ApiModelProperty(value = "公告类型（0：正常公告 1:  2:）目前只有 0：正常公告")

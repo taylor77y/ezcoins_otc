@@ -1,5 +1,6 @@
 package com.ezcoins.project.consumer.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ezcoins.constant.enums.user.KycStatus;
@@ -76,12 +77,29 @@ public class EzUserKycServiceImpl extends ServiceImpl<EzUserKycMapper, EzUserKyc
         if (kycReqDto.getOperate().equals(KycStatus.BY.getCode())){
             //改变用户认证状态
             LambdaUpdateWrapper<EzUser> updateWrapper=new LambdaUpdateWrapper<>();
-            updateWrapper.eq(EzUser::getUserId,kycReqDto.getUserId()).set(EzUser::getKycStatus,UserKycStatus.VERIFIED);
+            updateWrapper.eq(EzUser::getUserId,kycReqDto.getUserId()).set(EzUser::getKycStatus,UserKycStatus.VERIFIED.getCode());
             ezUserService.update(null,updateWrapper);
+        }else {
+            ezcoinsKyc.setStatus(KycStatus.REFUSE.getCode());
         }
         ezcoinsKyc.setStatus(kycReqDto.getOperate());
         ezcoinsKyc.setUpdateBy(ContextHandler.getUserName());
         baseMapper.updateById(ezcoinsKyc);
+    }
+
+    /**
+     * 获取审核通过的数据
+     *
+     * @param userId
+     * @return
+     */
+    @Override
+    public EzUserKyc getOneApprove(String userId) {
+        //根据用户id查询 kyc信息
+        LambdaQueryWrapper<EzUserKyc> lambdaQueryWrapper=new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(EzUserKyc::getUserId, ContextHandler.getUserId());
+        lambdaQueryWrapper.eq(EzUserKyc::getStatus, KycStatus.BY);
+        return baseMapper.selectOne(lambdaQueryWrapper);
     }
 
 

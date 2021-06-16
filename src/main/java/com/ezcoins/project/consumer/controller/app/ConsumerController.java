@@ -32,9 +32,6 @@ import org.springframework.web.bind.annotation.*;
 public class ConsumerController extends BaseController {
 
     @Autowired
-    private RedisCache redisCache;
-
-    @Autowired
     private EzUserService ezUserService;
 
     @Autowired

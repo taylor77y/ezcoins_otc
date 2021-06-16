@@ -46,12 +46,14 @@ public class SearchModel<T> {
         QueryWrapper<T> queryWrapper = new QueryWrapper<>();
         if (null != this.fields ) {
             this.fields.forEach(e -> {
-                switch (e.getQueryMethod()) {
-                    case eq:
-                        queryWrapper.eq(true, e.getName(), e.getValue());
-                        break;
-                    case like:
-                        queryWrapper.like(true, e.getName(), e.getValue());
+                if (StringUtils.isNotEmpty(e.getValue())){
+                    switch (e.getQueryMethod()) {
+                        case eq:
+                            queryWrapper.eq(e.getName(), e.getValue());
+                            break;
+                        case like:
+                            queryWrapper.like(e.getName(), e.getValue());
+                    }
                 }
             });
         }

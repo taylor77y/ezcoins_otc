@@ -49,6 +49,9 @@ public class EzUser implements Serializable {
     @ApiModelProperty(value = "电话国际区号")
     private String phoneArea;
 
+    @ApiModelProperty(value = "国籍")
+    private String nationality;
+
     @ApiModelProperty(value = "邮箱")
     private String email;
 

@@ -61,13 +61,5 @@ public class EzUserKycController {
 
 
 
-
-
-
-
-
-
-
-
 }
 

@@ -75,7 +75,7 @@ public class JWTHelper {
      * 将用户数据存入数据库
      */
      public String createToken(IJWTInfo jwtInfo){
-         redisCache.setCacheObject(RedisConstants.LOGIN_USER_KEY+jwtInfo.getUserName()+"_"+jwtInfo.getUserType(),
+         redisCache.setCacheObject(RedisConstants.LOGIN_USER_KEY+jwtInfo.getUserId()+"_"+jwtInfo.getUserType(),
                  jwtInfo,tokenProperties.getExpireTime(),
                  TimeUnit.MINUTES);
         return generateToken(jwtInfo,null);
@@ -85,7 +85,7 @@ public class JWTHelper {
      * 验证token是否过期
      */
     public boolean verifyToken(IJWTInfo jwtInfo){
-        IJWTInfo redisCacheCacheObject = redisCache.getCacheObject(RedisConstants.LOGIN_USER_KEY + jwtInfo.getUserName() + "_" + jwtInfo.getUserType());
+        IJWTInfo redisCacheCacheObject = redisCache.getCacheObject(RedisConstants.LOGIN_USER_KEY + jwtInfo.getUserId() + "_" + jwtInfo.getUserType());
         if (StringUtils.isNull(redisCacheCacheObject)){
             return false;
         }

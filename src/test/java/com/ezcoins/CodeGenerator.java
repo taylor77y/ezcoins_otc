@@ -51,7 +51,7 @@ public class CodeGenerator {
 
         // 4、包配置
         PackageConfig pc = new PackageConfig();
-        pc.setModuleName("config"); //模块名
+        pc.setModuleName("otc"); //模块名
         //包  com.atguigu.eduservice
         pc.setParent("com.ezcoins.project");
         //包  com.atguigu.eduservice.controller
@@ -64,7 +64,7 @@ public class CodeGenerator {
         // 5、策略配置
         StrategyConfig strategy = new StrategyConfig();
 
-        strategy.setInclude("ez_country_config");
+        strategy.setInclude("ez_user_alipay","ez_user_bank","ez_user_wechat");
 
         strategy.setNaming(NamingStrategy.underline_to_camel);//数据库表映射到实体的命名策略
         strategy.setTablePrefix(pc.getModuleName() + "_"); //生成实体时去掉表前缀

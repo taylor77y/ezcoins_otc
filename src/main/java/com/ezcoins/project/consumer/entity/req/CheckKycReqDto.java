@@ -22,7 +22,7 @@ public class CheckKycReqDto {
     @NotBlank(message = "{用户id不能为空}")
     private String userId;
 
-    @ApiModelProperty(value = "操作 （1：成功 2：失败）",required = true)
+    @ApiModelProperty(value = "操作 (1：成功 2：失败)",required = true)
     @NotBlank(message = "{操作类型不能为空}")
     private String operate;
 

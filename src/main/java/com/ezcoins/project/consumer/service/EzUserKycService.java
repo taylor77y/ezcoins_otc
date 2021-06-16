@@ -26,4 +26,12 @@ public interface EzUserKycService extends IService<EzUserKyc> {
      * @param kycReqDto
      */
     void checkKyc(CheckKycReqDto kycReqDto);
+
+
+    /**
+     * 获取审核通过的数据
+     * @param userId
+     * @return
+     */
+    EzUserKyc getOneApprove(String userId);
 }
