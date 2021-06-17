@@ -42,4 +42,34 @@ public class Response<T>{
         return r;
     }
 
+    //成功静态方法
+    public static <T> Response<T> success(String msg, T t) {
+        Response<T> r = new Response<T>();
+        r.setSuccess(true);
+        r.setCode(HttpStatus.HTTP_RES_CODE_200);
+        r.setMessage(msg);
+        r.data= t;
+        return r;
+    }
+
+
+    //成功静态方法
+    public static <T> Response<T> error(String message) {
+        Response<T> r = new Response<T>();
+        r.setSuccess(false);
+        r.setCode(HttpStatus.HTTP_RES_CODE_500);
+        r.setMessage(message);
+        return r;
+    }
+
+    public Response<T> message(String message){
+        this.setMessage(message);
+        return this;
+    }
+
+
+    public Response<T> code(Integer code){
+        this.setCode(code);
+        return this;
+    }
 }

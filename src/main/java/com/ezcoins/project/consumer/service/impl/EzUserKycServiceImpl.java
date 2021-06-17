@@ -70,14 +70,14 @@ public class EzUserKycServiceImpl extends ServiceImpl<EzUserKycMapper, EzUserKyc
             //异常  用户已审核
         }
         //查询用户key状态
-        EzUser ezUser = ezUserService.getById(kycReqDto.getUserId());
+        EzUser ezUser = ezUserService.getById(ezcoinsKyc.getUserId());
         if (ezUser.getKycStatus().equals(UserKycStatus.VERIFIED.getCode())){
             //异常  用户已认证
         }
         if (kycReqDto.getOperate().equals(KycStatus.BY.getCode())){
             //改变用户认证状态
             LambdaUpdateWrapper<EzUser> updateWrapper=new LambdaUpdateWrapper<>();
-            updateWrapper.eq(EzUser::getUserId,kycReqDto.getUserId()).set(EzUser::getKycStatus,UserKycStatus.VERIFIED.getCode());
+            updateWrapper.eq(EzUser::getUserId,ezcoinsKyc.getUserId()).set(EzUser::getKycStatus,UserKycStatus.VERIFIED.getCode());
             ezUserService.update(null,updateWrapper);
         }else {
             ezcoinsKyc.setStatus(KycStatus.REFUSE.getCode());

@@ -35,6 +35,15 @@ public class CheckException {
         }
     }
 
+    public static void checkDb(int flag, String message, OnOperate onOperate) {
+        if (flag != 1) {
+            if (onOperate != null) {
+                onOperate.operate();
+            }
+            throw new BaseException(message);
+        }
+    }
+
 
 
     public static void checkNull(Object flag, OnOperate onOperate) {

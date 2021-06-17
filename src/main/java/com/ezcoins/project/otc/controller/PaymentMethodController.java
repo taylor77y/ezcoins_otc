@@ -2,6 +2,10 @@ package com.ezcoins.project.otc.controller;
 
 
 import com.ezcoins.aspectj.lang.annotation.AuthToken;
+import com.ezcoins.aspectj.lang.annotation.Log;
+import com.ezcoins.aspectj.lang.annotation.NoRepeatSubmit;
+import com.ezcoins.constant.enums.BusinessType;
+import com.ezcoins.constant.enums.OperatorType;
 import com.ezcoins.project.common.service.mapper.SearchModel;
 import com.ezcoins.project.otc.entity.EzPaymentMethod;
 import com.ezcoins.project.otc.entity.EzPaymentQrcode;
@@ -48,9 +52,11 @@ public class PaymentMethodController {
         return ResponsePageList.success(methodService.page(searchModel.getPage(), searchModel.getQueryModel()));
     }
 
+    @NoRepeatSubmit
     @ApiOperation(value = "添加/修改  收款方式")
     @PostMapping("addOrUpdatePaymentMethod")
     @AuthToken
+    @Log(title = "添加/修改  收款方式", businessType = BusinessType.INSERT, operatorType = OperatorType.MANAGE)
     public BaseResponse addOrUpdatePaymentMethod(@RequestBody PaymentMethodReqDto paymentMethodReqDto) {
         methodService.addOrUpdatePaymentMethod(paymentMethodReqDto);
         return BaseResponse.success();

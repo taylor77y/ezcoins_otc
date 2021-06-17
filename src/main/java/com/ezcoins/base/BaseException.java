@@ -9,8 +9,7 @@ import com.ezcoins.utils.StringUtils;
  * 
  * 
  */
-public class BaseException extends RuntimeException
-{
+public class BaseException extends RuntimeException{
     private static final long serialVersionUID = 1L;
 
     /**
@@ -56,8 +55,7 @@ public class BaseException extends RuntimeException
         this(null, code, args, null);
     }
 
-    public BaseException(String defaultMessage)
-    {
+    public BaseException(String defaultMessage){
         this(null, null, null, defaultMessage);
     }
 
