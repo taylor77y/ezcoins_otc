@@ -198,7 +198,7 @@ public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> impleme
         String type = ezUserDto.getType();
         String password = ezUserDto.getPassword();
         String parentInviteCode = ezUserDto.getInviteCode();//父级邀请码
-        String nationality = ezUserDto.getNationality();//国籍
+        String countryCode = ezUserDto.getCountryCode();//国级代码
 
         EzUser ezUser = new EzUser();
         //获取redis验证码
@@ -242,7 +242,7 @@ public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> impleme
         }
         //通过邀请码查询人
         ezUser.setParentId(parentId);
-        ezUser.setNationality(nationality);
+        ezUser.setCountryCode(countryCode);
         //获得邀请码
         String inviteCode = getInviteCode(RandomUtil.generateByRandom(10));
         ezUser.setInviteCode(inviteCode);

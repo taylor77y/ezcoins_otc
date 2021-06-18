@@ -30,6 +30,9 @@ public class CountryReqDto {
     @NotBlank(message = "{国家编号不能为空}")
     private String countryCode;
 
+    @ApiModelProperty(value = "货币代码")
+    private String currencyCode;
+
     @ApiModelProperty(value = "国家电话区号",required = true)
     @NotBlank(message = "{国家电话区号不能为空}")
     private String countryTelCode;

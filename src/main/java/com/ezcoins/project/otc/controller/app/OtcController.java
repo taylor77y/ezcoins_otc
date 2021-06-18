@@ -10,10 +10,9 @@ import com.ezcoins.context.ContextHandler;
 import com.ezcoins.project.otc.entity.EzAdvertisingBusiness;
 import com.ezcoins.project.otc.entity.EzPaymentQrcode;
 import com.ezcoins.project.otc.entity.EzPaymentBank;
-import com.ezcoins.project.otc.entity.req.BankReqDto;
-import com.ezcoins.project.otc.entity.req.DpMethodReqDto;
-import com.ezcoins.project.otc.entity.req.PaymentQrcodeTypeReqDto;
+import com.ezcoins.project.otc.entity.req.*;
 import com.ezcoins.project.otc.service.EzAdvertisingBusinessService;
+import com.ezcoins.project.otc.service.EzOtcOrderService;
 import com.ezcoins.project.otc.service.EzPaymentQrcodeService;
 import com.ezcoins.project.otc.service.EzPaymentBankService;
 import com.ezcoins.response.BaseResponse;
@@ -44,6 +43,10 @@ public class OtcController {
 
     @Autowired
     private EzAdvertisingBusinessService advertisingBusinessService;
+
+
+    @Autowired
+    private EzOtcOrderService otcOrderService;
 
 
     @AuthToken
@@ -100,25 +103,53 @@ public class OtcController {
     @ApiOperation(value = "OTC广告商户  信息")
     @PostMapping("advertisingBusiness/{userId}")
     @AuthToken
-    public Response<EzAdvertisingBusiness> advertisingBusiness(
-            @PathVariable(value = "userId",required = false) String userId){
+    public Response<EzAdvertisingBusiness> advertisingBusiness(@PathVariable(value = "userId",required = false) String userId){
         String userId1=StringUtils.isNotEmpty(userId) ? userId : ContextHandler.getUserId();
         LambdaQueryWrapper<EzAdvertisingBusiness> lambdaQueryWrapper=new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(EzAdvertisingBusiness::getUserId,userId1);
-
         return Response.success(advertisingBusinessService.getOne(lambdaQueryWrapper));
     }
 
 
+    @NoRepeatSubmit
+    @ApiOperation(value = "发布 广告订单")
+    @PostMapping("releaseAdvertisingOrder")
+    @AuthToken
+    @Log(title = "发布 广告订单", businessType = BusinessType.INSERT, operatorType = OperatorType.MOBILE)
+    public BaseResponse releaseAdvertisingOrder(@RequestBody OtcOrderReqDto otcOrderReqDto){
+        otcOrderService.releaseAdvertisingOrder(otcOrderReqDto);
+        return BaseResponse.success();
+    }
 
 
 
+    @NoRepeatSubmit
+    @ApiOperation(value = "用户 根据订单号下单 购买/出售")
+    @PostMapping("placeAnOrder")
+    @AuthToken
+    @Log(title = "下单", businessType = BusinessType.INSERT, operatorType = OperatorType.MOBILE)
+    public BaseResponse placeAnOrder(@RequestBody PlaceOrderReqDto placeOrderReqDto){
+        return otcOrderService.placeAnOrder(placeOrderReqDto);
+    }
 
 
+    @NoRepeatSubmit
+    @ApiOperation(value = "用户 根据订单号取消订单 购买/出售")
+    @PostMapping("cancelOrder")
+    @AuthToken
+    @Log(title = "用户 取消订单", businessType = BusinessType.UPDATE, operatorType = OperatorType.MOBILE)
+    public BaseResponse cancelOrder(@RequestBody PlaceOrderReqDto placeOrderReqDto){
+        return otcOrderService.cancelOrder(placeOrderReqDto);
+    }
 
-
-
-
+    @NoRepeatSubmit
+    @ApiOperation(value = "商户 下架广告订单 ")
+    @PutMapping("offShelfOrder/{orderNo}")
+    @AuthToken
+    @Log(title = "用户 取消订单", businessType = BusinessType.UPDATE, operatorType = OperatorType.MOBILE)
+    public BaseResponse offShelfOrder(@PathVariable String orderNo){
+        return otcOrderService.offShelfOrder(orderNo);
+    }
 
 
 

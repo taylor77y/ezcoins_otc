@@ -19,7 +19,7 @@ import java.util.Date;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@TableName("ez_user_kyc")
+@TableName("ez_user_limit_log")
 @ApiModel(value="EzUserLimitLog对象", description="封号记录表")
 public class EzUserLimitLog implements Serializable {
     private static final long serialVersionUID = 1L;

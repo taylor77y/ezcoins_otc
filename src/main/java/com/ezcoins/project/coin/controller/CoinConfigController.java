@@ -33,27 +33,24 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @Api(tags = "Admin-冲提配置模块")
-@RequestMapping("/coin/coinConfig")
+@RequestMapping("/admin/coin/coinConfig")
 public class CoinConfigController {
-
-
     @Autowired
     private WithdrawConfigService withdrawConfigService;
-
 
     @Autowired
     private RechargeConfigService rechargeConfigService;
 
 
     @ApiOperation(value = "提币配置列表")
-    @GetMapping("/withdrawConfigList")
+    @PostMapping("/withdrawConfigList")
     @AuthToken
     public ResponsePageList<WithdrawConfig> withdrawConfigList(@RequestBody SearchModel<WithdrawConfig> searchModel){
         return ResponsePageList.success(withdrawConfigService.page(searchModel.getPage(), searchModel.getQueryModel()));
     }
 
     @ApiOperation(value = "冲币配置列表")
-    @GetMapping("/rechargeConfigList")
+    @PostMapping("/rechargeConfigList")
     @AuthToken
     public ResponsePageList<RechargeConfig> rechargeConfigList(@RequestBody SearchModel<RechargeConfig> searchModel){
         return ResponsePageList.success(rechargeConfigService.page(searchModel.getPage(), searchModel.getQueryModel()));

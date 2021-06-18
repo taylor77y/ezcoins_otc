@@ -28,15 +28,15 @@ import org.springframework.web.bind.annotation.*;
  * @since 2021-06-17
  */
 @RestController
-@Api(tags = "Admin-提现模块")
-@RequestMapping("/coin/withdrawOrder")
+@Api(tags = "Admin-提币模块")
+@RequestMapping("/admin/coin/withdrawOrder")
 public class WithdrawOrderController {
 
     @Autowired
     private WithdrawOrderService withdrawOrderService;
 
-    @ApiOperation(value = "提现订单列表")
-    @GetMapping("/withdrawOrderList")
+    @ApiOperation(value = "提币订单列表")
+    @PostMapping("/withdrawOrderList")
     @AuthToken
     public ResponsePageList<WithdrawOrder> withdrawOrderList(@RequestBody SearchModel<WithdrawOrder> searchModel){
         return ResponsePageList.success(withdrawOrderService.page(searchModel.getPage(), searchModel.getQueryModel()));

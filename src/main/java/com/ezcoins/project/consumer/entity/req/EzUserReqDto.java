@@ -31,8 +31,8 @@ public class EzUserReqDto {
     @ApiModelProperty(value = "电话国际区号")
     private String phoneArea;
 
-    @ApiModelProperty(value = "国籍",required = true)
-    private String nationality;
+    @ApiModelProperty(value = "国家编号",required = true)
+    private String countryCode;
 
     @ApiModelProperty(value = "验证方式",required = true)
     @NotBlank(message = "{验证码不能为空}")

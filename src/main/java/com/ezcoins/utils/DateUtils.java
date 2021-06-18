@@ -377,5 +377,10 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils
         date = ca.getTime();
         return date;
     }
-    
+
+    public static Date getBeForeTime(Integer prompt) {
+        Calendar beforeTime = Calendar.getInstance();
+        beforeTime.add(Calendar.MINUTE, prompt);// 5分钟之前的时间
+        return beforeTime.getTime();
+    }
 }

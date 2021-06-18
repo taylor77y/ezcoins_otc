@@ -24,6 +24,17 @@ public interface RedisConstants {
      */
     public static final String SMS_CONFIG_KEY = "sms_config_key:";
 
+    /**
+     * 取消订单次数 key
+     */
+    public static final String CANCEL_ORDER_COUNT_KEY = "cancel_order_count_key:";
+
+
+
+
+
+
+
 
     /**
      * Verification code
@@ -33,6 +44,11 @@ public interface RedisConstants {
 
     public static final String PHONE_RETRIEVE_PASSWORD_SMS_KEY = "phone_retrieve_password_sms_key:";//找回发送手机验证
     public static final String EMAIL_RETRIEVE_PASSWORD_SMS_KEY = "email_retrieve_password_sms_key:";//找回发送邮箱验证
+
+
+
+
+
 
 
 
