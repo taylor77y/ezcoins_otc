@@ -12,6 +12,7 @@ import com.ezcoins.project.consumer.entity.EzUser;
 import com.ezcoins.project.consumer.service.EzUserService;
 import com.ezcoins.project.otc.entity.EzOtcOrder;
 import com.ezcoins.project.otc.entity.EzOtcOrderMatch;
+import com.ezcoins.project.otc.entity.req.OrderOperateReqDto;
 import com.ezcoins.project.otc.entity.req.OtcOrderReqDto;
 import com.ezcoins.project.otc.entity.req.PlaceOrderReqDto;
 import com.ezcoins.project.otc.mapper.EzOtcOrderMapper;
@@ -103,6 +104,7 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         String userId = ContextHandler.getUserId();
         //查询当前用户是否被取消订单是否超过规定数量
         int count=redisCache.getCacheObject(RedisConstants.CANCEL_ORDER_COUNT_KEY+userId);
+
         //获取otc配置每天能取消的次数 5
         if (count>5){//5后面从配置数据库得到
             throw new BaseException("你今天取消次数超过上线,每天再来");
@@ -180,7 +182,9 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         if ("1".equals(isAdvertising)){//不为接单广告
             match.setStatus(MatchOrderStatus.WAITFORPAYMENT.getCode()); //不是接单广告直接进入待支付状态
             //TODO:将订单存入rabbitmq进行死信通信  时间到了就取消订单 根据卖家用户设置而定
-
+            //增加商家匹配数量
+            ezOtcOrder.setQuotaAmount(quotaAmount.add(placeOrderReqDto.getAmount()));
+            baseMapper.updateById(ezOtcOrder);
         }else {
             match.setStatus(MatchOrderStatus.PENDINGORDER.getCode()); //接单广告直接进入商家待接单状态  如果此模式下 用户取消订单免除每天取消限制的
             //TODO: 将订单存入rabbitmq进行死信通信  时间到了就取消订单  接单时间根据otc设置而定
@@ -219,13 +223,65 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         //订单状态（0：正常 1：已下架）
         //根据订单号查询到订单
         EzOtcOrder ezOtcOrder = baseMapper.selectById(orderNo);
-        //将冻结数量返回商户的资产中
 
+        BigDecimal frozeAmount = ezOtcOrder.getFrozeAmount();
+        //TODO: 将冻结数量返回商户的资产中
 
+        //改变订单状态
+        ezOtcOrder.setStatus("1");
+        ezOtcOrder.setEndTime(DateUtils.getNowDate());
+        baseMapper.updateById(ezOtcOrder);
 
-        return null;
+        return  BaseResponse.success();
     }
 
+    /***
+     * @Description: 商户 接单(订单广告)
+     * @Param: [matchOrderNo]
+     * @return: com.ezcoins.response.BaseResponse
+     * @Author: Wanglei
+     * @Date: 2021/6/18
+     * @param
+     */
+    @Override
+    public BaseResponse merchantOrder(OrderOperateReqDto orderOperateReqDto) {
+        //根据订单号查询订单
+        EzOtcOrderMatch orderMatch = orderMatchService.getById(orderOperateReqDto.getMatchOrderNo());
+        if (!orderMatch.getStatus().equals(MatchOrderStatus.PENDINGORDER.getCode())){
+            throw new BaseException("订单状态已发生变化");
+        }
+
+        if ("1".equals(orderOperateReqDto.getOperate())){
+            //拒绝接受订单
+            orderMatch.setStatus(MatchOrderStatus.ORDERBEENCANCELLED.getCode());
+            orderMatchService.updateById(orderMatch);
+            return BaseResponse.success();
+        }
+        //查询匹配到的订单
+        EzOtcOrder ezOtcOrder = baseMapper.selectById(orderMatch.getOtcOrderId());
+
+        BigDecimal amount = orderMatch.getAmount();//订单数量
+
+        //查看剩余匹配数量是否满足
+        BigDecimal totalAmount = ezOtcOrder.getTotalAmount();
+        BigDecimal quotaAmount = ezOtcOrder.getQuotaAmount();
+        //未匹配的数量
+        BigDecimal nuQuotaAmount=totalAmount.subtract(quotaAmount);
+
+        if (amount.compareTo(nuQuotaAmount)>0){
+            //拒绝接受订单
+            orderMatch.setStatus(MatchOrderStatus.ORDERBEENCANCELLED.getCode());
+            orderMatchService.updateById(orderMatch);
+            return BaseResponse.error("订单数量不足 已取消接受定单");
+        }
+        //修改订单状态
+        orderMatch.setStatus(MatchOrderStatus.WAITFORPAYMENT.getCode());
+
+        //增加商家匹配数量
+        ezOtcOrder.setQuotaAmount(quotaAmount.add(amount));
+        baseMapper.updateById(ezOtcOrder);
+        return BaseResponse.success();
+    }
 
 
 

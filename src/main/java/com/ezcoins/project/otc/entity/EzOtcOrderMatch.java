@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import java.util.Date;
 import com.baomidou.mybatisplus.annotation.TableId;
 import java.io.Serializable;
+
+import com.baomidou.mybatisplus.annotation.Version;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -68,5 +70,9 @@ public class EzOtcOrderMatch implements Serializable {
     @ApiModelProperty(value = "订单到期时间")
     private Date dueTime;
 
+
+    @ApiModelProperty(value = "乐观锁")
+    @Version
+    private Integer version;
 
 }

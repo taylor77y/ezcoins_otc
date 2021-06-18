@@ -11,10 +11,7 @@ import com.ezcoins.project.otc.entity.EzAdvertisingBusiness;
 import com.ezcoins.project.otc.entity.EzPaymentQrcode;
 import com.ezcoins.project.otc.entity.EzPaymentBank;
 import com.ezcoins.project.otc.entity.req.*;
-import com.ezcoins.project.otc.service.EzAdvertisingBusinessService;
-import com.ezcoins.project.otc.service.EzOtcOrderService;
-import com.ezcoins.project.otc.service.EzPaymentQrcodeService;
-import com.ezcoins.project.otc.service.EzPaymentBankService;
+import com.ezcoins.project.otc.service.*;
 import com.ezcoins.response.BaseResponse;
 import com.ezcoins.response.Response;
 import com.ezcoins.utils.StringUtils;
@@ -47,6 +44,9 @@ public class OtcController {
 
     @Autowired
     private EzOtcOrderService otcOrderService;
+
+    @Autowired
+    private EzOtcOrderMatchService orderMatchService;
 
 
     @AuthToken
@@ -122,7 +122,6 @@ public class OtcController {
     }
 
 
-
     @NoRepeatSubmit
     @ApiOperation(value = "用户 根据订单号下单 购买/出售")
     @PostMapping("placeAnOrder")
@@ -134,29 +133,42 @@ public class OtcController {
 
 
     @NoRepeatSubmit
-    @ApiOperation(value = "用户 根据订单号取消订单 购买/出售")
-    @PostMapping("cancelOrder")
-    @AuthToken
-    @Log(title = "用户 取消订单", businessType = BusinessType.UPDATE, operatorType = OperatorType.MOBILE)
-    public BaseResponse cancelOrder(@RequestBody PlaceOrderReqDto placeOrderReqDto){
-        return otcOrderService.cancelOrder(placeOrderReqDto);
-    }
-
-    @NoRepeatSubmit
-    @ApiOperation(value = "商户 下架广告订单 ")
+    @ApiOperation(value = "商户 下架广告订单")
     @PutMapping("offShelfOrder/{orderNo}")
     @AuthToken
-    @Log(title = "用户 取消订单", businessType = BusinessType.UPDATE, operatorType = OperatorType.MOBILE)
+    @Log(title = "商户 下架广告订单", businessType = BusinessType.UPDATE, operatorType = OperatorType.MOBILE)
     public BaseResponse offShelfOrder(@PathVariable String orderNo){
         return otcOrderService.offShelfOrder(orderNo);
     }
 
+    @NoRepeatSubmit
+    @ApiOperation(value = "商户 接单/拒接 (订单广告)")
+    @PutMapping("operateOrderAd")
+    @AuthToken
+    @Log(title = "商户 接单(订单广告)", businessType = BusinessType.UPDATE, operatorType = OperatorType.MOBILE)
+    public BaseResponse operateOrderAd(@RequestBody OrderOperateReqDto orderOperateReqDto){
+        return otcOrderService.merchantOrder(orderOperateReqDto);
+    }
 
 
+    @NoRepeatSubmit
+    @ApiOperation(value = "用户 取消订单（两个状态可取消订单  1：接单广告（卖家未接受订单）用户免费取消 2：接单广告/普通广告（用户未支付状态） 用户取消次数增加）")
+    @PutMapping("cancelOrder/{matchOrderNo}")
+    @AuthToken
+    @Log(title = "用户 取消订单", businessType = BusinessType.UPDATE, operatorType = OperatorType.MOBILE)
+    public BaseResponse cancelOrder(@PathVariable String matchOrderNo){
+        return orderMatchService.cancelOrder(matchOrderNo);
+    }
 
 
-
-
+    @NoRepeatSubmit
+    @ApiOperation(value = "卖家 放款")
+    @PutMapping("sellerPut")
+    @AuthToken
+    @Log(title = "卖家 放款", businessType = BusinessType.UPDATE, operatorType = OperatorType.MOBILE)
+    public BaseResponse sellerPut(@RequestBody OrderOperateReqDto orderOperateReqDto){
+        return otcOrderService.merchantOrder(orderOperateReqDto);
+    }
 
 
 

@@ -4,6 +4,7 @@ import com.ezcoins.project.consumer.service.EzUserKycService;
 import com.ezcoins.project.consumer.service.EzUserService;
 import com.ezcoins.project.otc.entity.EzOtcOrder;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.ezcoins.project.otc.entity.req.OrderOperateReqDto;
 import com.ezcoins.project.otc.entity.req.OtcOrderReqDto;
 import com.ezcoins.project.otc.entity.req.PlaceOrderReqDto;
 import com.ezcoins.response.BaseResponse;
@@ -41,4 +42,19 @@ public interface EzOtcOrderService extends IService<EzOtcOrder> {
     * @Date: 2021/6/18
     */
     BaseResponse offShelfOrder(String orderNo);
+
+
+
+
+    /***
+    * @Description: 商户 接单(订单广告)
+    * @Param: [matchOrderNo]
+    * @return: com.ezcoins.response.BaseResponse
+    * @Author: Wanglei
+    * @Date: 2021/6/18
+    */
+    BaseResponse merchantOrder(OrderOperateReqDto orderOperateReqDto);
+
+
+
 }

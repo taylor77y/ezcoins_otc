@@ -383,4 +383,23 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils
         beforeTime.add(Calendar.MINUTE, prompt);// 5分钟之前的时间
         return beforeTime.getTime();
     }
+
+
+
+/***
+* @Description:  获取当前时间到凌晨12点的秒数
+* @Param: []
+* @return: java.lang.Object
+* @Author: Wanglei
+* @Date: 2021/6/18
+*/
+    public static Long getSecondsNextEarlyMorning() {
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DAY_OF_YEAR, 1);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return (cal.getTimeInMillis() - System.currentTimeMillis()) / 1000;
+    }
 }
