@@ -41,7 +41,6 @@ public class OtcController {
     @Autowired
     private EzAdvertisingBusinessService advertisingBusinessService;
 
-
     @Autowired
     private EzOtcOrderService otcOrderService;
 
@@ -135,11 +134,12 @@ public class OtcController {
     @NoRepeatSubmit
     @ApiOperation(value = "商户 下架广告订单")
     @PutMapping("offShelfOrder/{orderNo}")
-    @AuthToken
+     @AuthToken
     @Log(title = "商户 下架广告订单", businessType = BusinessType.UPDATE, operatorType = OperatorType.MOBILE)
     public BaseResponse offShelfOrder(@PathVariable String orderNo){
         return otcOrderService.offShelfOrder(orderNo);
     }
+
 
     @NoRepeatSubmit
     @ApiOperation(value = "商户 接单/拒接 (订单广告)")
@@ -160,30 +160,25 @@ public class OtcController {
         return orderMatchService.cancelOrder(matchOrderNo);
     }
 
-
     @NoRepeatSubmit
     @ApiOperation(value = "卖家 放款")
     @PutMapping("sellerPut")
     @AuthToken
     @Log(title = "卖家 放款", businessType = BusinessType.UPDATE, operatorType = OperatorType.MOBILE)
     public BaseResponse sellerPut(@RequestBody OrderOperateReqDto orderOperateReqDto){
-        return otcOrderService.merchantOrder(orderOperateReqDto);
+        //TODO:  otcOrderService.sellerPut(orderOperateReqDto);
+        return BaseResponse.success();
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    @NoRepeatSubmit
+    @ApiOperation(value = "订单申诉")
+    @PutMapping("appeal")
+    @AuthToken
+    @Log(title = "订单申诉", businessType = BusinessType.UPDATE, operatorType = OperatorType.MOBILE)
+    public BaseResponse appeal(){
+        //TODO:  otcOrderService.sellerPut(orderOperateReqDto);
+        return BaseResponse.success();
+    }
 
 
 

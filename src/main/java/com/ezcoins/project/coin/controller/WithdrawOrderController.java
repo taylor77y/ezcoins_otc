@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.*;
  * @since 2021-06-17
  */
 @RestController
-@Api(tags = "Admin-提币模块")
+@Api(tags = "Admin-资产账户模块")
 @RequestMapping("/admin/coin/withdrawOrder")
 public class WithdrawOrderController {
 

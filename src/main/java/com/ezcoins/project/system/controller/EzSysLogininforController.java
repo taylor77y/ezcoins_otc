@@ -27,7 +27,7 @@ import java.util.List;
  * @since 2021-06-05
  */
 @RestController
-@Api(tags = "Admin-登录日志模块")
+@Api(tags = "Admin-日志模块")
 @RequestMapping("/admin/system/SysLogininfor")
 public class EzSysLogininforController {
 

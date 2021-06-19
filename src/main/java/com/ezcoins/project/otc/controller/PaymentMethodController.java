@@ -37,6 +37,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Api(tags = "Admin-收款方式模块")
 @RequestMapping("/admin/otc/paymentMethod")
 public class PaymentMethodController {
+
     @Autowired
     private EzPaymentQrcodeService qrcodeService;
     @Autowired

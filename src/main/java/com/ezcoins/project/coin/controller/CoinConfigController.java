@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.*;
  * @since 2021-06-17
  */
 @RestController
-@Api(tags = "Admin-冲提配置模块")
+@Api(tags = "Admin-资产配置模块")
 @RequestMapping("/admin/coin/coinConfig")
 public class CoinConfigController {
     @Autowired
