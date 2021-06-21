@@ -28,8 +28,8 @@ public class EzOtcOrder implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @ApiModelProperty(value = "订单号")
-    @TableId(value = "id", type = IdType.ASSIGN_ID)
-    private String id;
+    @TableId(value = "orderNo")
+    private String orderNo;
 
     @ApiModelProperty(value = "用户id")
     private String userId;

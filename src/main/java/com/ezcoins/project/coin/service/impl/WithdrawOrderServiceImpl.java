@@ -37,8 +37,9 @@ public class WithdrawOrderServiceImpl extends ServiceImpl<WithdrawOrderMapper, W
      */
     @Override
     public void reviewWithdrawOrder(CheckWithdrewOrderReqDto checkWithdrewOrderReqDto) {
+        WithdrawOrder withdrawOrder = baseMapper.selectById(checkWithdrewOrderReqDto.getId());
         String userName = ContextHandler.getUserName();
-        if (!checkWithdrewOrderReqDto.getOperate().equals(WithdrawOrderStatus.PENDINGREVIEW.getCode())){
+        if (!withdrawOrder.getStatus().equals(WithdrawOrderStatus.PENDINGREVIEW.getCode())){
             throw new BaseException("该提币订单审核失败");
         } else  if (checkWithdrewOrderReqDto.getOperate().equals(WithdrawOrderStatus.BY.getCode())){
                 //TODO: 去优盾处理
@@ -47,7 +48,6 @@ public class WithdrawOrderServiceImpl extends ServiceImpl<WithdrawOrderMapper, W
         }else if (checkWithdrewOrderReqDto.getOperate().equals(WithdrawOrderStatus.REFUSE.getCode())){
             log.info("后台管理员 {}： 审核失败,原因：{}",userName,checkWithdrewOrderReqDto.getReason());
         }
-        WithdrawOrder withdrawOrder = baseMapper.selectById(checkWithdrewOrderReqDto.getId());
         //修改订单状态
         withdrawOrder.setStatus(checkWithdrewOrderReqDto.getOperate());
         withdrawOrder.setReason(checkWithdrewOrderReqDto.getReason());

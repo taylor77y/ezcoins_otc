@@ -28,14 +28,14 @@ public class EzOtcOrderMatch implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @ApiModelProperty(value = "匹配订单号")
-      @TableId(value = "id", type = IdType.ASSIGN_ID)
-    private String id;
+    @TableId(value = "orderMatchNo")
+    private String orderMatchNo;
 
     @ApiModelProperty(value = "用户id")
     private String userId;
 
     @ApiModelProperty(value = "匹配到的发布订单号")
-    private String otcOrderId;
+    private String orderNo;
 
     @ApiModelProperty(value = "广告发布订单用户id")
     private String otcOrderUserId;

@@ -18,8 +18,7 @@ import java.util.Date;
 @Data
 public class OtcOrderReqDto {
     @ApiModelProperty(value = "订单号")
-    @TableId(value = "id", type = IdType.ASSIGN_ID)
-    private String id;
+    private String orderNo;
 
     @ApiModelProperty(value = "用户id")
     private String userId;

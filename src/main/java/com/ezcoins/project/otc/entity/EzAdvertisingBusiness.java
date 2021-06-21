@@ -38,6 +38,9 @@ public class EzAdvertisingBusiness implements Serializable {
     @ApiModelProperty(value = "商户名")
     private String name;
 
+    @ApiModelProperty(value = "安全密码")
+    private String securityPassword;
+
     @ApiModelProperty(value = "卖单数量")
     private Integer sellCount;
 
@@ -71,4 +74,11 @@ public class EzAdvertisingBusiness implements Serializable {
     @TableField(fill = FieldFill.INSERT_UPDATE)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date updateTime;
+
+
+    @ApiModelProperty(value = "乐观锁 请忽略它的存在")
+    @Version
+    private Integer version;
+
+
 }

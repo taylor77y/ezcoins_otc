@@ -58,8 +58,6 @@ public class EzUser implements Serializable {
     @ApiModelProperty(value = "邀请码")
     private String inviteCode;
 
-    @ApiModelProperty(value = "安全密码")
-    private String securityPassword;
 
     @ApiModelProperty(value = "认证等级：0：未认证 1：初级认证 2：高级认证")
     private String level;

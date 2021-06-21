@@ -8,12 +8,14 @@ import com.ezcoins.constant.enums.BusinessType;
 import com.ezcoins.constant.enums.OperatorType;
 import com.ezcoins.context.ContextHandler;
 import com.ezcoins.project.otc.entity.EzAdvertisingBusiness;
+import com.ezcoins.project.otc.entity.EzOtcChatMsg;
 import com.ezcoins.project.otc.entity.EzPaymentQrcode;
 import com.ezcoins.project.otc.entity.EzPaymentBank;
 import com.ezcoins.project.otc.entity.req.*;
 import com.ezcoins.project.otc.service.*;
 import com.ezcoins.response.BaseResponse;
 import com.ezcoins.response.Response;
+import com.ezcoins.response.ResponseList;
 import com.ezcoins.utils.StringUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -47,6 +49,35 @@ public class OtcController {
     @Autowired
     private EzOtcOrderMatchService orderMatchService;
 
+    @Autowired
+    private EzAdvertisingBusinessService businessService;
+
+    @Autowired
+    private EzOtcChatMsgService otcChatMsgService;
+
+    @NoRepeatSubmit
+    @AuthToken
+    @ApiOperation(value = "完善otc交易信息")
+    @PostMapping("otcSetting")
+    @Log(title = "完善otc交易信息", businessType = BusinessType.INSERT, operatorType = OperatorType.MOBILE)
+    public BaseResponse otcSetting(@RequestBody OtcSettingReqDto otcSettingReqDto){
+        return businessService.otcSetting(otcSettingReqDto);
+    }
+
+
+    @ApiOperation(value = "OTC 交易信息")
+    @PostMapping("advertisingBusiness/{userId}")
+    @AuthToken
+    public Response<EzAdvertisingBusiness> advertisingBusiness(@PathVariable(value = "userId",required = false) String userId){
+        String userId1=StringUtils.isNotEmpty(userId) ? userId : ContextHandler.getUserId();
+        LambdaQueryWrapper<EzAdvertisingBusiness> lambdaQueryWrapper=new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(EzAdvertisingBusiness::getUserId,userId1);
+        EzAdvertisingBusiness one = advertisingBusinessService.getOne(lambdaQueryWrapper);
+        if (one==null && StringUtils.isEmpty(userId)){
+            return Response.error("请先完善otc交易信息");
+        }
+        return Response.success(one);
+    }
 
     @AuthToken
     @ApiOperation(value = "收款方式 列表")
@@ -97,18 +128,6 @@ public class OtcController {
 
         return BaseResponse.success();
     }
-
-
-    @ApiOperation(value = "OTC广告商户  信息")
-    @PostMapping("advertisingBusiness/{userId}")
-    @AuthToken
-    public Response<EzAdvertisingBusiness> advertisingBusiness(@PathVariable(value = "userId",required = false) String userId){
-        String userId1=StringUtils.isNotEmpty(userId) ? userId : ContextHandler.getUserId();
-        LambdaQueryWrapper<EzAdvertisingBusiness> lambdaQueryWrapper=new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(EzAdvertisingBusiness::getUserId,userId1);
-        return Response.success(advertisingBusinessService.getOne(lambdaQueryWrapper));
-    }
-
 
     @NoRepeatSubmit
     @ApiOperation(value = "发布 广告订单")
@@ -161,13 +180,21 @@ public class OtcController {
     }
 
     @NoRepeatSubmit
+    @ApiOperation(value = "买家确认 付款")
+    @PutMapping("confirmPayment/{matchOrderNo}")
+    @AuthToken
+    @Log(title = "买家确认 付款", businessType = BusinessType.UPDATE, operatorType = OperatorType.MOBILE)
+    public BaseResponse confirmPayment(@PathVariable String matchOrderNo){
+        return  orderMatchService.confirmPayment(matchOrderNo);
+    }
+
+    @NoRepeatSubmit
     @ApiOperation(value = "卖家 放款")
-    @PutMapping("sellerPut")
+    @PutMapping("sellerPut/{matchOrderNo}")
     @AuthToken
     @Log(title = "卖家 放款", businessType = BusinessType.UPDATE, operatorType = OperatorType.MOBILE)
-    public BaseResponse sellerPut(@RequestBody OrderOperateReqDto orderOperateReqDto){
-        //TODO:  otcOrderService.sellerPut(orderOperateReqDto);
-        return BaseResponse.success();
+    public BaseResponse sellerPut(@PathVariable String matchOrderNo){
+        return  orderMatchService.sellerPut(matchOrderNo);
     }
 
     @NoRepeatSubmit
@@ -181,5 +208,22 @@ public class OtcController {
     }
 
 
+    @ApiOperation(value = "接受 发送聊天记录")
+    @PostMapping("sendChat")
+    @AuthToken
+    public BaseResponse sendChat(@RequestBody ChatMsgReqDto msgReqDto) {
+       return otcChatMsgService.sendChat(msgReqDto);
+    }
+
+
+
+    @ApiOperation(value = "根据 匹配订单id查询聊天记录")
+    @GetMapping("chatMsg/{orderMatchNo}")
+    @AuthToken
+    public ResponseList<EzOtcChatMsg> advertisingBusinessList(@PathVariable String orderMatchNo) {
+        LambdaQueryWrapper<EzOtcChatMsg> queryWrapper=new LambdaQueryWrapper<>();
+        queryWrapper.eq(EzOtcChatMsg::getOrderMatchNo,orderMatchNo);
+        return ResponseList.success(otcChatMsgService.list(queryWrapper));
+    }
 
 }
