@@ -2,16 +2,16 @@ package com.ezcoins.constant.enums.otc;
 
 public enum PaymentMethod {
 
-    ALIPAY("1", "支付宝"), WECHAT("2", "微信"), BANK("3", "银行");
-    private final String code;
+    BANK (1, "银行"), ALIPAY(2, "支付宝"),  WECHAT(3, "微信");
+    private final Integer code;
     private final String info;
-    PaymentMethod(String code, String info)
+    PaymentMethod(Integer code, String info)
     {
         this.code = code;
         this.info = info;
     }
 
-    public String getCode()
+    public Integer getCode()
     {
         return code;
     }

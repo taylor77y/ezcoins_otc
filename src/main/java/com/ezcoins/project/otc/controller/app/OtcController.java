@@ -7,20 +7,28 @@ import com.ezcoins.aspectj.lang.annotation.NoRepeatSubmit;
 import com.ezcoins.constant.enums.BusinessType;
 import com.ezcoins.constant.enums.OperatorType;
 import com.ezcoins.context.ContextHandler;
-import com.ezcoins.project.otc.entity.EzAdvertisingBusiness;
-import com.ezcoins.project.otc.entity.EzOtcChatMsg;
-import com.ezcoins.project.otc.entity.EzPaymentQrcode;
-import com.ezcoins.project.otc.entity.EzPaymentBank;
+import com.ezcoins.exception.user.SecurityPasswordNotMatchException;
+import com.ezcoins.project.otc.entity.*;
 import com.ezcoins.project.otc.entity.req.*;
+import com.ezcoins.project.otc.entity.resp.PaymentMethodRespDto;
 import com.ezcoins.project.otc.service.*;
 import com.ezcoins.response.BaseResponse;
 import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponseList;
+import com.ezcoins.utils.BeanUtils;
+import com.ezcoins.utils.EncoderUtil;
+import com.ezcoins.utils.Md5Util;
 import com.ezcoins.utils.StringUtils;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * @Author: WangLei
@@ -34,11 +42,10 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/otc/app")
 public class OtcController {
     @Autowired
-    private EzPaymentQrcodeService qrcodeService;
+    private EzPaymentInfoService paymentInfoService;
 
     @Autowired
-    private EzPaymentBankService bankService;
-
+    private EzPaymentMethodService methodService;
 
     @Autowired
     private EzAdvertisingBusinessService advertisingBusinessService;
@@ -81,53 +88,68 @@ public class OtcController {
 
     @AuthToken
     @ApiOperation(value = "收款方式 列表")
-    @GetMapping("paymentMethodList")
-    public Response<EzPaymentBank> paymentMethodList(){
+    @GetMapping("paymentInfoList")
+    public ResponseList<PaymentMethodRespDto> paymentMethodList(){
         String userId = ContextHandler.getUserId();
-        LambdaQueryWrapper<EzPaymentQrcode> alipayQueryWrapper=new LambdaQueryWrapper<>();
-        alipayQueryWrapper.eq(EzPaymentQrcode::getUserId,userId);
-        EzPaymentQrcode paymentQrcode = qrcodeService.getOne(alipayQueryWrapper);
+        LambdaQueryWrapper<EzPaymentInfo> alipayQueryWrapper=new LambdaQueryWrapper<>();
+        alipayQueryWrapper.eq(EzPaymentInfo::getUserId,userId);
+        List<EzPaymentMethod> list = methodService.list();
 
-        LambdaQueryWrapper<EzPaymentBank> bankQueryWrapper=new LambdaQueryWrapper<>();
-        bankQueryWrapper.eq(EzPaymentBank::getUserId,userId);
-        EzPaymentBank userBank = bankService.getOne(bankQueryWrapper);
-
-//        PaymentMethodRespDto paymentMethodRespDto = new PaymentMethodRespDto();
-//        paymentMethodRespDto.setEzUserAlipay(userAlipay);
-//        paymentMethodRespDto.setEzUserWechat(userWechat);
-//        paymentMethodRespDto.setEzPaymentBank(userBank);
-        return Response.success(null);
+        ArrayList<PaymentMethodRespDto> respDtos = new ArrayList<>();
+        paymentInfoService.list(alipayQueryWrapper).forEach(e->{
+            PaymentMethodRespDto paymentMethodRespDto = new PaymentMethodRespDto();
+            paymentMethodRespDto.setPaymentQrCode(e.getPaymentQrCode());
+            paymentMethodRespDto.setAccountNumber(e.getAccountNumber());
+            paymentMethodRespDto.setRealName(e.getRealName());
+            paymentMethodRespDto.setStatus(e.getStatus());
+            EzPaymentMethod ezPaymentMethod = list.get(e.getPaymentMethodId());
+            paymentMethodRespDto.setIcon(ezPaymentMethod.getIcon());
+            paymentMethodRespDto.setBankName(e.getBankName());
+            respDtos.add(paymentMethodRespDto);
+        });
+        return ResponseList.success(respDtos);
     }
 
     @NoRepeatSubmit
     @AuthToken
-    @ApiOperation(value = "添加/修改 支付宝/微信 收款方式")
-    @PostMapping("alipayWechatPaymentMethod")
-    @Log(title = "添加 支付宝/微信 收款方式", businessType = BusinessType.INSERT, operatorType = OperatorType.MOBILE)
-    public BaseResponse alipayWechatPaymentMethod(@RequestBody PaymentQrcodeTypeReqDto qrcodeTypeReqDto){
-        qrcodeService.alipayPaymentMethod(qrcodeTypeReqDto);
-        return BaseResponse.success();
-    }
-
-    @NoRepeatSubmit
-    @AuthToken
-    @ApiOperation(value = "添加/修改 银行收款方式")
-    @PostMapping("bankPaymentMethod")
-    @Log(title = "添加/修改 银行收款方式", businessType = BusinessType.INSERT, operatorType = OperatorType.MOBILE)
-    public BaseResponse bankPaymentMethod(@RequestBody BankReqDto bankReqDto){
-        bankService.bankPaymentMethod(bankReqDto);
-        return BaseResponse.success();
+    @ApiOperation(value = "添加/修改  收款方式")
+    @PostMapping("updateOrAddPaymentInfo")
+    @Log(title = "添加 收款方式", businessType = BusinessType.INSERT, operatorType = OperatorType.MOBILE)
+    public BaseResponse updateOrAddPaymentInfo(@RequestBody PaymentQrcodeTypeReqDto qrcodeTypeReqDto){
+        return paymentInfoService.alipayPaymentMethod(qrcodeTypeReqDto);
     }
 
     @NoRepeatSubmit
     @AuthToken
     @ApiOperation(value = "删除 收款方式")
-    @PostMapping("deletePaymentMethod")
+    @PostMapping("deletePaymentInfo/{id}")
     @Log(title = "删除 收款方式", businessType = BusinessType.DELETE, operatorType = OperatorType.MOBILE)
-    public BaseResponse deletePaymentMethod(@RequestBody DpMethodReqDto dpMethodReqDto){
-
+    public BaseResponse deletePaymentInfo(@PathVariable String id){
+        paymentInfoService.removeById(id);
         return BaseResponse.success();
     }
+
+    @NoRepeatSubmit
+    @AuthToken
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "securityPassword", value = "安全密码", required = true),
+    })
+    @ApiOperation(value = "判断安全密码是否正确")
+    @PostMapping("deletePaymentInfo")
+    @Log(title = "删除 收款方式", businessType = BusinessType.DELETE, operatorType = OperatorType.MOBILE)
+    public BaseResponse deletePaymentInfo(@RequestBody HashMap<String,String> map){
+        String securityPassword = map.get("securityPassword");
+        String encode = EncoderUtil.encode(securityPassword);
+        LambdaQueryWrapper<EzAdvertisingBusiness> queryWrapper=new LambdaQueryWrapper<>();
+        queryWrapper.eq(EzAdvertisingBusiness::getUserId,ContextHandler.getUserId());
+        queryWrapper.eq(EzAdvertisingBusiness::getSecurityPassword,encode);
+        int count = advertisingBusinessService.count(queryWrapper);
+        if (count!=0){
+            throw new SecurityPasswordNotMatchException();
+        }
+        return BaseResponse.success();
+    }
+
 
     @NoRepeatSubmit
     @ApiOperation(value = "发布 广告订单")
@@ -135,9 +157,9 @@ public class OtcController {
     @AuthToken
     @Log(title = "发布 广告订单", businessType = BusinessType.INSERT, operatorType = OperatorType.MOBILE)
     public BaseResponse releaseAdvertisingOrder(@RequestBody OtcOrderReqDto otcOrderReqDto){
-        otcOrderService.releaseAdvertisingOrder(otcOrderReqDto);
-        return BaseResponse.success();
+        return otcOrderService.releaseAdvertisingOrder(otcOrderReqDto);
     }
+
 
 
     @NoRepeatSubmit

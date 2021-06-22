@@ -2,8 +2,9 @@ package com.ezcoins.project.otc.service;
 
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.ezcoins.project.otc.entity.EzPaymentQrcode;
+import com.ezcoins.project.otc.entity.EzPaymentInfo;
 import com.ezcoins.project.otc.entity.req.PaymentQrcodeTypeReqDto;
+import com.ezcoins.response.BaseResponse;
 
 /**
  * <p>
@@ -13,7 +14,7 @@ import com.ezcoins.project.otc.entity.req.PaymentQrcodeTypeReqDto;
  * @author wanglei
  * @since 2021-06-15
  */
-public interface EzPaymentQrcodeService extends IService<EzPaymentQrcode> {
+public interface EzPaymentInfoService extends IService<EzPaymentInfo> {
 
 
 
@@ -25,5 +26,5 @@ public interface EzPaymentQrcodeService extends IService<EzPaymentQrcode> {
     * @Author: Wanglei
     * @Date: 2021/6/15
     */
-    void alipayPaymentMethod(PaymentQrcodeTypeReqDto qrcodeTypeReqDto);
+    BaseResponse alipayPaymentMethod(PaymentQrcodeTypeReqDto qrcodeTypeReqDto);
 }

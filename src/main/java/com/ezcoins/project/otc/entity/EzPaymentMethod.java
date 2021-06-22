@@ -26,7 +26,6 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value="EzPaymentMethod对象", description="")
 public class EzPaymentMethod implements Serializable {
-
     private static final long serialVersionUID = 1L;
 
     @ApiModelProperty(value = "支付方式id")
@@ -38,6 +37,9 @@ public class EzPaymentMethod implements Serializable {
 
     @ApiModelProperty(value = "方式英文名")
     private String nameEn;
+
+    @ApiModelProperty(value = "图标")
+    private String icon;
 
     @ApiModelProperty(value = "创建时间")
     @TableField(fill = FieldFill.INSERT)

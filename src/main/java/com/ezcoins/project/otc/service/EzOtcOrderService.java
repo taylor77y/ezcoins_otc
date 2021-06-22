@@ -21,7 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public interface EzOtcOrderService extends IService<EzOtcOrder> {
 
-    void releaseAdvertisingOrder(OtcOrderReqDto otcOrderReqDto);
+    BaseResponse releaseAdvertisingOrder(OtcOrderReqDto otcOrderReqDto);
 
     /**
     * @Description: 下单

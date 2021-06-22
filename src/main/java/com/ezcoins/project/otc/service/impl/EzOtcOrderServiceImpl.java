@@ -6,16 +6,19 @@ import com.ezcoins.constant.enums.otc.MatchOrderStatus;
 import com.ezcoins.constant.interf.IndexOrderNoKey;
 import com.ezcoins.constant.interf.RedisConstants;
 import com.ezcoins.context.ContextHandler;
+import com.ezcoins.mq.RabbitMQConfiguration;
 import com.ezcoins.project.config.entity.EzCountryConfig;
 import com.ezcoins.project.config.service.EzCountryConfigService;
 import com.ezcoins.project.consumer.entity.EzUser;
 import com.ezcoins.project.consumer.service.EzUserService;
+import com.ezcoins.project.otc.entity.EzOtcConfig;
 import com.ezcoins.project.otc.entity.EzOtcOrder;
 import com.ezcoins.project.otc.entity.EzOtcOrderMatch;
 import com.ezcoins.project.otc.entity.req.OrderOperateReqDto;
 import com.ezcoins.project.otc.entity.req.OtcOrderReqDto;
 import com.ezcoins.project.otc.entity.req.PlaceOrderReqDto;
 import com.ezcoins.project.otc.mapper.EzOtcOrderMapper;
+import com.ezcoins.project.otc.service.EzOtcConfigService;
 import com.ezcoins.project.otc.service.EzOtcOrderIndexService;
 import com.ezcoins.project.otc.service.EzOtcOrderMatchService;
 import com.ezcoins.project.otc.service.EzOtcOrderService;
@@ -24,6 +27,7 @@ import com.ezcoins.redis.RedisCache;
 import com.ezcoins.response.BaseResponse;
 import com.ezcoins.utils.BeanUtils;
 import com.ezcoins.utils.DateUtils;
+import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -63,31 +67,45 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
     private EzOtcOrderMatchService orderMatchService;
 
 
+    @Autowired
+    private EzOtcConfigService otcConfigService;
+
+    @Autowired
+    private AmqpTemplate rabbitTemplate;
+
+
+
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void releaseAdvertisingOrder(OtcOrderReqDto otcOrderReqDto) {
+    public BaseResponse releaseAdvertisingOrder(OtcOrderReqDto otcOrderReqDto) {
+
         //获得订单号  国家代码+订单日期
         String currencyCode = otcOrderReqDto.getCurrencyCode();
         LambdaQueryWrapper<EzCountryConfig> configLambdaQueryWrapper = new LambdaQueryWrapper<>();
         configLambdaQueryWrapper.eq(EzCountryConfig::getCurrencyCode, currencyCode);
         EzCountryConfig one = countryConfigService.getOne(configLambdaQueryWrapper);
         if (null == one) {
-            throw new BaseException("国家货币代码不存在");
+           return BaseResponse.error("国家货币代码不存在");
         }
         String countryCode = one.getCountryCode();//国家编号
         String orderNo = orderIndexService.getOrderNo(countryCode, IndexOrderNoKey.ORDER_INFO);
 
-        EzOtcOrder ezOtcOrder = new EzOtcOrder();
-        ezOtcOrder.setOrderNo(orderNo);
-        BeanUtils.copyBeanProp(ezOtcOrder, otcOrderReqDto);
-
-        //存入新的广告
-        baseMapper.insert(ezOtcOrder);
 
         //将卖出订单金额冻结
         BigDecimal totalAmount = otcOrderReqDto.getTotalAmount();
 
+        EzOtcOrder ezOtcOrder = new EzOtcOrder();
+        ezOtcOrder.setOrderNo(orderNo);
+        ezOtcOrder.setFrozeAmount(totalAmount);
+        BeanUtils.copyBeanProp(ezOtcOrder, otcOrderReqDto);
 
+        //存入新的广告
+        baseMapper.insert(ezOtcOrder);
+        //将用户账户冻结
+
+
+
+        return BaseResponse.success();
     }
 
     /**
@@ -103,10 +121,12 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         String userId = ContextHandler.getUserId();
         //查询当前用户是否被取消订单是否超过规定数量
         int count = redisCache.getCacheObject(RedisConstants.CANCEL_ORDER_COUNT_KEY + userId);
-
+        //获取otc基本配置
+        EzOtcConfig otcConfig = otcConfigService.getById(1);
         //获取otc配置每天能取消的次数 5
-        if (count > 5) {//5后面从配置数据库得到
-            throw new BaseException("你今天取消次数超过上线,每天再来");
+        Integer maxCancelNum = otcConfig.getMaxCancelNum();
+        if (count > maxCancelNum) {//5后面从配置数据库得到
+            return BaseResponse.error("你今天取消次数超过上线,每天再来");
         }
 
         //查看用户是否有未完成的订单
@@ -115,35 +135,32 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         matchLambdaQueryWrapper.eq(EzOtcOrderMatch::getStatus, MatchOrderStatus.PENDINGORDER)
                 .or()
                 .eq(EzOtcOrderMatch::getStatus, MatchOrderStatus.WAITFORPAYMENT);
-
         EzOtcOrderMatch orderMatch = orderMatchService.getOne(matchLambdaQueryWrapper);
         if (null != orderMatch) {
             return BaseResponse.error("请先完成当前未完成的订单").data("matchOrderNo", orderMatch.getOrderMatchNo());//将订单号返回
         }
+
         //通过订单号查询到购买的订单
         String orderNo = placeOrderReqDto.getOrderNo();
         EzOtcOrder ezOtcOrder = baseMapper.selectById(orderNo);
+        BigDecimal maximumLimit = ezOtcOrder.getMaximumLimit();//最大限额
+        BigDecimal minimumLimit = ezOtcOrder.getMinimumLimit();//最小限额
 
-
-        BigDecimal amount = placeOrderReqDto.getAmount();
-        BigDecimal maximumLimit = ezOtcOrder.getMaximumLimit();
-        BigDecimal minimumLimit = ezOtcOrder.getMinimumLimit();
-
-        BigDecimal totalAmount = ezOtcOrder.getTotalAmount();
-        BigDecimal quotaAmount = ezOtcOrder.getQuotaAmount();
-        //未匹配的数量
-        BigDecimal nuQuotaAmount = totalAmount.subtract(quotaAmount);
-
-        BigDecimal frozeAmount = ezOtcOrder.getFrozeAmount();
+        BigDecimal amount = placeOrderReqDto.getAmount();//购买数量
         //判断数量是否满足
         if (amount.compareTo(maximumLimit) > 0 || amount.compareTo(minimumLimit) < 0) {
-            throw new BaseException("输入数量不满足条件范围");
-        }
-        //判断冻结数量/未匹配的数量  是否大于购买数量
-        if (frozeAmount.compareTo(amount) < 0 || nuQuotaAmount.compareTo(amount) < 0) {
-            throw new BaseException("订单已发生改变");
+            return BaseResponse.error("输入数量不满足条件范围");
         }
 
+        BigDecimal totalAmount = ezOtcOrder.getTotalAmount();//广告总数量
+        BigDecimal quotaAmount = ezOtcOrder.getQuotaAmount();//匹配数量
+        BigDecimal nuQuotaAmount = totalAmount.subtract(quotaAmount);//未匹配的数量
+        BigDecimal frozeAmount = ezOtcOrder.getFrozeAmount();//冻结数量
+
+        //判断冻结数量/未匹配的数量  是否大于购买数量
+        if (frozeAmount.compareTo(amount) < 0 || nuQuotaAmount.compareTo(amount) < 0) {
+            return BaseResponse.error("订单数量已发生改变");
+        }
         //判断用户注册的国籍是否满足购买条件
         String currencyCode = ezOtcOrder.getCurrencyCode();
 
@@ -154,7 +171,6 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         LambdaQueryWrapper<EzCountryConfig> configLambdaQueryWrapper = new LambdaQueryWrapper<>();
         configLambdaQueryWrapper.eq(EzCountryConfig::getCountryCode, countryCode);
         EzCountryConfig one = countryConfigService.getOne(configLambdaQueryWrapper);
-
         if (!one.getCurrencyCode().equals(currencyCode)) {
             throw new BaseException("根据您注册所在地的相关规定，您只能交易本地区的法币");
         }
@@ -180,18 +196,37 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         String isAdvertising = ezOtcOrder.getIsAdvertising();
         if ("1".equals(isAdvertising)) {//不为接单广告
             match.setStatus(MatchOrderStatus.WAITFORPAYMENT.getCode()); //不是接单广告直接进入待支付状态
-            //TODO:将订单存入rabbitmq进行死信通信  时间到了就取消订单 根据卖家用户设置而定
             //增加商家匹配数量
             ezOtcOrder.setQuotaAmount(quotaAmount.add(placeOrderReqDto.getAmount()));
-            baseMapper.updateById(ezOtcOrder);
+            //TODO:将订单存入rabbitmq进行死信通信  时间到了就取消订单 根据卖家用户设置而定
+            this.rabbitTemplate.convertAndSend(
+                    RabbitMQConfiguration.orderExchange, //发送至订单交换机
+                    RabbitMQConfiguration.routingKeyOrder, //订单定routingKey
+                    orderMatchNo+"_"+MatchOrderStatus.WAITFORPAYMENT.getCode() //订单号   这里可以传对象 比如直接传订单对象
+                    , message -> {
+                        // 如果配置了 params.put("x-message-ttl", 5 * 1000);
+                        // 那么这一句也可以省略,具体根据业务需要是声明 Queue 的时候就指定好延迟时间还是在发送自己控制时间
+                        message.getMessageProperties().setExpiration(1000 * 10 * 60 *prompt+"");
+                        return message;
+                    });
         } else {
             match.setStatus(MatchOrderStatus.PENDINGORDER.getCode()); //接单广告直接进入商家待接单状态  如果此模式下 用户取消订单免除每天取消限制的
             //TODO: 将订单存入rabbitmq进行死信通信  时间到了就取消订单  接单时间根据otc设置而定
-
+            this.rabbitTemplate.convertAndSend(
+                    RabbitMQConfiguration.orderExchange, //发送至订单交换机
+                    RabbitMQConfiguration.routingKeyOrder, //订单定routingKey
+                    orderMatchNo+"_"+MatchOrderStatus.PENDINGORDER.getCode() //订单号   这里可以传对象 比如直接传订单对象
+                    , message -> {
+                        // 如果配置了 params.put("x-message-ttl", 5 * 1000);
+                        // 那么这一句也可以省略,具体根据业务需要是声明 Queue 的时候就指定好延迟时间还是在发送自己控制时间
+                        message.getMessageProperties().setExpiration(1000 * 10 * 60 * otcConfig.getOrderTime()+"");
+                        return message;
+                    });
         }
+        baseMapper.updateById(ezOtcOrder);//修改订单
+
         orderMatchService.save(match);
 
-        //增加订单匹配数量
 
 
         //返回订单号

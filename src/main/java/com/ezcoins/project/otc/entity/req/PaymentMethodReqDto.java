@@ -28,4 +28,8 @@ public class PaymentMethodReqDto {
     @ApiModelProperty(value = "收付款方式英文名",required = true)
     @NotBlank(message = "{收付款方式英文名不能为空}")
     private String nameEn;
+
+    @ApiModelProperty(value = "图标")
+    @NotBlank(message = "{收付款方式图标不能为空}")
+    private String icon;
 }

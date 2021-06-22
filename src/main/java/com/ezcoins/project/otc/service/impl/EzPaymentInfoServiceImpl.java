@@ -1,15 +1,17 @@
 package com.ezcoins.project.otc.service.impl;
 
 import com.ezcoins.base.BaseException;
+import com.ezcoins.constant.enums.otc.PaymentMethod;
 import com.ezcoins.context.ContextHandler;
 import com.ezcoins.project.consumer.entity.EzUserKyc;
 import com.ezcoins.project.consumer.service.EzUserKycService;
 
-import com.ezcoins.project.otc.entity.EzPaymentQrcode;
+import com.ezcoins.project.otc.entity.EzPaymentInfo;
 import com.ezcoins.project.otc.entity.req.PaymentQrcodeTypeReqDto;
-import com.ezcoins.project.otc.mapper.EzPaymentQrcodeMapper;
-import com.ezcoins.project.otc.service.EzPaymentQrcodeService;
+import com.ezcoins.project.otc.mapper.EzPaymentInfoMapper;
+import com.ezcoins.project.otc.service.EzPaymentInfoService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.ezcoins.response.BaseResponse;
 import com.ezcoins.utils.BeanUtils;
 import com.ezcoins.utils.MessageUtils;
 import com.ezcoins.utils.StringUtils;
@@ -25,7 +27,7 @@ import org.springframework.stereotype.Service;
  * @since 2021-06-15
  */
 @Service
-public class EzPaymentQrcodeServiceImpl extends ServiceImpl<EzPaymentQrcodeMapper, EzPaymentQrcode> implements EzPaymentQrcodeService {
+public class EzPaymentInfoServiceImpl extends ServiceImpl<EzPaymentInfoMapper, EzPaymentInfo> implements EzPaymentInfoService {
 
     @Autowired
     private EzUserKycService kycService;
@@ -39,7 +41,16 @@ public class EzPaymentQrcodeServiceImpl extends ServiceImpl<EzPaymentQrcodeMappe
      * @Date: 2021/6/15
      */
     @Override
-    public void alipayPaymentMethod(PaymentQrcodeTypeReqDto qrcodeTypeReqDto) {
+    public BaseResponse alipayPaymentMethod(PaymentQrcodeTypeReqDto qrcodeTypeReqDto) {
+        if (qrcodeTypeReqDto.getPaymentMethodId()== PaymentMethod.BANK.getCode()){
+            if (StringUtils.isEmpty(qrcodeTypeReqDto.getBankName())){
+                return BaseResponse.error(MessageUtils.message("银行名称不能为空"));
+            }
+        }else {
+            if (StringUtils.isEmpty(qrcodeTypeReqDto.getPaymentQrCode())){
+                return BaseResponse.error(MessageUtils.message("请先上传支付二维码"));
+            }
+        }
         String realName = qrcodeTypeReqDto.getRealName();
         EzUserKyc one = kycService.getOneApprove(ContextHandler.getUserId());
         if (null == one) {
@@ -48,15 +59,14 @@ public class EzPaymentQrcodeServiceImpl extends ServiceImpl<EzPaymentQrcodeMappe
         if (!one.getRealName().equals(realName)) {
             throw new BaseException(MessageUtils.message("请输入认证的真实姓名"));
         }
-
         String id = qrcodeTypeReqDto.getId();
-        EzPaymentQrcode paymentQrcode = new EzPaymentQrcode();
-        BeanUtils.copyBeanProp(paymentQrcode, qrcodeTypeReqDto);
+        EzPaymentInfo paymentInfo = new EzPaymentInfo();
+        BeanUtils.copyBeanProp(paymentInfo, qrcodeTypeReqDto);
         if (StringUtils.isEmpty(id)) {//添加
-            baseMapper.insert(paymentQrcode);
+            baseMapper.insert(paymentInfo);
         } else {//修改
-            baseMapper.updateById(paymentQrcode);
+            baseMapper.updateById(paymentInfo);
         }
-
+        return BaseResponse.success();
     }
 }

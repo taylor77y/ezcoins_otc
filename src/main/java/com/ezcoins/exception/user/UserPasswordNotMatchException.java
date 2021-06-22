@@ -5,8 +5,8 @@ package com.ezcoins.exception.user;
  * 
  * 
  */
-public class UserPasswordNotMatchException extends UserException
-{
+public class UserPasswordNotMatchException extends UserException{
+
     private static final long serialVersionUID = 1L;
 
     public UserPasswordNotMatchException()

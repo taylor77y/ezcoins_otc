@@ -13,13 +13,16 @@ import lombok.Data;
  */
 @Data
 public class PaymentQrcodeTypeReqDto {
-    @ApiModelProperty(value = "类型 2：支付宝  3：微信 .....")
-    private int paymentMethodId;
-
-    @ApiModelProperty(value = "支付宝表编号")
+    @ApiModelProperty(value = "详情编号  null为添加 否则：修改")
     private String id;
 
-    @ApiModelProperty(value = "卖家姓名")
+    @ApiModelProperty(value = "类型 1:银行 2：支付宝  3：微信 .....")
+    private int paymentMethodId;
+
+    @ApiModelProperty(value = "开户银行名")
+    private String bankName;
+
+    @ApiModelProperty(value = "真实姓名")
     private String realName;
 
     @ApiModelProperty(value = "账号")

@@ -70,7 +70,6 @@ public class EzOtcOrderMatch implements Serializable {
     @ApiModelProperty(value = "订单到期时间")
     private Date dueTime;
 
-
     @ApiModelProperty(value = "乐观锁")
     @Version
     private Integer version;

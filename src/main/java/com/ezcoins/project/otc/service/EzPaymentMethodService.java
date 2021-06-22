@@ -1,5 +1,6 @@
 package com.ezcoins.project.otc.service;
 
+import com.ezcoins.project.otc.entity.EzPaymentInfo;
 import com.ezcoins.project.otc.entity.EzPaymentMethod;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ezcoins.project.otc.entity.req.PaymentMethodReqDto;
