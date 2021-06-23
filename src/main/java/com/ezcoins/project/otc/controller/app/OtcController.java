@@ -8,13 +8,18 @@ import com.ezcoins.constant.enums.BusinessType;
 import com.ezcoins.constant.enums.OperatorType;
 import com.ezcoins.context.ContextHandler;
 import com.ezcoins.exception.user.SecurityPasswordNotMatchException;
+import com.ezcoins.project.common.service.mapper.SearchModel;
 import com.ezcoins.project.otc.entity.*;
 import com.ezcoins.project.otc.entity.req.*;
+import com.ezcoins.project.otc.entity.resp.NewOrderRespDto;
+import com.ezcoins.project.otc.entity.resp.OrderInfo;
+import com.ezcoins.project.otc.entity.resp.OtcOrderRespDto;
 import com.ezcoins.project.otc.entity.resp.PaymentMethodRespDto;
 import com.ezcoins.project.otc.service.*;
 import com.ezcoins.response.BaseResponse;
 import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponseList;
+import com.ezcoins.response.ResponsePageList;
 import com.ezcoins.utils.BeanUtils;
 import com.ezcoins.utils.EncoderUtil;
 import com.ezcoins.utils.Md5Util;
@@ -159,6 +164,32 @@ public class OtcController {
     public BaseResponse releaseAdvertisingOrder(@RequestBody OtcOrderReqDto otcOrderReqDto){
         return otcOrderService.releaseAdvertisingOrder(otcOrderReqDto);
     }
+
+    @ApiOperation(value = "订单 列表")
+    @PostMapping("otcOrderList")
+    @AuthToken
+    public ResponseList<OtcOrderRespDto> otcOrderList(@RequestBody OtcOrderQueryReqDto orderQueryReqDto){
+        return otcOrderService.otcOrderList(orderQueryReqDto);
+    }
+
+
+
+    @ApiOperation(value = "NEW ORDER")
+    @PostMapping("nowOrderList")
+    @AuthToken
+    public ResponseList<NewOrderRespDto> nowOrderList(@RequestBody PageQuery pageQuery){
+        return otcOrderService.nowOrderList(pageQuery);
+    }
+
+
+    @ApiOperation(value = "购买查询订单详情")
+    @GetMapping("orderInfo/{otcOrderNo}")
+    @AuthToken
+    public Response<OrderInfo> orderInfo(@PathVariable String otcOrderNo){
+        return otcOrderService.orderInfo(otcOrderNo);
+    }
+
+
 
 
 

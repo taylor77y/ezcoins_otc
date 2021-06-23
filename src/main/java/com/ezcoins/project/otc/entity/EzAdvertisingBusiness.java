@@ -75,7 +75,6 @@ public class EzAdvertisingBusiness implements Serializable {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date updateTime;
 
-
     @ApiModelProperty(value = "乐观锁 请忽略它的存在")
     @Version
     private Integer version;

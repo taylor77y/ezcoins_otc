@@ -28,7 +28,7 @@ public class EzOtcOrder implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @ApiModelProperty(value = "订单号")
-    @TableId(value = "orderNo")
+    @TableId(value = "order_no")
     private String orderNo;
 
     @ApiModelProperty(value = "用户id")
@@ -64,14 +64,14 @@ public class EzOtcOrder implements Serializable {
     @ApiModelProperty(value = "是否为接单广告(0:是 1：否)")
     private String isAdvertising;
 
-    @ApiModelProperty(value = "支付方式1")
-    private String paymentMethod1;
+    @ApiModelProperty(value = "支付方式1ID")
+    private Integer paymentMethod1;
 
-    @ApiModelProperty(value = "支付方式2")
-    private String paymentMethod2;
+    @ApiModelProperty(value = "支付方式2ID")
+    private Integer paymentMethod2;
 
-    @ApiModelProperty(value = "支付方式3")
-    private String paymentMethod3;
+    @ApiModelProperty(value = "支付方式3ID")
+    private Integer paymentMethod3;
 
     @ApiModelProperty(value = "付款期限(分钟)")
     private Integer prompt;
@@ -79,7 +79,7 @@ public class EzOtcOrder implements Serializable {
     @ApiModelProperty(value = "交易提示")
     private String tradingTips;
 
-    @ApiModelProperty(value = "订单状态")
+    @ApiModelProperty(value = "订单状态（0：正常 1：已下架）")
     private String status;
 
     @ApiModelProperty(value = "订单完成时间")

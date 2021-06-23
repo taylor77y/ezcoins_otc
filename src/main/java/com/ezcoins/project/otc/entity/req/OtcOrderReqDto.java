@@ -17,12 +17,6 @@ import java.util.Date;
  */
 @Data
 public class OtcOrderReqDto {
-    @ApiModelProperty(value = "订单号")
-    private String orderNo;
-
-    @ApiModelProperty(value = "用户id")
-    private String userId;
-
     @ApiModelProperty(value = "单价")
     private BigDecimal price;
 
@@ -44,7 +38,6 @@ public class OtcOrderReqDto {
     @ApiModelProperty(value = "订单类型(0:买  1：卖)")
     private String type;
 
-
     @ApiModelProperty(value = "是否为接单广告(0:是 1：否)")
     private String isAdvertising;
 
@@ -62,16 +55,4 @@ public class OtcOrderReqDto {
 
     @ApiModelProperty(value = "交易提示")
     private String tradingTips;
-
-    @ApiModelProperty(value = "订单状态")
-    private String status;
-
-    @ApiModelProperty(value = "订单完成时间")
-    private Date endTime;
-
-    @ApiModelProperty(value = "创建时间")
-    private Date createTime;
-
-    @ApiModelProperty(value = "更新时间")
-    private Date updateTime;
 }

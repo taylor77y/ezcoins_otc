@@ -3,6 +3,8 @@ package com.ezcoins.project.consumer.controller.app;
 
 import com.ezcoins.aspectj.lang.annotation.NoRepeatSubmit;
 import com.ezcoins.base.BaseController;
+import com.ezcoins.project.config.entity.EzCountryConfig;
+import com.ezcoins.project.config.service.EzCountryConfigService;
 import com.ezcoins.project.consumer.entity.req.VerificationCodeReqDto;
 import com.ezcoins.redis.RedisCache;
 import com.ezcoins.project.acl.entity.req.JwtAuthenticationRequest;
@@ -11,6 +13,7 @@ import com.ezcoins.project.consumer.entity.req.UserKycReqDto;
 import com.ezcoins.project.consumer.service.EzUserKycService;
 import com.ezcoins.project.consumer.service.EzUserService;
 import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.ResponseList;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.experimental.Accessors;
@@ -37,6 +40,9 @@ public class ConsumerController extends BaseController {
     @Autowired
     private EzUserKycService kycService;
 
+    @Autowired
+    private EzCountryConfigService countryConfigService;
+
 
     @ApiOperation(value = "发送短信/邮箱验证码")
     @PostMapping("sendMsm")
@@ -61,7 +67,6 @@ public class ConsumerController extends BaseController {
         return BaseResponse.success().message("登录成功").data("token",ezUserService.login(jwtAuthenticationRequest));
     }
 
-//
 //    @ApiOperation(value = "用户修改密码/安全密码")
 //    @PostMapping("updateUser")
 //    public BaseResponse updateUser(@RequestBody UpdateUserBody updateUserBody) {
@@ -101,4 +106,11 @@ public class ConsumerController extends BaseController {
         kycService.verified(userKycReqDto);
         return BaseResponse.success();
     }
+
+    @ApiOperation(value = "国家列表")
+    @GetMapping("countryList")
+    public ResponseList<EzCountryConfig> countryList() {
+        return ResponseList.success(countryConfigService.list());
+    }
+
 }
