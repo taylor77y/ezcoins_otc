@@ -14,6 +14,12 @@ import java.math.BigDecimal;
  */
 @Data
 public class NewOrderRespDto {
+    @ApiModelProperty(value = "订单号")
+    private String orderNo;
+
+    @ApiModelProperty(value = "币种类型")
+    private String coinName;
+
     @ApiModelProperty(value = "剩余数量")
     private BigDecimal lastAmount;
 

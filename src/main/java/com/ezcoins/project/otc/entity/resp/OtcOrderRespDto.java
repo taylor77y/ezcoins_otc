@@ -1,6 +1,6 @@
 package com.ezcoins.project.otc.entity.resp;
 
-import com.ezcoins.project.otc.entity.EzPaymentMethod;
+import com.baomidou.mybatisplus.annotation.TableId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -16,6 +16,10 @@ import java.util.List;
  */
 @Data
 public class OtcOrderRespDto {
+
+    @ApiModelProperty(value = "订单号")
+    private String orderNo;
+
 
     @ApiModelProperty(value = "单价")
     private BigDecimal price;

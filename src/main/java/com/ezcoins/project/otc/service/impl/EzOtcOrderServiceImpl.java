@@ -323,6 +323,12 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         return BaseResponse.success();
     }
 
+
+
+
+
+
+
     /**
      * app订单列表
      *
@@ -382,6 +388,7 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         records.forEach(e->{
             OtcOrderRespDto otcOrderRespDto = new OtcOrderRespDto();
             otcOrderRespDto.setCoinName(e.getCoinName());
+            otcOrderRespDto.setOrderNo(e.getOrderNo());
             otcOrderRespDto.setMinimumLimit(e.getMinimumLimit());
             otcOrderRespDto.setMaximumLimit(e.getMaximumLimit());
             otcOrderRespDto.setLastAmount(e.getTotalAmount().subtract(e.getQuotaAmount()));
@@ -408,7 +415,7 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         return ResponseList.success(otcOrderRespDtos);
     }
 
-    /***
+    /**
      * @Description: 新订单
      * @Param: []
      * @return: com.ezcoins.response.ResponseList<com.ezcoins.project.otc.entity.resp.OtcOrderRespDto>
@@ -424,6 +431,8 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         otcOrderLambdaQueryWrapper.orderByDesc(EzOtcOrder::getCoinName);
         baseMapper.selectPage(page,otcOrderLambdaQueryWrapper).getRecords().forEach(e->{
             NewOrderRespDto newOrderRespDto = new NewOrderRespDto();
+            newOrderRespDto.setOrderNo(e.getOrderNo());
+            newOrderRespDto.setCoinName(e.getCoinName());
             newOrderRespDto.setType(e.getType());
             newOrderRespDto.setPrice(e.getPrice());
             newOrderRespDto.setLastAmount(e.getTotalAmount().subtract(e.getQuotaAmount()));
@@ -431,6 +440,11 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         });
         return ResponseList.success(newOrderRespDtos);
     }
+
+
+
+
+
 
     /**
      * @Description: 购买查询订单详情
@@ -446,7 +460,6 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         OrderInfo orderInfo = new OrderInfo();
         orderInfo.setPrice(ezOtcOrder.getPrice());
         orderInfo.setTradingTips(ezOtcOrder.getTradingTips());
-
         //查询所有支付方式
         List<EzPaymentMethod> list = paymentMethodService.list();
 
