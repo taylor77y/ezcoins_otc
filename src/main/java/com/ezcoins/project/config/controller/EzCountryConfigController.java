@@ -36,8 +36,6 @@ import java.util.List;
 @Api(tags = "Admin-国家编号管理模块")
 @RequestMapping("/admin/config/countryConfig")
 public class EzCountryConfigController {
-
-
     @Autowired
     private EzCountryConfigService countryConfigService;
 

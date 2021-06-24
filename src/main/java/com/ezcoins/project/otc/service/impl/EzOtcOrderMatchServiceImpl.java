@@ -59,11 +59,11 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
             orderMatch.setStatus(MatchOrderStatus.CANCELLED.getCode());
 
             //查询当前用户取消订单数量
-            int count=redisCache.getCacheObject(RedisConstants.CANCEL_ORDER_COUNT_KEY+userId);
-            //用户取消次数增加
-            count+=1;
-            //存储时间 当晚12点之前
-            //获取当晚12点
+            int count=1;
+            if (null!=redisCache.getCacheObject(RedisConstants.CANCEL_ORDER_COUNT_KEY+userId)){
+                count=redisCache.getCacheObject(RedisConstants.CANCEL_ORDER_COUNT_KEY+userId);
+                count+=1; //用户取消次数增加
+            }
             redisCache.setCacheObject(RedisConstants.CANCEL_ORDER_COUNT_KEY+userId,count, Math.toIntExact(DateUtils.getSecondsNextEarlyMorning()), TimeUnit.SECONDS);
         }else {
             throw new BaseException("订单状态已发生变化");

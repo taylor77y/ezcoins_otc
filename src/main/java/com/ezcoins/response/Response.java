@@ -68,6 +68,16 @@ public class Response<T>{
     }
 
 
+    //成功静态方法
+    public static <T> Response<T> error(String message,T t) {
+        Response<T> r = new Response<T>();
+        r.setSuccess(false);
+        r.setCode(HttpStatus.HTTP_RES_CODE_500);
+        r.setMessage(message);
+        r.setData(t);
+        return r;
+    }
+
     public Response<T> code(Integer code){
         this.setCode(code);
         return this;

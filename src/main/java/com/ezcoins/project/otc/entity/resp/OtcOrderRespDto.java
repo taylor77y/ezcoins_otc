@@ -16,10 +16,8 @@ import java.util.List;
  */
 @Data
 public class OtcOrderRespDto {
-
     @ApiModelProperty(value = "订单号")
     private String orderNo;
-
 
     @ApiModelProperty(value = "单价")
     private BigDecimal price;

@@ -8,6 +8,7 @@ import com.ezcoins.project.otc.entity.req.*;
 import com.ezcoins.project.otc.entity.resp.NewOrderRespDto;
 import com.ezcoins.project.otc.entity.resp.OrderInfo;
 import com.ezcoins.project.otc.entity.resp.OtcOrderRespDto;
+import com.ezcoins.project.otc.entity.resp.PaymentDetails;
 import com.ezcoins.response.BaseResponse;
 import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponseList;
@@ -34,7 +35,7 @@ public interface EzOtcOrderService extends IService<EzOtcOrder> {
     * @Author: Wanglei
     * @Date: 2021/6/18
     */
-    BaseResponse placeAnOrder(PlaceOrderReqDto placeOrderReqDto);
+    Response<PaymentDetails> placeAnOrder(PlaceOrderReqDto placeOrderReqDto);
 
     
     

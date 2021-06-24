@@ -3,6 +3,7 @@ package com.ezcoins.project.app.service;
 import com.ezcoins.project.app.entity.EzAppAnnouncement;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ezcoins.project.app.entity.req.AnnouncementReqDto;
+import com.ezcoins.project.app.entity.resp.AppAnnouncementRespDto;
 import com.ezcoins.project.app.entity.resp.AppVersionRespDto;
 
 import java.util.List;
@@ -29,5 +30,5 @@ public interface EzAppAnnouncementService extends IService<EzAppAnnouncement> {
      * @param userId
      * @return
      */
-    List<AppVersionRespDto> getAnnouncement(String userId);
+    List<AppAnnouncementRespDto> getAnnouncement(String userId);
 }

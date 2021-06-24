@@ -40,13 +40,21 @@ public class AppVersionReqDto  implements Serializable {
     @NotBlank(message = "{下载地址不能为空}")
     private String addr;
 
+    @ApiModelProperty(value = "中文标题")
+    @NotBlank(message = "{中文标题不能为空}")
+    private String title;
+
+    @ApiModelProperty(value = "英文标题")
+    @NotBlank(message = "{英文标题不能为空}")
+    private String titleEn;
+
     @ApiModelProperty(value = "中文描述",required = true)
     @NotBlank(message = "{中文描述不能为空}")
-    private String description;
+    private String content;
 
     @ApiModelProperty(value = "英文描述",required = true)
     @NotBlank(message = "{英文描述不能为空}")
-    private String descriptionEn;
+    private String contentEn;
 
     @ApiModelProperty(value = "创建者",required = true)
     @NotBlank(message = "{创建者不能为空}")

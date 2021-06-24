@@ -11,10 +11,7 @@ import com.ezcoins.exception.user.SecurityPasswordNotMatchException;
 import com.ezcoins.project.common.service.mapper.SearchModel;
 import com.ezcoins.project.otc.entity.*;
 import com.ezcoins.project.otc.entity.req.*;
-import com.ezcoins.project.otc.entity.resp.NewOrderRespDto;
-import com.ezcoins.project.otc.entity.resp.OrderInfo;
-import com.ezcoins.project.otc.entity.resp.OtcOrderRespDto;
-import com.ezcoins.project.otc.entity.resp.PaymentMethodRespDto;
+import com.ezcoins.project.otc.entity.resp.*;
 import com.ezcoins.project.otc.service.*;
 import com.ezcoins.response.BaseResponse;
 import com.ezcoins.response.Response;
@@ -107,7 +104,9 @@ public class OtcController {
             paymentMethodRespDto.setAccountNumber(e.getAccountNumber());
             paymentMethodRespDto.setRealName(e.getRealName());
             paymentMethodRespDto.setStatus(e.getStatus());
-            EzPaymentMethod ezPaymentMethod = list.get(e.getPaymentMethodId());
+            paymentMethodRespDto.setPaymentMethodId(e.getPaymentMethodId());
+            paymentMethodRespDto.setId(e.getId());
+            EzPaymentMethod ezPaymentMethod = list.get(e.getPaymentMethodId()-1);
             paymentMethodRespDto.setIcon(ezPaymentMethod.getIcon());
             paymentMethodRespDto.setBankName(e.getBankName());
             respDtos.add(paymentMethodRespDto);
@@ -179,7 +178,8 @@ public class OtcController {
         return otcOrderService.nowOrderList(pageQuery);
     }
 
-    @ApiOperation(value = "购买查询订单详情")
+
+    @ApiOperation(value = "购买 查询订单详情")
     @GetMapping("orderInfo/{otcOrderNo}")
     @AuthToken
     public Response<OrderInfo> orderInfo(@PathVariable String otcOrderNo){
@@ -192,7 +192,7 @@ public class OtcController {
     @PostMapping("placeAnOrder")
     @AuthToken
     @Log(title = "下单", businessType = BusinessType.INSERT, operatorType = OperatorType.MOBILE)
-    public BaseResponse placeAnOrder(@RequestBody PlaceOrderReqDto placeOrderReqDto){
+    public Response<PaymentDetails> placeAnOrder(@RequestBody PlaceOrderReqDto placeOrderReqDto){
         return otcOrderService.placeAnOrder(placeOrderReqDto);
     }
 
@@ -200,7 +200,7 @@ public class OtcController {
     @NoRepeatSubmit
     @ApiOperation(value = "商户 下架广告订单")
     @PutMapping("offShelfOrder/{orderNo}")
-     @AuthToken
+    @AuthToken
     @Log(title = "商户 下架广告订单", businessType = BusinessType.UPDATE, operatorType = OperatorType.MOBILE)
     public BaseResponse offShelfOrder(@PathVariable String orderNo){
         return otcOrderService.offShelfOrder(orderNo);
@@ -232,7 +232,7 @@ public class OtcController {
     @AuthToken
     @Log(title = "买家确认 付款", businessType = BusinessType.UPDATE, operatorType = OperatorType.MOBILE)
     public BaseResponse confirmPayment(@PathVariable String matchOrderNo){
-        return  orderMatchService.confirmPayment(matchOrderNo);
+        return orderMatchService.confirmPayment(matchOrderNo);
     }
 
     @NoRepeatSubmit

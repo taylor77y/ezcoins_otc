@@ -45,7 +45,17 @@ public class ResponseList<T> {
         return r;
     }
 
-
+    //成功静态方法
+    public static <T> ResponseList<T> error(String message,List<T> t) {
+        ResponseList<T> r = new ResponseList<T>();
+        r.setSuccess(true);
+        r.setCode(HttpStatus.HTTP_RES_CODE_500);
+        r.setMessage(HttpStatus.HTTP_RES_CODE_500_VALUE);
+        if (t!=null){
+            r.data=t;
+        }
+        return r;
+    }
 
 
 }

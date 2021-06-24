@@ -3,6 +3,7 @@ package com.ezcoins.project.app.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ezcoins.project.app.entity.EzAppAnnouncementTag;
+import com.ezcoins.project.app.entity.resp.AppAnnouncementRespDto;
 import com.ezcoins.utils.BeanUtils;
 import com.ezcoins.context.ContextHandler;
 import com.ezcoins.project.app.entity.EzAppAnnouncement;
@@ -12,9 +13,11 @@ import com.ezcoins.project.app.mapper.EzAppAnnouncementMapper;
 import com.ezcoins.project.app.mapper.EzAppAnnouncementTagMapper;
 import com.ezcoins.project.app.service.EzAppAnnouncementService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -41,14 +44,13 @@ public class EzAppAnnouncementServiceImpl extends ServiceImpl<EzAppAnnouncementM
      */
     @Override
     public void announce(AnnouncementReqDto announcementReqDto) {
-        EzAppAnnouncement ezAppAnnouncement=new EzAppAnnouncement();
+        EzAppAnnouncement ezAppAnnouncement = new EzAppAnnouncement();
         BeanUtils.copyBeanProp(ezAppAnnouncement,announcementReqDto);
         ezAppAnnouncement.setCreateBy(ContextHandler.getUserName());
-        if ("0".equals(announcementReqDto.getUserType())){
+        if ("0".equals(announcementReqDto.getUserType())) {
             baseMapper.insert(ezAppAnnouncement);
         }
     }
-
     /**
      * 获取 公告列表
      *
@@ -56,41 +58,47 @@ public class EzAppAnnouncementServiceImpl extends ServiceImpl<EzAppAnnouncementM
      * @return
      */
     @Override
-    public List<AppVersionRespDto> getAnnouncement(String userId) {
-        List<AppVersionRespDto> respDtoArrayList=new ArrayList<>();
-
+    public List<AppAnnouncementRespDto> getAnnouncement(String userId) {
+        String locale = LocaleContextHolder.getLocale().toString();
+        List<AppAnnouncementRespDto> respDtoArrayList = new ArrayList<>();
         //查询所有没有撤销或删除的公告列表
-        LambdaQueryWrapper<EzAppAnnouncement> queryWrapper=new LambdaQueryWrapper<>();
-        queryWrapper.eq(EzAppAnnouncement::getIfCancel,"0");
+        LambdaQueryWrapper<EzAppAnnouncement> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(EzAppAnnouncement::getIfCancel, "0");
         queryWrapper.orderByAsc(EzAppAnnouncement::getPriority);
-        List<EzAppAnnouncement> list=baseMapper.selectList(queryWrapper);
-        if (list.size()==0){
+        List<EzAppAnnouncement> list = baseMapper.selectList(queryWrapper);
+        if (list.size() == 0) {
             return respDtoArrayList;
         }
-        //将所有公告分类
-        Map<String,List<EzAppAnnouncement>> mapByUserType=list.stream().collect(Collectors.groupingBy(EzAppAnnouncement::getUserType));
+        //将所有公告通过用户类型分类
+        Map<String, List<EzAppAnnouncement>> mapByUserType = list.stream().collect(Collectors.groupingBy(EzAppAnnouncement::getUserType));
+        LambdaQueryWrapper<EzAppAnnouncementTag> tagQueryWrapper = new LambdaQueryWrapper<>();
+        tagQueryWrapper.eq(EzAppAnnouncementTag::getUserId, userId);
 
+        List<EzAppAnnouncementTag> tags = announcementTagMapper.selectList(tagQueryWrapper);
 
+        List<String> announcementIdList = tags.stream().map(EzAppAnnouncementTag::getAnnouncementId).collect(Collectors.toList());
 
-        LambdaQueryWrapper<EzAppAnnouncementTag> tagQueryWrapper=new LambdaQueryWrapper<>();
-        tagQueryWrapper.eq(EzAppAnnouncementTag::getUserId,userId);
-        List<EzAppAnnouncementTag> tags= announcementTagMapper.selectList(tagQueryWrapper);
+        mapByUserType.get("0").forEach(e -> {
+            AppAnnouncementRespDto appAnnouncementRespDto = new AppAnnouncementRespDto();
+            appAnnouncementRespDto.setCreateTime(e.getCreateTime());
+            appAnnouncementRespDto.setPriority(e.getPriority());
+            if ("zh_CN".equals(locale)) {
+                appAnnouncementRespDto.setTitle(e.getTitle());
+                appAnnouncementRespDto.setContent(e.getContent());
+            } else if ("en_US".equals(locale)) {
+                appAnnouncementRespDto.setTitle(e.getTitleEn());
+                appAnnouncementRespDto.setContent(e.getContentEn());
+            }
+            appAnnouncementRespDto.setCreateTime(e.getCreateTime());
+            //标记公告是否已读
+            if (announcementIdList.contains(e.getId())) {
+                appAnnouncementRespDto.setIsRead("0");
+            }else {
+                appAnnouncementRespDto.setIsRead("1");
+            }
+            respDtoArrayList.add(appAnnouncementRespDto);
+        });
 
-        List<String> announcementIdList=tags.stream().map(EzAppAnnouncementTag::getAnnouncementId).collect(Collectors.toList());
-         mapByUserType.get("0").forEach(e->{
-             AppVersionRespDto versionRespDto= new AppVersionRespDto();
-             BeanUtils.copyBeanProp(versionRespDto,e);
-             //标记公告是否已读
-             if (announcementIdList.contains(e.getId())){
-//                versionRespDto.setIsRead("0");
-             }
-         });
-
-        //判断用户类型
-
-
-      return respDtoArrayList;
-
-
+        return respDtoArrayList.stream().sorted(Comparator.comparing(AppAnnouncementRespDto::getPriority).reversed().thenComparing(AppAnnouncementRespDto::getCreateTime)).collect(Collectors.toList());
     }
 }

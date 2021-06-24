@@ -1,12 +1,14 @@
 package com.ezcoins.project.otc.entity;
 
 import java.math.BigDecimal;
-import com.baomidou.mybatisplus.annotation.IdType;
+
+import com.baomidou.mybatisplus.annotation.*;
+
 import java.util.Date;
-import com.baomidou.mybatisplus.annotation.TableId;
+
 import java.io.Serializable;
 
-import com.baomidou.mybatisplus.annotation.Version;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -28,7 +30,7 @@ public class EzOtcOrderMatch implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @ApiModelProperty(value = "匹配订单号")
-    @TableId(value = "orderMatchNo")
+    @TableId(value = "order_match_no")
     private String orderMatchNo;
 
     @ApiModelProperty(value = "用户id")
@@ -41,12 +43,17 @@ public class EzOtcOrderMatch implements Serializable {
     private String otcOrderUserId;
 
     @ApiModelProperty(value = "创建时间")
+    @TableField(fill = FieldFill.INSERT)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
 
+
     @ApiModelProperty(value = "支付时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date paymentTime;
 
     @ApiModelProperty(value = "完成时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date finishTime;
 
     @ApiModelProperty(value = "卖家昵称")
@@ -68,6 +75,7 @@ public class EzOtcOrderMatch implements Serializable {
     private String coinName;
 
     @ApiModelProperty(value = "订单到期时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date dueTime;
 
     @ApiModelProperty(value = "乐观锁")

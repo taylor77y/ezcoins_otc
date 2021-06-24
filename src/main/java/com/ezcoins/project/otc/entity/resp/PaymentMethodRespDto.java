@@ -15,7 +15,6 @@ import lombok.Data;
  */
 @Data
 public class PaymentMethodRespDto {
-
     @ApiModelProperty(value = "详情编号")
     private String id;
 

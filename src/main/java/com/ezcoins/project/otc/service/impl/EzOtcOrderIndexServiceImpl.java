@@ -37,9 +37,11 @@ public class EzOtcOrderIndexServiceImpl extends ServiceImpl<EzOtcOrderIndexMappe
         stringBuilder.append(sequenceStr);
 
         int nextSequence = index.getCurrentValue()+index.getStep() ;
-
         if (nextSequence >= 1000000) {
             index.setCurrentValue(0);
+            baseMapper.updateById(index);
+        }else {
+            index.setCurrentValue(nextSequence);
             baseMapper.updateById(index);
         }
         return String.valueOf(stringBuilder);

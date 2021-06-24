@@ -52,10 +52,16 @@ public class EzAppVersion implements Serializable {
     private String addr;
 
     @ApiModelProperty(value = "中文描述")
-    private String description;
+    private String content;
 
     @ApiModelProperty(value = "英文描述")
-    private String descriptionEn;
+    private String contentEn;
+
+    @ApiModelProperty(value = "中文标题")
+    private String title;
+
+    @ApiModelProperty(value = "英文标题")
+    private String titleEn;
 
     @ApiModelProperty(value = "创建者")
     private String createBy;
@@ -79,11 +85,7 @@ public class EzAppVersion implements Serializable {
 
     public void setDescription(String description) {
         String locale = LocaleContextHolder.getLocale().toString();
-        if ("zh_CN".equals(locale)) {
-            this.description = description;
-        } else if ("en_US".equals(locale)) {
-            this.description = this.descriptionEn;
-        }
+
     }
 
 
