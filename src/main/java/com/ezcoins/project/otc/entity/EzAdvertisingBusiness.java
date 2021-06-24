@@ -35,8 +35,8 @@ public class EzAdvertisingBusiness implements Serializable {
     @ApiModelProperty(value = "用户id")
     private String userId;
 
-    @ApiModelProperty(value = "商户名")
-    private String name;
+    @ApiModelProperty(value = "卖家昵称")
+    private String advertisingName;
 
     @ApiModelProperty(value = "安全密码")
     private String securityPassword;

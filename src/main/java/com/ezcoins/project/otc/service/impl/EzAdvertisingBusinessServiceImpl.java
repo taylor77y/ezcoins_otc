@@ -31,17 +31,17 @@ public class EzAdvertisingBusinessServiceImpl extends ServiceImpl<EzAdvertisingB
      */
     @Override
     public BaseResponse otcSetting(OtcSettingReqDto otcSettingReqDto) {
-        String name = otcSettingReqDto.getName();
+        String name = otcSettingReqDto.getAdvertisingName();
         String securityPassword = otcSettingReqDto.getSecurityPassword();
         //判断昵称是否纯在
         LambdaQueryWrapper<EzAdvertisingBusiness> queryWrapper=new LambdaQueryWrapper<>();
-        queryWrapper.eq(EzAdvertisingBusiness::getName,name);
+        queryWrapper.eq(EzAdvertisingBusiness::getAdvertisingName,name);
         Integer count = baseMapper.selectCount(queryWrapper);
         if (count>0){
             BaseResponse.error("昵称重复，请重新输入");
         }
         EzAdvertisingBusiness business = new EzAdvertisingBusiness();
-        business.setName(name);
+        business.setAdvertisingName(name);
         business.setSecurityPassword(securityPassword);
         business.setUserId(ContextHandler.getUserId());
         return BaseResponse.success();

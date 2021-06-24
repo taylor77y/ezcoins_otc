@@ -1,6 +1,5 @@
 package com.ezcoins.project.otc.entity.resp;
 
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.ezcoins.project.otc.entity.EzPaymentMethod;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;

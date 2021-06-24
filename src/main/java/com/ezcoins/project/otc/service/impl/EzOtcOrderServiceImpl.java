@@ -83,6 +83,11 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
     private EzPaymentMethodService paymentMethodService;
 
 
+
+    @Autowired
+    private EzPaymentInfoService paymentInfoService;
+
+
     @Autowired
     private EzAdvertisingBusinessService advertisingBusinessService;
 
@@ -179,7 +184,7 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
             details.setAdvertisingName(orderMatch.getAdvertisingName());
             details.setPrice(orderMatch.getPrice());
             details.setStatus(orderMatch.getStatus());
-            return Response.error("请先完成当前未完成的订单",details);//将订单号返回
+            return Response.success("请先完成当前未完成的订单",details);//将订单号返回
         }
         BigDecimal maximumLimit = ezOtcOrder.getMaximumLimit();//最大限额
         BigDecimal minimumLimit = ezOtcOrder.getMinimumLimit();//最小限额
@@ -230,7 +235,7 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         BigDecimal totalPrice = ezOtcOrder.getPrice().multiply(placeOrderReqDto.getAmount());
         match.setTotalPrice(totalPrice);
         match.setCoinName(ezOtcOrder.getCoinName());
-        match.setAdvertisingName(advertisingBusiness.getName());
+        match.setAdvertisingName(advertisingBusiness.getAdvertisingName());
 
         //订单到期时间=当前时间+付款期限(分钟)   根据用户设置的订单付款期限
         Integer prompt = ezOtcOrder.getPrompt();//付款期限(分钟)
@@ -255,7 +260,7 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         details.setOrderMatchNo(orderMatchNo);
         details.setDueTime(beForeTime);
         details.setTotalPrice(totalPrice);
-        details.setAdvertisingName(advertisingBusiness.getName());
+        details.setAdvertisingName(advertisingBusiness.getAdvertisingName());
         details.setPrice(ezOtcOrder.getPrice());
 
 
@@ -452,7 +457,7 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
             otcOrderRespDto.setLastAmount(e.getTotalAmount().subtract(e.getQuotaAmount()));
             businessLambdaQueryWrapper.eq(EzAdvertisingBusiness::getUserId,e.getUserId());
             EzAdvertisingBusiness one = advertisingBusinessService.getOne(businessLambdaQueryWrapper);
-            otcOrderRespDto.setName(one.getName());
+            otcOrderRespDto.setAdvertisingName(one.getAdvertisingName());
             List<String> icons=new ArrayList<>();
             if (StringUtils.isNotNull(e.getPaymentMethod1())){
                 icons.add(list.get(e.getPaymentMethod1()-1).getIcon());
@@ -539,7 +544,7 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         LambdaQueryWrapper<EzAdvertisingBusiness> businessLambdaQueryWrapper=new LambdaQueryWrapper<>();
         businessLambdaQueryWrapper.eq(EzAdvertisingBusiness::getUserId,ezOtcOrder.getUserId());
         EzAdvertisingBusiness one = advertisingBusinessService.getOne(businessLambdaQueryWrapper);
-        orderInfo.setName(one.getName());
+        orderInfo.setAdvertisingName(one.getAdvertisingName());
         orderInfo.setIcons(icons);
         return Response.success(orderInfo);
     }

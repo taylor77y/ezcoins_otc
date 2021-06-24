@@ -186,7 +186,6 @@ public class OtcController {
         return otcOrderService.orderInfo(otcOrderNo);
     }
 
-
     @NoRepeatSubmit
     @ApiOperation(value = "用户 根据订单号下单 购买/出售")
     @PostMapping("placeAnOrder")

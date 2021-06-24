@@ -24,8 +24,9 @@ public class OrderInfo {
     @ApiModelProperty(value = "支付方式")
     private List<String> icons;
 
-    @ApiModelProperty(value = "OTC商户名")
-    private String name;
+    @ApiModelProperty(value = "卖家昵称")
+    private String advertisingName;
+
 
     @ApiModelProperty(value = "币种类型")
     private String coinName;
