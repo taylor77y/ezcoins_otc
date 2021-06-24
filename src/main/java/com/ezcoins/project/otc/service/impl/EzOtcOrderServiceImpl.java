@@ -271,6 +271,7 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
             details.setStatus(MatchOrderStatus.WAITFORPAYMENT.getCode()); //不是接单广告直接进入待支付状态
             //增加商家匹配数量
             ezOtcOrder.setQuotaAmount(quotaAmount.add(placeOrderReqDto.getAmount()));
+
             //TODO:将订单存入rabbitmq进行死信通信  时间到了就取消订单 根据卖家用户设置而定
             this.rabbitTemplate.convertAndSend(
                     RabbitMQConfiguration.orderExchange, //发送至订单交换机
@@ -279,7 +280,7 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
                     , message -> {
                         // 如果配置了 params.put("x-message-ttl", 5 * 1000);
                         // 那么这一句也可以省略,具体根据业务需要是声明 Queue 的时候就指定好延迟时间还是在发送自己控制时间
-                        message.getMessageProperties().setExpiration(1000 * 10 * 60 *prompt+"");
+                        message.getMessageProperties().setExpiration(1000 * 60 *prompt  +"");
                         return message;
                     });
         } else {

@@ -58,6 +58,11 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
         }else if (orderMatch.getStatus().equals(MatchOrderStatus.WAITFORPAYMENT.getCode())){
             orderMatch.setStatus(MatchOrderStatus.CANCELLED.getCode());
 
+            //将订单匹配数量增加回去
+            EzOtcOrder ezOtcOrder = otcOrderService.getById(orderMatch.getOrderNo());
+            ezOtcOrder.setQuotaAmount(ezOtcOrder.getQuotaAmount().subtract(orderMatch.getAmount()));
+            otcOrderService.updateById(ezOtcOrder);
+
             //查询当前用户取消订单数量
             int count=1;
             if (null!=redisCache.getCacheObject(RedisConstants.CANCEL_ORDER_COUNT_KEY+userId)){
@@ -68,6 +73,7 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
         }else {
             throw new BaseException("订单状态已发生变化");
         }
+        baseMapper.updateById(orderMatch);
         return BaseResponse.success();
     }
 

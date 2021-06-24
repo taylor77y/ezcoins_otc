@@ -5,8 +5,10 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.ezcoins.constant.enums.otc.MatchOrderStatus;
 import com.ezcoins.constant.interf.RedisConstants;
 import com.ezcoins.mq.RabbitMQConfiguration;
+import com.ezcoins.project.otc.entity.EzOtcOrder;
 import com.ezcoins.project.otc.entity.EzOtcOrderMatch;
 import com.ezcoins.project.otc.service.EzOtcOrderMatchService;
+import com.ezcoins.project.otc.service.EzOtcOrderService;
 import com.ezcoins.redis.RedisCache;
 import com.ezcoins.utils.DateUtils;
 import com.ezcoins.utils.StringUtils;
@@ -43,6 +45,10 @@ public class OrderFailureListener {
     @Autowired
     private RedisCache redisCache;
 
+    @Autowired
+    private EzOtcOrderService otcOrderService;
+
+
     @RabbitHandler
     public void process(String order, Message message, @Headers Map<String, Object> headers, Channel channel) throws IOException {
         log.info("【订单号】 - [{}]", order);
@@ -62,6 +68,11 @@ public class OrderFailureListener {
             EzOtcOrderMatch match = matchService.getById(otcOrderMatchNo);
             match.setStatus(MatchOrderStatus.CANCELLED.getCode());
             matchService.updateById(match);
+
+            //将订单匹配数量增加回去
+            EzOtcOrder ezOtcOrder = otcOrderService.getById(match.getOrderNo());
+            ezOtcOrder.setQuotaAmount(ezOtcOrder.getQuotaAmount().subtract(match.getAmount()));
+            otcOrderService.updateById(ezOtcOrder);
 
             //查询当前用户取消订单数量
             int count = 1;

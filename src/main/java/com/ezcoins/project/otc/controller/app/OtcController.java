@@ -6,6 +6,7 @@ import com.ezcoins.aspectj.lang.annotation.Log;
 import com.ezcoins.aspectj.lang.annotation.NoRepeatSubmit;
 import com.ezcoins.constant.enums.BusinessType;
 import com.ezcoins.constant.enums.OperatorType;
+import com.ezcoins.constant.enums.otc.PaymentMethod;
 import com.ezcoins.context.ContextHandler;
 import com.ezcoins.exception.user.SecurityPasswordNotMatchException;
 import com.ezcoins.project.common.service.mapper.SearchModel;
@@ -63,6 +64,7 @@ public class OtcController {
 
     @Autowired
     private EzOtcChatMsgService otcChatMsgService;
+
 
     @NoRepeatSubmit
     @AuthToken
@@ -234,6 +236,7 @@ public class OtcController {
         return orderMatchService.confirmPayment(matchOrderNo);
     }
 
+
     @NoRepeatSubmit
     @ApiOperation(value = "卖家 放款")
     @PutMapping("sellerPut/{matchOrderNo}")
@@ -242,6 +245,7 @@ public class OtcController {
     public BaseResponse sellerPut(@PathVariable String matchOrderNo){
         return  orderMatchService.sellerPut(matchOrderNo);
     }
+
 
     @NoRepeatSubmit
     @ApiOperation(value = "订单申诉")
@@ -262,7 +266,6 @@ public class OtcController {
     }
 
 
-
     @ApiOperation(value = "根据 匹配订单id查询聊天记录")
     @GetMapping("chatMsg/{orderMatchNo}")
     @AuthToken
@@ -270,6 +273,36 @@ public class OtcController {
         LambdaQueryWrapper<EzOtcChatMsg> queryWrapper=new LambdaQueryWrapper<>();
         queryWrapper.eq(EzOtcChatMsg::getOrderMatchNo,orderMatchNo);
         return ResponseList.success(otcChatMsgService.list(queryWrapper));
+    }
+
+
+
+    @ApiOperation(value = "根据订单号查询支付详情")
+    @GetMapping("paymentInfo/{orderMatchNo}/{paymentMethodId}")
+    @AuthToken
+    public Response<PaymentMethodRespDto> paymentInfo(@PathVariable String orderMatchNo,@PathVariable String paymentMethodId) {
+        PaymentMethodRespDto paymentMethodRespDto = new PaymentMethodRespDto();
+
+        EzOtcOrderMatch orderMatch = orderMatchService.getById(orderMatchNo);
+        LambdaQueryWrapper<EzPaymentInfo> queryWrapper=new LambdaQueryWrapper<>();
+        queryWrapper.eq(EzPaymentInfo::getUserId,orderMatch.getOtcOrderUserId());
+        queryWrapper.eq(EzPaymentInfo::getPaymentMethodId,paymentMethodId);
+        queryWrapper.eq(EzPaymentInfo::getStatus,0);
+        EzPaymentInfo one = paymentInfoService.getOne(queryWrapper);
+
+        EzPaymentMethod paymentMethod = methodService.getById(one.getPaymentMethodId());
+
+        if (one.getPaymentMethodId().equals(PaymentMethod.BANK.getCode())){
+            paymentMethodRespDto.setBankName(one.getBankName());
+        }else {
+            paymentMethodRespDto.setPaymentQrCode(one.getPaymentQrCode());
+        }
+        paymentMethodRespDto.setRealName(one.getRealName());
+        paymentMethodRespDto.setIcon(paymentMethod.getIcon());
+        paymentMethodRespDto.setAccountNumber(one.getAccountNumber());
+        paymentMethodRespDto.setPaymentMethodId(one.getPaymentMethodId());
+
+        return Response.success(paymentMethodRespDto);
     }
 
 }
