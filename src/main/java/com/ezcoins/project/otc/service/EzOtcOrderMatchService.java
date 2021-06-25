@@ -2,7 +2,9 @@ package com.ezcoins.project.otc.service;
 
 import com.ezcoins.project.otc.entity.EzOtcOrderMatch;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.ezcoins.project.otc.entity.resp.OtcInfoOrder;
 import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 
 /**
  * <p>
@@ -41,4 +43,15 @@ public interface EzOtcOrderMatchService extends IService<EzOtcOrderMatch> {
      * @Date: 2021/6/19
      */
     BaseResponse sellerPut(String matchOrderNo);
+
+    
+    
+    /*** 
+    * @Description:
+    * @Param: [userId]
+    * @return: com.ezcoins.response.Response<com.ezcoins.project.otc.entity.resp.OtcInfoOrder>
+    * @Author: Wanglei
+    * @Date: 2021/6/25
+    */
+    Response<OtcInfoOrder> otcOrderListBy(String userId);
 }

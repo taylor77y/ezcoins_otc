@@ -40,11 +40,8 @@ public class CacheUtils {
     /**
      * 获取账号锁key
      */
-    public static String getAccountLockKey(long accountId) {
-        if (accountId <= 0) {
-            throw new IllegalArgumentException("Invalid account id: " + accountId);
-        }
-        return ACCOUNTLOCK_LIST + String.valueOf(accountId);
+    public static String getAccountLockKey(String accountId) {
+        return ACCOUNTLOCK_LIST + accountId;
     }
 
     /**
@@ -109,7 +106,7 @@ public class CacheUtils {
     /**
      * 锁定账户
      */
-    public boolean getAccountLock(long accountId, int lockSeconds) {
+    public boolean getAccountLock(String accountId, int lockSeconds) {
         log.info("accountId[{}], lockSeconds[{}]", accountId, lockSeconds);
         String accountLockKey = CacheUtils.getAccountLockKey(accountId);
         try {
@@ -125,7 +122,7 @@ public class CacheUtils {
     /**
      * 释放账户锁
      */
-    public boolean releaseAccountLock(long accountId) {
+    public boolean releaseAccountLock(String accountId) {
         log.debug("accountId[{}]", accountId);
         String accountLockKey = CacheUtils.getAccountLockKey(accountId);
         try {

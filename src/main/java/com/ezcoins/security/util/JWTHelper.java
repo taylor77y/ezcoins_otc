@@ -3,6 +3,7 @@ package com.ezcoins.security.util;
 import com.ezcoins.constant.Constants;
 import com.ezcoins.constant.interf.JWTConstans;
 import com.ezcoins.constant.interf.RedisConstants;
+import com.ezcoins.exception.jwt.TokenException;
 import com.ezcoins.redis.RedisCache;
 import com.ezcoins.security.configuration.TokenProperties;
 import com.ezcoins.utils.StringUtils;
@@ -122,7 +123,12 @@ public class JWTHelper {
      * @throws Exception
      */
     public  Jws<Claims> parserToken(String token) throws Exception {
-        Jws<Claims> claimsJws = Jwts.parser().setSigningKey(tokenProperties.getSecret()).parseClaimsJws(token);
+        Jws<Claims> claimsJws =null;
+        try {
+           claimsJws = Jwts.parser().setSigningKey(tokenProperties.getSecret()).parseClaimsJws(token);
+        }catch (Exception e){
+            throw new TokenException();
+        }
         return claimsJws;
     }
     /**
@@ -133,8 +139,7 @@ public class JWTHelper {
      * @throws Exception
      */
     public static Jws<Claims> parserToken(String token, byte[] pubKey) throws Exception {
-        Jws<Claims> claimsJws = Jwts.parser().setSigningKey(rsaKeyHelper.getPublicKey(pubKey)).parseClaimsJws(token);
-        return claimsJws;
+        return Jwts.parser().setSigningKey(rsaKeyHelper.getPublicKey(pubKey)).parseClaimsJws(token);
     }
     /**
      * 获取token中的用户信息

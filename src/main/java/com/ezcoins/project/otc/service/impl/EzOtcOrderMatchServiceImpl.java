@@ -6,12 +6,14 @@ import com.ezcoins.constant.interf.RedisConstants;
 import com.ezcoins.context.ContextHandler;
 import com.ezcoins.project.otc.entity.EzOtcOrder;
 import com.ezcoins.project.otc.entity.EzOtcOrderMatch;
+import com.ezcoins.project.otc.entity.resp.OtcInfoOrder;
 import com.ezcoins.project.otc.mapper.EzOtcOrderMatchMapper;
 import com.ezcoins.project.otc.service.EzOtcOrderMatchService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ezcoins.project.otc.service.EzOtcOrderService;
 import com.ezcoins.redis.RedisCache;
 import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 import com.ezcoins.utils.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -150,9 +152,18 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
         return null;
     }
 
-
-
-
+    /***
+     * @Description:
+     * @Param: [userId]
+     * @return: com.ezcoins.response.Response<com.ezcoins.project.otc.entity.resp.OtcInfoOrder>
+     * @Author: Wanglei
+     * @Date: 2021/6/25
+     * @param userId
+     */
+    @Override
+    public Response<OtcInfoOrder> otcOrderListBy(String userId) {
+        return null;
+    }
 
 
 }

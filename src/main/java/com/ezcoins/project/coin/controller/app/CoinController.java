@@ -6,6 +6,8 @@ import com.ezcoins.project.coin.entity.Type;
 import com.ezcoins.project.coin.entity.resp.AccountRespDto;
 import com.ezcoins.project.coin.service.AccountService;
 import com.ezcoins.project.coin.service.TypeService;
+import com.ezcoins.project.coin.service.WalletService;
+import com.ezcoins.response.BaseResponse;
 import com.ezcoins.response.ResponseList;
 import com.ezcoins.response.ResponsePageList;
 import io.swagger.annotations.Api;
@@ -36,13 +38,15 @@ public class CoinController extends BaseController {
     @Autowired
     private TypeService typeService;
 
+    @Autowired
+    private WalletService walletService;
+
     @ApiOperation(value = "资产列表")
     @AuthToken
     @GetMapping("coinAccountList")
     public ResponseList<AccountRespDto> coinAccountList() {
         return ResponseList.success(accountService.coinAccountListByUserId(getUserId()));
     }
-
 
     @ApiOperation(value = "币种列表")
     @AuthToken
@@ -53,14 +57,12 @@ public class CoinController extends BaseController {
 
 
 
-//    @ApiOperation(value = "充值 地址二维码")
-//    @AuthToken
-//    @GetMapping("rechargeAddress")
-//    public TableDataInfo coinFromAddressList(@PathVariable Long id) {
-//        startPage();
-//        List<CoinWallet> list = coinWalletService.selectCoinWalletByCoinIdListToUdun(id,getUserId());
-//        return getDataTable(list);
-//    }
+    @ApiOperation(value = "充值 地址二维码")
+    @AuthToken
+    @GetMapping("rechargeAddress/{id}")
+    public BaseResponse rechargeAddress(@PathVariable String id) {
+        return walletService.rechargeAddress(getUserId(),id);
+    }
 
 
 }

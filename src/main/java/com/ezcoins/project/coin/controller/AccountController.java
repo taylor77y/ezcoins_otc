@@ -35,26 +35,5 @@ public class AccountController {
     public ResponsePageList<Account> accountList(@RequestBody SearchModel<Account> searchModel){
         return ResponsePageList.success(accountService.page(searchModel.getPage(), searchModel.getQueryModel()));
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
 

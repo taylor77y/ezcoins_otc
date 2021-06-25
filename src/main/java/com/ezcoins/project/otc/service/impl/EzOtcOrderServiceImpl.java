@@ -358,7 +358,6 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         if (!orderMatch.getStatus().equals(MatchOrderStatus.PENDINGORDER.getCode())) {
             throw new BaseException("订单状态已发生变化");
         }
-
         if ("1".equals(orderOperateReqDto.getOperate())) {
             //拒绝接受订单
             orderMatch.setStatus(MatchOrderStatus.ORDERBEENCANCELLED.getCode());
@@ -470,6 +469,7 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
                 icons.add(list.get(e.getPaymentMethod3()-1).getIcon());
             }
             otcOrderRespDto.setIcons(icons);
+            otcOrderRespDto.setUserId(e.getUserId());
             otcOrderRespDto.setTotalCount(one.getSellCount()+one.getBuyCount());
             otcOrderRespDto.setMouthFinishRate(one.getMouthFinishRate());
             otcOrderRespDto.setPrice(e.getPrice());

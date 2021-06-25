@@ -1,8 +1,11 @@
 package com.ezcoins.project.coin.service;
 
+import com.ezcoins.exception.coin.AccountBalanceNotEnoughException;
+import com.ezcoins.exception.coin.AccountOperationBusyException;
 import com.ezcoins.project.coin.entity.Account;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ezcoins.project.coin.entity.resp.AccountRespDto;
+import com.ezcoins.project.coin.entity.vo.BalanceChange;
 
 import java.util.List;
 
@@ -18,4 +21,13 @@ public interface AccountService extends IService<Account> {
 
 
     List<AccountRespDto> coinAccountListByUserId(String userId);
+
+    Account getAccountByUserIdAndCoinId(String userId, String coinId) throws AccountOperationBusyException;
+
+
+//    // 同步操作资产[余额/冻结/锁仓]
+//    boolean balanceChangeSYNC(List<BalanceChange> cList)
+//            throws AccountBalanceNotEnoughException, AccountOperationBusyException;
+
+
 }

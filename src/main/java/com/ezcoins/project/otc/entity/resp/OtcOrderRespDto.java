@@ -16,6 +16,9 @@ import java.util.List;
  */
 @Data
 public class OtcOrderRespDto {
+    @ApiModelProperty
+    private String userId;
+
     @ApiModelProperty(value = "订单号")
     private String orderNo;
 
