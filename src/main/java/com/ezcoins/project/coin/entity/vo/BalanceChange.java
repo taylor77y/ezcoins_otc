@@ -12,9 +12,9 @@ import java.math.BigDecimal;
 @Data
 public class BalanceChange {
 	/**用户ID*/
-	private Long userId;
+	private String userId;
 	/**币种ID*/
-    private Long coinId;
+    private Integer coinId;
 	/**币种名称(大写)*/
 	private String coinName;
 	/**操作余额(正数加余额/负数减余额)**/
@@ -24,6 +24,10 @@ public class BalanceChange {
 	/**操作锁仓(正数加锁仓/负数减锁仓)**/
     private BigDecimal lockup;
 
+	/**
+	 * 手续费
+	 */
+	private BigDecimal fee;
     /**收支类型**/
     private String incomeType;
 

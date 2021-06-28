@@ -26,7 +26,6 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value="EzOtcOrderMatch对象", description="匹配日OTC订单")
 public class EzOtcOrderMatch implements Serializable {
-
     private static final long serialVersionUID = 1L;
 
     @ApiModelProperty(value = "匹配订单号")
@@ -46,7 +45,6 @@ public class EzOtcOrderMatch implements Serializable {
     @TableField(fill = FieldFill.INSERT)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
-
 
     @ApiModelProperty(value = "支付时间")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")

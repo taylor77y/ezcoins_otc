@@ -4,12 +4,16 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ezcoins.base.BaseException;
+import com.ezcoins.constant.enums.coin.CoinConstants;
 import com.ezcoins.constant.enums.otc.MatchOrderStatus;
 import com.ezcoins.constant.interf.IndexOrderNoKey;
 import com.ezcoins.constant.interf.RedisConstants;
 import com.ezcoins.context.ContextHandler;
 import com.ezcoins.exception.CheckException;
+import com.ezcoins.exception.coin.AccountOperationBusyException;
 import com.ezcoins.mq.RabbitMQConfiguration;
+import com.ezcoins.project.coin.entity.vo.BalanceChange;
+import com.ezcoins.project.coin.service.AccountService;
 import com.ezcoins.project.config.entity.EzCountryConfig;
 import com.ezcoins.project.config.service.EzCountryConfigService;
 import com.ezcoins.project.consumer.entity.EzUser;
@@ -92,6 +96,10 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
     private EzAdvertisingBusinessService advertisingBusinessService;
 
 
+    @Autowired
+    private AccountService accountService;
+
+
 
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
@@ -104,22 +112,46 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         if (null == one) {
            return BaseResponse.error("国家货币代码不存在");
         }
+
         String countryCode = one.getCountryCode();//国家编号
         String orderNo = orderIndexService.getOrderNo(countryCode, IndexOrderNoKey.ORDER_INFO);
+        BigDecimal amount = otcOrderReqDto.getTotalAmount();
 
+        String userId = ContextHandler.getUserId();
 
-        //将卖出订单金额冻结
-        BigDecimal totalAmount = otcOrderReqDto.getTotalAmount();
+        //判断订单 买卖
+        if ("0".equals(otcOrderReqDto.getType())){//买
+        }else if ("1".equals(otcOrderReqDto.getType())){//卖
+            //将卖出订单金额冻结
+            //手续费
+            EzOtcConfig otcConfig = otcConfigService.getById(1);
+            BigDecimal advertisingFee = otcConfig.getAdvertisingFee();
+            BigDecimal fee = advertisingFee.multiply(amount);
+            BigDecimal totalAmount=amount.add(fee);
+            //冻结卖出的USDT
+            List<BalanceChange> cList = new ArrayList<>();
+            BalanceChange b = new BalanceChange();
+            b.setCoinName(otcOrderReqDto.getCoinName());
+            b.setAvailable(totalAmount.negate());
+            b.setFrozen(amount);
+            b.setIncomeType(CoinConstants.IncomeType.PAYOUT.getType());
+            b.setUserId(userId);
+            b.setMainType(CoinConstants.MainType.FROZEN.getType());
+            b.setFee(fee);
+
+            cList.add(b);
+            accountService.balanceChangeSYNC(cList);
+        }
 
         EzOtcOrder ezOtcOrder = new EzOtcOrder();
         ezOtcOrder.setOrderNo(orderNo);
-        ezOtcOrder.setFrozeAmount(totalAmount);
-        ezOtcOrder.setUserId(ContextHandler.getUserId());
+        ezOtcOrder.setFrozeAmount(amount);
+        ezOtcOrder.setUserId(userId);
         BeanUtils.copyBeanProp(ezOtcOrder, otcOrderReqDto);
 
         //存入新的订单
         baseMapper.insert(ezOtcOrder);
-        //将用户账户冻结
+
         return BaseResponse.success();
     }
 
@@ -136,8 +168,8 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
     public Response<PaymentDetails> placeAnOrder(PlaceOrderReqDto placeOrderReqDto) {
         PaymentDetails details = new PaymentDetails();
         String userId = ContextHandler.getUserId();
-        //查询当前用户是否被取消订单是否超过规定数量
 
+        //查询当前用户是否被取消订单是否超过规定数量
         //获取otc基本配置
         EzOtcConfig otcConfig = otcConfigService.getById(1);
 
@@ -153,8 +185,7 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         //查看用户是否有未完成的订单
         LambdaQueryWrapper<EzOtcOrderMatch> matchLambdaQueryWrapper = new LambdaQueryWrapper<>();
         matchLambdaQueryWrapper.eq(EzOtcOrderMatch::getUserId, userId);
-        matchLambdaQueryWrapper.eq(EzOtcOrderMatch::getStatus, MatchOrderStatus.PENDINGORDER.getCode())
-                .or()
+        matchLambdaQueryWrapper.eq(EzOtcOrderMatch::getStatus, MatchOrderStatus.PENDINGORDER.getCode()).or()
                 .eq(EzOtcOrderMatch::getStatus, MatchOrderStatus.WAITFORPAYMENT.getCode());
         EzOtcOrderMatch orderMatch = orderMatchService.getOne(matchLambdaQueryWrapper);
 
@@ -163,6 +194,7 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         String orderNo = placeOrderReqDto.getOrderNo();
         EzOtcOrder ezOtcOrder = baseMapper.selectById(orderNo);
         List<EzPaymentMethod> list=new ArrayList<>();
+
         if (null != orderMatch) {
             //收款方式列表
             List<EzPaymentMethod> paymentMethodList = paymentMethodService.list();
@@ -184,8 +216,10 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
             details.setAdvertisingName(orderMatch.getAdvertisingName());
             details.setPrice(orderMatch.getPrice());
             details.setStatus(orderMatch.getStatus());
-            return Response.success("请先完成当前未完成的订单",details);//将订单号返回
+            return Response.success("请先完成当前未完成的订单",details);//将订单返回
         }
+
+
         BigDecimal maximumLimit = ezOtcOrder.getMaximumLimit();//最大限额
         BigDecimal minimumLimit = ezOtcOrder.getMinimumLimit();//最小限额
         BigDecimal amount = placeOrderReqDto.getAmount();//购买数量
@@ -197,13 +231,11 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         BigDecimal totalAmount = ezOtcOrder.getTotalAmount();//广告总数量
         BigDecimal quotaAmount = ezOtcOrder.getQuotaAmount();//匹配数量
         BigDecimal nuQuotaAmount = totalAmount.subtract(quotaAmount);//未匹配的数量
-        BigDecimal frozeAmount = ezOtcOrder.getFrozeAmount();//冻结数量
 
         //判断冻结数量/未匹配的数量  是否大于购买数量
-        if (frozeAmount.compareTo(amount) < 0 || nuQuotaAmount.compareTo(amount) < 0) {
+        if (nuQuotaAmount.compareTo(amount) < 0) {
             return Response.error("订单数量已发生改变");
         }
-
         //判断用户注册的国籍是否满足购买条件
         String currencyCode = ezOtcOrder.getCurrencyCode();
         EzUser user = userService.getById(userId);
@@ -217,15 +249,17 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
             throw new BaseException("根据您注册所在地的相关规定，您只能交易本地区的法币");
         }
 
+        //OTC信息
         LambdaQueryWrapper<EzAdvertisingBusiness> lambdaQueryWrapper=new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(EzAdvertisingBusiness::getUserId,ezOtcOrder.getUserId());
         EzAdvertisingBusiness advertisingBusiness = advertisingBusinessService.getOne(lambdaQueryWrapper);
 
+        //得到订单号
+        String orderMatchNo = orderIndexService.getOrderNo(countryCode, IndexOrderNoKey.ORDER_MATCH_INFO);
 
         //查看  订单类型(0:买  1：卖)
         EzOtcOrderMatch match = new EzOtcOrderMatch();//封装订单
-        //得到订单号
-        String orderMatchNo = orderIndexService.getOrderNo(countryCode, IndexOrderNoKey.ORDER_MATCH_INFO);
+
         match.setOrderMatchNo(orderMatchNo);
         match.setOrderNo(ezOtcOrder.getOrderNo());
         match.setUserId(userId);
@@ -332,9 +366,27 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         //根据订单号查询到订单
         EzOtcOrder ezOtcOrder = baseMapper.selectById(orderNo);
 
-        BigDecimal frozeAmount = ezOtcOrder.getFrozeAmount();
-        //TODO: 将冻结数量返回商户的资产中
 
+
+        if ("1".equals(ezOtcOrder.getType())){
+            BigDecimal frozeAmount = ezOtcOrder.getFrozeAmount();
+            //TODO: 将冻结数量返回商户的资产中
+            //冻结卖出的USDT
+            List<BalanceChange> cList = new ArrayList<>();
+            BalanceChange b = new BalanceChange();
+            b.setCoinName(ezOtcOrder.getCoinName());
+            b.setAvailable(frozeAmount);
+            b.setFrozen(frozeAmount.negate());
+            b.setIncomeType(CoinConstants.IncomeType.INCOME.getType());
+            b.setUserId(ezOtcOrder.getUserId());
+            b.setMainType(CoinConstants.MainType.UNFREEZE.getType());
+            b.setFee(BigDecimal.ZERO);
+            cList.add(b);
+            if (!accountService.balanceChangeSYNC(cList)) {// 资产变更异常
+                throw new AccountOperationBusyException();
+            }
+
+        }
         //改变订单状态
         ezOtcOrder.setStatus("1");
         ezOtcOrder.setEndTime(DateUtils.getNowDate());
@@ -360,7 +412,7 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         }
         if ("1".equals(orderOperateReqDto.getOperate())) {
             //拒绝接受订单
-            orderMatch.setStatus(MatchOrderStatus.ORDERBEENCANCELLED.getCode());
+            orderMatch.setStatus(MatchOrderStatus.REFUSE.getCode());
             orderMatchService.updateById(orderMatch);
             return BaseResponse.success();
         }

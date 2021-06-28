@@ -16,9 +16,9 @@ public class CoinConstants {
 		/** 提币 **/
 		WITHDRAWAL("withdrawal", "提币"),
 
+		BUY("buy", "购买"),
 
-		TRANSFORM("transform", "转换"),
-
+		SELL("sell", "卖出"),
 
         /** 转入 **/
 		TRANSFERIN("transferin", "转入"),

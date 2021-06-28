@@ -13,11 +13,11 @@ public enum MatchOrderStatus {
     CANCELLED("3", "已取消"),
     WAITFORPAYMENT("4", "等待支付"),
     PAID("5", "已支付"),
-    COMPLETED("6", "已完成");
+    COMPLETED("6", "已完成"),
+    REFUSE("7", "接单拒绝");
     private final String code;
     private final String info;
-    MatchOrderStatus(String code, String info)
-    {
+    MatchOrderStatus(String code, String info){
         this.code = code;
         this.info = info;
     }

@@ -22,12 +22,12 @@ public interface AccountService extends IService<Account> {
 
     List<AccountRespDto> coinAccountListByUserId(String userId);
 
-    Account getAccountByUserIdAndCoinId(String userId, String coinId) throws AccountOperationBusyException;
+    Account getAccountByUserIdAndCoinId(String userId, String coinName) throws AccountOperationBusyException;
 
 
-//    // 同步操作资产[余额/冻结/锁仓]
-//    boolean balanceChangeSYNC(List<BalanceChange> cList)
-//            throws AccountBalanceNotEnoughException, AccountOperationBusyException;
+    // 同步操作资产[余额/冻结/锁仓]
+    boolean balanceChangeSYNC(List<BalanceChange> cList)
+            throws AccountBalanceNotEnoughException, AccountOperationBusyException;
 
 
 }

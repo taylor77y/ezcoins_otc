@@ -53,6 +53,6 @@ public class OtcOrderReqDto {
     @ApiModelProperty(value = "付款期限(分钟)")
     private Integer prompt;
 
-    @ApiModelProperty(value = "交易提示")
+    @ApiModelProperty(value = "交易备注")
     private String tradingTips;
 }

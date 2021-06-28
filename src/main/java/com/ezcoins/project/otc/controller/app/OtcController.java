@@ -66,6 +66,10 @@ public class OtcController {
     private EzOtcChatMsgService otcChatMsgService;
 
 
+    @Autowired
+    private EzSellConfigService sellConfigService;
+
+
     @NoRepeatSubmit
     @AuthToken
     @ApiOperation(value = "完善otc交易信息")
@@ -226,6 +230,7 @@ public class OtcController {
         return orderMatchService.cancelOrder(matchOrderNo);
     }
 
+
     @NoRepeatSubmit
     @ApiOperation(value = "根据用户id 查询订单")
     @GetMapping("otcOrderListBy/{userId}")
@@ -284,7 +289,6 @@ public class OtcController {
 
 
 
-
     @ApiOperation(value = "根据 匹配订单id查询聊天记录")
     @GetMapping("chatMsg/{orderMatchNo}")
     @AuthToken
@@ -322,5 +326,16 @@ public class OtcController {
 
         return Response.success(paymentMethodRespDto);
     }
+
+    @ApiOperation(value = "一键卖币")
+    @PostMapping("sellOneKey")
+    @AuthToken
+    @Log(title = "一键卖币", businessType = BusinessType.INSERT, operatorType = OperatorType.MOBILE)
+    public BaseResponse sellOneKey(@RequestBody SellOneKeyReqDto sellOneKeyReqDto) {
+        return sellConfigService.sellOneKey(sellOneKeyReqDto);
+    }
+
+
+
 
 }

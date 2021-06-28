@@ -15,17 +15,17 @@ import lombok.EqualsAndHashCode;
 
 /**
  * <p>
- * 资产余额表
+ * 资产记录表
  * </p>
  *
  * @author wanglei
- * @since 2021-06-17
+ * @since 2021-06-28
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@TableName("coin_account")
-@ApiModel(value="Account对象", description="资产余额表")
-public class Account implements Serializable {
+@TableName("coin_record")
+@ApiModel(value="Record对象", description="资产记录表")
+public class Record implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -36,24 +36,50 @@ public class Account implements Serializable {
     @ApiModelProperty(value = "用户ID")
     private String userId;
 
+    @ApiModelProperty(value = "用户名")
+    private String userName;
+
+    @ApiModelProperty(value = "到达用户ID（内转使用）")
+    private Integer toId;
+
+    @ApiModelProperty(value = "从")
+    private String fromUser;
+
     @ApiModelProperty(value = "币种ID")
     private Integer coinId;
 
     @ApiModelProperty(value = "币种名")
     private String coinName;
 
-    @ApiModelProperty(value = "余额")
-    private BigDecimal available;
+    @ApiModelProperty(value = "收支类型（1收入 2支出）")
+    private String incomeType;
 
-    @ApiModelProperty(value = "冻结")
-    private BigDecimal frozen;
+    @ApiModelProperty(value = "主类型")
+    private String mainType;
 
-    @ApiModelProperty(value = "锁仓")
-    private BigDecimal lockup;
+    @ApiModelProperty(value = "子类型")
+    private String sonType;
 
-    @ApiModelProperty(value = "版本号")
-    @Version
-    private Integer version;
+    @ApiModelProperty(value = "数量")
+    private BigDecimal amount;
+
+    @ApiModelProperty(value = "来自地址")
+    private String fromAddress;
+
+    @ApiModelProperty(value = "到达地址")
+    private String toAddress;
+
+    @ApiModelProperty(value = "交易ID")
+    private String txid;
+
+    @ApiModelProperty(value = "备注")
+    private String memo;
+
+    @ApiModelProperty(value = "手续费")
+    private BigDecimal fee;
+
+    @ApiModelProperty(value = "状态（1成功）")
+    private String status;
 
     @ApiModelProperty(value = "创建时间")
     @TableField(fill = FieldFill.INSERT)
@@ -64,13 +90,6 @@ public class Account implements Serializable {
     @TableField(fill = FieldFill.INSERT_UPDATE)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date updateTime;
-
-
-    @ApiModelProperty(value = "创建者")
-    private String createBy;
-
-    @ApiModelProperty(value = "更新者")
-    private String updateBy;
 
 
 }
