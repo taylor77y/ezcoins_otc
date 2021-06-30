@@ -1,6 +1,7 @@
 package com.ezcoins.exception.jwt;
 
 public class TokenException extends RuntimeException {
+
     public TokenException(String message) {
         super(message);
     }

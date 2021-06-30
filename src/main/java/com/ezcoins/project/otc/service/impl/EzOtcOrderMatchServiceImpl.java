@@ -14,10 +14,7 @@ import com.ezcoins.exception.coin.AccountOperationBusyException;
 import com.ezcoins.project.coin.entity.Record;
 import com.ezcoins.project.coin.entity.vo.BalanceChange;
 import com.ezcoins.project.coin.service.AccountService;
-import com.ezcoins.project.otc.entity.EzOneSellConfig;
-import com.ezcoins.project.otc.entity.EzOneSellOrder;
-import com.ezcoins.project.otc.entity.EzOtcOrder;
-import com.ezcoins.project.otc.entity.EzOtcOrderMatch;
+import com.ezcoins.project.otc.entity.*;
 import com.ezcoins.project.otc.entity.req.OrderRecordQueryReqDto;
 import com.ezcoins.project.otc.entity.req.SellOneKeyReqDto;
 import com.ezcoins.project.otc.entity.resp.OrderRecordRespDto;
@@ -31,6 +28,7 @@ import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponseList;
 import com.ezcoins.utils.BeanUtils;
 import com.ezcoins.utils.DateUtils;
+import com.ezcoins.utils.MessageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -71,6 +69,9 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
 
     @Autowired
     private EzPaymentInfoService paymentInfoService;
+
+    @Autowired
+    private EzAdvertisingBusinessService businessService;
 
     /***
      * @Description: 用户 取消订单（两个状态可取消订单  1：接单广告（卖家未接受订单）用户免费取消 2：接单广告/普通广告（用户未支付状态） 用户取消次数增加）
@@ -178,14 +179,21 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
         b2.setIncomeType(CoinConstants.IncomeType.INCOME.getType());
         b2.setMainType(CoinConstants.MainType.BUY.getType());
         b2.setFee(BigDecimal.ZERO);
-        //卖单 需要广告商户进行放币
+
+
+        //改变OTC信息
+        LambdaQueryWrapper<EzAdvertisingBusiness> lambdaQueryWrapper=new LambdaQueryWrapper<>();
+
+
         if ("0".equals(ezOtcOrder.getType())) {//买单
             b1.setUserId(orderMatch.getUserId());
             cList.add(b1);
             //将amount币存入买家的账户中
             b2.setUserId(ezOtcOrder.getUserId());
+
+
             cList.add(b2);
-        } else if ("1".equals(ezOtcOrder.getType())) {//卖单
+        } else if ("1".equals(ezOtcOrder.getType())) {  //卖单 需要广告商户进行放币
             b1.setUserId(ezOtcOrder.getUserId());
             cList.add(b1);
 
@@ -205,6 +213,12 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
         if (!accountService.balanceChangeSYNC(cList)) {// 资产变更异常
             throw new AccountOperationBusyException();
         }
+
+
+
+
+
+
         return BaseResponse.success();
     }
 
@@ -234,7 +248,7 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
         queryWrapper.eq(EzOneSellConfig::getCoinName,sellOneKeyReqDto.getCoinName());
         EzOneSellConfig ezSellConfig = sellConfigService.getOne(queryWrapper);
         if ("1".equals(ezSellConfig.getStatus())){
-            return BaseResponse.error("当前币种一键卖币已关闭");
+            return BaseResponse.error(MessageUtils.message("当前币种一键卖币已关闭"));
         }
 
         BigDecimal amount = sellOneKeyReqDto.getAmount();
@@ -242,9 +256,8 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
         BigDecimal minAmount = ezSellConfig.getMinAmount();
 
         if (amount.compareTo(maxAmount)>0 || amount.compareTo(minAmount)<0){
-            return BaseResponse.error("输入数量错误");
+            return BaseResponse.error(MessageUtils.message("输入数量错误"));
         }
-
         //手续费计算
         BigDecimal fee=amount.multiply(ezSellConfig.getFeeRatio()).setScale(8, RoundingMode.FLOOR).add(ezSellConfig.getFee());
 
@@ -267,12 +280,14 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
         //得到订单号
         String orderMatchNo = orderIndexService.getOrderNo("156", IndexOrderNoKey.ORDER_MATCH_INFO);
         match.setOrderMatchNo(orderMatchNo);
-        match.setAdvertisingName("app收币商铺");
+        match.setAdvertisingName("System shop");
         match.setPrice(ezSellConfig.getPrice());
         match.setAmount(amount);
         match.setCoinName(sellOneKeyReqDto.getCoinName());
         match.setTotalPrice(amount.multiply(ezSellConfig.getPrice()));
-
+        match.setPaymentInfoId(sellOneKeyReqDto.getPaymentInfoId());
+        match.setOrderType("2");
+        match.setType("1");
         return BaseResponse.success();
     }
 

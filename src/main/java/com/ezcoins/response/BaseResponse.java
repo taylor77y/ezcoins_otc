@@ -55,11 +55,11 @@ public class BaseResponse{
     }
 
     //失败静态方法
-    public static BaseResponse error(String message,Object... args) {
+    public static BaseResponse error(String message) {
         BaseResponse r = new BaseResponse();
         r.setSuccess(false);
         r.setCode(HttpStatus.HTTP_RES_CODE_500);
-        r.setMessage(MessageUtils.message(message,args));
+        r.setMessage(message);
         return r;
     }
     public static BaseResponse error(Integer code, String message) {

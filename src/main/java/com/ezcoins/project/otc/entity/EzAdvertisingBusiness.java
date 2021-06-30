@@ -2,6 +2,7 @@ package com.ezcoins.project.otc.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 import java.io.Serializable;
@@ -62,8 +63,8 @@ public class EzAdvertisingBusiness implements Serializable {
     @ApiModelProperty(value = "30日平均取消时间")
     private Integer mouthAverageCancel;
 
-    @ApiModelProperty(value = "30日平均放行时间")
-    private Integer mouthAveragePass;
+    @ApiModelProperty(value = "30日平均放行时间 分钟")
+    private Double mouthAveragePass;
 
     @ApiModelProperty(value = "创建时间")
     @TableField(fill = FieldFill.INSERT)
@@ -79,5 +80,6 @@ public class EzAdvertisingBusiness implements Serializable {
     @Version
     private Integer version;
 
-
+    @ApiModelProperty(value = "保证金")
+    private BigDecimal margin;
 }

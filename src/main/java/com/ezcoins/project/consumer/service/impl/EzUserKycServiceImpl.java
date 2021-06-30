@@ -46,7 +46,7 @@ public class EzUserKycServiceImpl extends ServiceImpl<EzUserKycMapper, EzUserKyc
     @Override
     public void verified(UserKycReqDto userKycReqDto) {
         EzUserKyc ezcoinsKyc =null;
-                //查看用户的实名认证
+         //查看用户的实名认证
         LambdaQueryWrapper<EzUserKyc> lambdaQueryWrapper=new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(EzUserKyc::getUserId,userKycReqDto.getUserId());
         ezcoinsKyc= baseMapper.selectOne(lambdaQueryWrapper);
@@ -80,24 +80,23 @@ public class EzUserKycServiceImpl extends ServiceImpl<EzUserKycMapper, EzUserKyc
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void checkKyc(CheckKycReqDto kycReqDto) {
         //根据id查询审核
-        EzUserKyc ezcoinsKyc = baseMapper.selectById(kycReqDto.getId());
-        if (!ezcoinsKyc.getStatus().equals(KycStatus.PENDINGREVIEW.getCode())){
+        EzUserKyc ezUserKyc = baseMapper.selectById(kycReqDto.getId());
+        if (!ezUserKyc.getStatus().equals(KycStatus.PENDINGREVIEW.getCode())){
             throw new BaseException("已审核");
         }
         if (kycReqDto.getOperate().equals(KycStatus.BY.getCode())){
             //改变用户认证状态
             LambdaUpdateWrapper<EzUser> updateWrapper=new LambdaUpdateWrapper<>();
-            updateWrapper.eq(EzUser::getUserId,ezcoinsKyc.getUserId()).set(EzUser::getKycStatus,UserKycStatus.VERIFIED.getCode());
+            updateWrapper.eq(EzUser::getUserId,ezUserKyc.getUserId()).set(EzUser::getKycStatus,UserKycStatus.VERIFIED.getCode());
             ezUserService.update(null,updateWrapper);
         }else {
-            ezcoinsKyc.setStatus(KycStatus.REFUSE.getCode());
+            ezUserKyc.setStatus(KycStatus.REFUSE.getCode());
         }
-        ezcoinsKyc.setStatus(kycReqDto.getOperate());
-        ezcoinsKyc.setExamineBy(ContextHandler.getUserName());
-        ezcoinsKyc.setExamineTime(DateUtils.getNowDate());
-        baseMapper.updateById(ezcoinsKyc);
+        ezUserKyc.setStatus(kycReqDto.getOperate());
+        ezUserKyc.setExamineBy(ContextHandler.getUserName());
+        ezUserKyc.setExamineTime(DateUtils.getNowDate());
+        baseMapper.updateById(ezUserKyc);
     }
-
     /**
      * 获取审核通过的数据
      * @param userId

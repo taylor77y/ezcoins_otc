@@ -22,7 +22,7 @@ public class SellOneKeyReqDto {
     private BigDecimal amount;
 
     @ApiModelProperty(value = "收款方式ID")
-    private String id;
+    private String paymentInfoId;
 
 
 }

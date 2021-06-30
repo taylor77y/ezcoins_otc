@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.ezcoins.project.otc.entity.req.OtcSettingReqDto;
 import com.ezcoins.response.BaseResponse;
 
+import java.util.Date;
+
 /**
  * <p>
  *  服务类
@@ -32,7 +34,7 @@ public interface EzAdvertisingBusinessService extends IService<EzAdvertisingBusi
     * @Author: Wanglei
     * @Date: 2021/6/19
     */
-
+    void updateCount(String sellUserId, String buyUserId, Date payTime, Date finishTime);
 
 
 

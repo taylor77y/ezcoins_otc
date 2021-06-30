@@ -10,6 +10,7 @@ import com.ezcoins.project.consumer.entity.EzUserKyc;
 import com.ezcoins.project.consumer.entity.req.CheckKycReqDto;
 import com.ezcoins.project.consumer.service.EzUserKycService;
 import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponsePageList;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -29,10 +30,8 @@ import org.springframework.web.bind.annotation.*;
 @Api(tags = "Admin-用户kyc认证模块")
 @RequestMapping("/admin/consumer/userKyc")
 public class EzUserKycController {
-
     @Autowired
     private EzUserKycService kycService;
-
 
     @ApiOperation(value = "实名认证列表")
     @PostMapping("kycList")
@@ -41,12 +40,11 @@ public class EzUserKycController {
         return  ResponsePageList.success(kycService.page(searchModel.getPage(), searchModel.getQueryModel()));
     }
 
-
     @ApiOperation(value = "根据Id查询实名认证详情")
-    @GetMapping("getKycById")
+    @GetMapping("getKycById/{id}")
     @AuthToken
-    public BaseResponse getKycById() {
-       return BaseResponse.success();
+    public Response<EzUserKyc> getKycById(@PathVariable String id) {
+       return Response.success(kycService.getById(id));
     }
 
 
@@ -58,7 +56,6 @@ public class EzUserKycController {
         kycService.checkKyc(kycReqDto);
         return BaseResponse.success();
     }
-
 
 
 }

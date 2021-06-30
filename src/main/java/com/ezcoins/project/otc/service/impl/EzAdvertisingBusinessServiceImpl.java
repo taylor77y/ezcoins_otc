@@ -8,7 +8,10 @@ import com.ezcoins.project.otc.mapper.EzAdvertisingBusinessMapper;
 import com.ezcoins.project.otc.service.EzAdvertisingBusinessService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ezcoins.response.BaseResponse;
+import lombok.var;
 import org.springframework.stereotype.Service;
+
+import java.util.Date;
 
 /**
  * <p>
@@ -45,5 +48,38 @@ public class EzAdvertisingBusinessServiceImpl extends ServiceImpl<EzAdvertisingB
         business.setSecurityPassword(securityPassword);
         business.setUserId(ContextHandler.getUserId());
         return BaseResponse.success();
+    }
+
+
+
+    /**
+     * @param sellUserId
+     * @param buyUserId
+     * @Description:
+     * @Param:
+     * @return:
+     * @Author: Wanglei
+     * @Date: 2021/6/19
+     */
+    @Override
+    public void updateCount(String sellUserId, String buyUserId, Date payTime, Date finishTime) {
+        //根据用户查询到OTC详情
+        LambdaQueryWrapper<EzAdvertisingBusiness> sell=new LambdaQueryWrapper<>();
+        sell.eq(EzAdvertisingBusiness::getUserId,sellUserId);
+        EzAdvertisingBusiness sellInfo = baseMapper.selectOne(sell);
+        sellInfo.setSellCount(sellInfo.getSellCount()+1);
+
+        LambdaQueryWrapper<EzAdvertisingBusiness> buy=new LambdaQueryWrapper<>();
+        buy.eq(EzAdvertisingBusiness::getUserId,buyUserId);
+        baseMapper.selectOne(buy);
+        EzAdvertisingBusiness buyInfo = baseMapper.selectOne(sell);
+        buyInfo.setBuyCount(sellInfo.getBuyCount()+1);
+
+        Long releaseTime=finishTime.getTime()-payTime.getTime();//放行时间
+        var time = Math.floor(releaseTime / 60 % 60);
+        buyInfo.setMouthAveragePass((time+sellInfo.getMouthAveragePass()*sellInfo.getSellCount())/(sellInfo.getSellCount()+1));//平均放行时间
+
+
+
     }
 }

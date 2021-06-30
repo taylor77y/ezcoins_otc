@@ -79,7 +79,6 @@ public class OtcController {
         return businessService.otcSetting(otcSettingReqDto);
     }
 
-
     @ApiOperation(value = "OTC 交易信息")
     @PostMapping("advertisingBusiness/{userId}")
     @AuthToken
@@ -93,7 +92,6 @@ public class OtcController {
         }
         return Response.success(one);
     }
-
     @AuthToken
     @ApiOperation(value = "收款方式 列表")
     @GetMapping("paymentInfoList")
@@ -102,7 +100,6 @@ public class OtcController {
         LambdaQueryWrapper<EzPaymentInfo> alipayQueryWrapper=new LambdaQueryWrapper<>();
         alipayQueryWrapper.eq(EzPaymentInfo::getUserId,userId);
         List<EzPaymentMethod> list = methodService.list();
-
         ArrayList<PaymentMethodRespDto> respDtos = new ArrayList<>();
         paymentInfoService.list(alipayQueryWrapper).forEach(e->{
             PaymentMethodRespDto paymentMethodRespDto = new PaymentMethodRespDto();
@@ -119,6 +116,7 @@ public class OtcController {
         });
         return ResponseList.success(respDtos);
     }
+
 
     @NoRepeatSubmit
     @AuthToken
@@ -325,15 +323,12 @@ public class OtcController {
         return Response.success(paymentMethodRespDto);
     }
 
-    @ApiOperation(value = "一键卖币")
+    @ApiOperation(value = "一键卖币(只支持人民币)")
     @PostMapping("sellOneKey")
     @AuthToken
     @Log(title = "一键卖币", businessType = BusinessType.INSERT, operatorType = OperatorType.MOBILE)
     public BaseResponse sellOneKey(@RequestBody SellOneKeyReqDto sellOneKeyReqDto) {
         return orderMatchService.sellOneKey(sellOneKeyReqDto);
     }
-
-
-
 
 }
