@@ -3,6 +3,7 @@ package com.ezcoins.project.consumer.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.ezcoins.base.BaseException;
 import com.ezcoins.constant.enums.user.KycStatus;
 import com.ezcoins.constant.enums.user.UserKycStatus;
 import com.ezcoins.context.ContextHandler;
@@ -15,6 +16,7 @@ import com.ezcoins.project.consumer.service.EzUserKycService;
 import com.ezcoins.project.consumer.service.EzUserService;
 import com.ezcoins.security.util.SecurityUtils;
 import com.ezcoins.utils.BeanUtils;
+import com.ezcoins.utils.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -43,22 +45,35 @@ public class EzUserKycServiceImpl extends ServiceImpl<EzUserKycMapper, EzUserKyc
      */
     @Override
     public void verified(UserKycReqDto userKycReqDto) {
-        //查询用户key状态
-        EzUser ezUser = ezUserService.getById(userKycReqDto.getUserId());
-        if (ezUser.getKycStatus().equals(UserKycStatus.VERIFIED.getCode())){
-            //异常  用户已认证
-        }
-        EzUserKyc ezcoinsKyc = new EzUserKyc();
-        BeanUtils.copyBeanProp(ezcoinsKyc,userKycReqDto);
-        ezcoinsKyc.setCreateBy(SecurityUtils.getUsername());
-        ezcoinsKyc.setStatus(KycStatus.PENDINGREVIEW.getCode());
-        baseMapper.insert(ezcoinsKyc);
-    }
+        EzUserKyc ezcoinsKyc =null;
+                //查看用户的实名认证
+        LambdaQueryWrapper<EzUserKyc> lambdaQueryWrapper=new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(EzUserKyc::getUserId,userKycReqDto.getUserId());
+        ezcoinsKyc= baseMapper.selectOne(lambdaQueryWrapper);
 
+        if (null==ezcoinsKyc){
+            ezcoinsKyc=new EzUserKyc();
+            BeanUtils.copyBeanProp(ezcoinsKyc,userKycReqDto);
+            ezcoinsKyc.setCreateBy(SecurityUtils.getUsername());
+            ezcoinsKyc.setCreateTime(DateUtils.getNowDate());
+            ezcoinsKyc.setStatus(KycStatus.PENDINGREVIEW.getCode());
+            baseMapper.insert(ezcoinsKyc);
+        }else {
+            if (ezcoinsKyc.getStatus().equals(KycStatus.BY.getCode())){
+                throw new BaseException("用户认证已通过");
+            }
+            BeanUtils.copyBeanProp(ezcoinsKyc,userKycReqDto);
+            ezcoinsKyc.setMemo(null);
+            ezcoinsKyc.setExamineBy(null);
+            ezcoinsKyc.setExamineTime(null);
+            ezcoinsKyc.setCreateTime(DateUtils.getNowDate());
+            ezcoinsKyc.setStatus(KycStatus.PENDINGREVIEW.getCode());
+            baseMapper.updateById(ezcoinsKyc);
+        }
+    }
 
     /**
      * 审核
-     *
      * @param kycReqDto
      */
     @Override
@@ -67,12 +82,7 @@ public class EzUserKycServiceImpl extends ServiceImpl<EzUserKycMapper, EzUserKyc
         //根据id查询审核
         EzUserKyc ezcoinsKyc = baseMapper.selectById(kycReqDto.getId());
         if (!ezcoinsKyc.getStatus().equals(KycStatus.PENDINGREVIEW.getCode())){
-            //异常  用户已审核
-        }
-        //查询用户key状态
-        EzUser ezUser = ezUserService.getById(ezcoinsKyc.getUserId());
-        if (ezUser.getKycStatus().equals(UserKycStatus.VERIFIED.getCode())){
-            //异常  用户已认证
+            throw new BaseException("已审核");
         }
         if (kycReqDto.getOperate().equals(KycStatus.BY.getCode())){
             //改变用户认证状态
@@ -83,13 +93,13 @@ public class EzUserKycServiceImpl extends ServiceImpl<EzUserKycMapper, EzUserKyc
             ezcoinsKyc.setStatus(KycStatus.REFUSE.getCode());
         }
         ezcoinsKyc.setStatus(kycReqDto.getOperate());
-        ezcoinsKyc.setUpdateBy(ContextHandler.getUserName());
+        ezcoinsKyc.setExamineBy(ContextHandler.getUserName());
+        ezcoinsKyc.setExamineTime(DateUtils.getNowDate());
         baseMapper.updateById(ezcoinsKyc);
     }
 
     /**
      * 获取审核通过的数据
-     *
      * @param userId
      * @return
      */
@@ -98,9 +108,7 @@ public class EzUserKycServiceImpl extends ServiceImpl<EzUserKycMapper, EzUserKyc
         //根据用户id查询 kyc信息
         LambdaQueryWrapper<EzUserKyc> lambdaQueryWrapper=new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(EzUserKyc::getUserId, ContextHandler.getUserId());
-        lambdaQueryWrapper.eq(EzUserKyc::getStatus, KycStatus.BY);
         return baseMapper.selectOne(lambdaQueryWrapper);
     }
-
 
 }

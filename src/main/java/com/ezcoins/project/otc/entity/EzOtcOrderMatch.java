@@ -66,6 +66,9 @@ public class EzOtcOrderMatch implements Serializable {
     @ApiModelProperty(value = "价格")
     private BigDecimal price;
 
+    @ApiModelProperty(value = "国际货币")
+    private String currencyCode;
+
     @ApiModelProperty(value = "订单状态(1:接单已取消 2:待接单 3：已取消 4：等待支付 5：已支付 6：已完成)")
     private String status;
 
@@ -79,5 +82,14 @@ public class EzOtcOrderMatch implements Serializable {
     @ApiModelProperty(value = "乐观锁")
     @Version
     private Integer version;
+
+    @ApiModelProperty(value = "订单类型：1：普通 2：一键")
+    private String orderType;
+
+    @ApiModelProperty(value = "交易类型(0:买  1：卖)")
+    private String type;
+
+    @ApiModelProperty(value = "支付详情id")
+    private String paymentInfoId;
 
 }

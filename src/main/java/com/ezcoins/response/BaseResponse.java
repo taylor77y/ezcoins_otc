@@ -1,6 +1,7 @@
 package com.ezcoins.response;
 
 import com.ezcoins.constant.interf.HttpStatus;
+import com.ezcoins.utils.MessageUtils;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -54,11 +55,11 @@ public class BaseResponse{
     }
 
     //失败静态方法
-    public static BaseResponse error(String message) {
+    public static BaseResponse error(String message,Object... args) {
         BaseResponse r = new BaseResponse();
         r.setSuccess(false);
         r.setCode(HttpStatus.HTTP_RES_CODE_500);
-        r.setMessage(message);
+        r.setMessage(MessageUtils.message(message,args));
         return r;
     }
     public static BaseResponse error(Integer code, String message) {

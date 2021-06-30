@@ -26,8 +26,8 @@ import lombok.EqualsAndHashCode;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value="EzSellConfig对象", description="一键卖币配置")
-public class EzSellConfig implements Serializable {
+@ApiModel(value="EzOneSellConfig对象", description="一键卖币配置")
+public class EzOneSellConfig implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -53,7 +53,7 @@ public class EzSellConfig implements Serializable {
     @ApiModelProperty(value = "币种")
     private String coinName;
 
-    @ApiModelProperty(value = "0:关闭  1：开启")
+    @ApiModelProperty(value = "0:开启  1：关闭")
     private String status;
 
     @ApiModelProperty(value = "创建时间")

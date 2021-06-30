@@ -7,8 +7,9 @@ import com.ezcoins.aspectj.lang.annotation.NoRepeatSubmit;
 import com.ezcoins.constant.enums.BusinessType;
 import com.ezcoins.constant.enums.OperatorType;
 import com.ezcoins.context.ContextHandler;
+import com.ezcoins.project.otc.entity.EzOneSellConfig;
 import com.ezcoins.project.otc.entity.EzOtcConfig;
-import com.ezcoins.project.otc.entity.EzSellConfig;
+import com.ezcoins.project.otc.entity.EzOneSellConfig;
 import com.ezcoins.project.otc.entity.req.SellConfigReqDto;
 import com.ezcoins.project.otc.service.EzSellConfigService;
 import com.ezcoins.response.BaseResponse;
@@ -42,7 +43,7 @@ public class EzSellConfigController {
     @ApiOperation(value = "一键卖币配置")
     @PostMapping("sellConfig")
     @AuthToken
-    public ResponseList<EzSellConfig> sellConfig() {
+    public ResponseList<EzOneSellConfig> sellConfig() {
         return ResponseList.success(sellConfigService.list());
     }
 
@@ -53,7 +54,7 @@ public class EzSellConfigController {
     @AuthToken
     @Log(title = "修改一键卖币配置", businessType = BusinessType.UPDATE, operatorType = OperatorType.MANAGE)
     public BaseResponse updateSellConfig(@RequestBody SellConfigReqDto sellConfigReqDto) {
-        EzSellConfig ezSellConfig = new EzSellConfig();
+        EzOneSellConfig ezSellConfig = new EzOneSellConfig();
         BeanUtils.copyBeanProp(ezSellConfig,sellConfigReqDto);
         ezSellConfig.setUpdateBy(ContextHandler.getUserName());
         sellConfigService.updateById(ezSellConfig);

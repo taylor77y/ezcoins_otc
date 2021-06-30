@@ -2,6 +2,8 @@ package com.ezcoins.project.coin.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
+
+import java.math.BigDecimal;
 import java.util.Date;
 import com.baomidou.mybatisplus.annotation.TableId;
 import java.io.Serializable;
@@ -35,6 +37,12 @@ public class Type implements Serializable {
 
     @ApiModelProperty(value = "币种全称")
     private String coinFullName;
+
+    @ApiModelProperty(value = "otc交易手续费比例")
+    private BigDecimal otcFeeRatio;
+
+    @ApiModelProperty(value = "otc状态（0启用 1禁用 ）")
+    private String otcStatus;
 
     @ApiModelProperty(value = "币种状态（0启用 1禁用 ）")
     private String status;

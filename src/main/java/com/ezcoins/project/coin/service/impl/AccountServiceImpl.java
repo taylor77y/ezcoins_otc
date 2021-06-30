@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.ezcoins.constant.enums.coin.CoinConstants;
 import com.ezcoins.constant.enums.coin.CoinStatus;
+import com.ezcoins.context.ContextHandler;
 import com.ezcoins.exception.coin.AccountBalanceNotEnoughException;
 import com.ezcoins.exception.coin.AccountOperationBusyException;
 import com.ezcoins.project.coin.entity.Account;
@@ -96,6 +97,7 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
                                     account.setCoinName(coin.getCoinName());
                                     account.setCreateTime(d);
                                     account.setUpdateTime(d);
+                                    account.setCreateBy(ContextHandler.getUserName());
                                     baseMapper.insert(account);//添加账户数据
                                     accountList.add(account);//将创建好的账户放入集合
                                 }
@@ -138,7 +140,6 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
         lambdaQueryWrapper.eq(Account::getCoinName,coinName);
         lambdaQueryWrapper.eq(Account::getUserId,userId);
         Account account = baseMapper.selectOne(lambdaQueryWrapper);
-
         if (account == null) {
             //没有查到就去创建
             List<Account> accountList = processCoinAccount(userId);
@@ -206,9 +207,7 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
             }
             c.setCoinName(acc.getCoinName());
             boolean isLock = cacheUtils.getAccountLock(acc.getId(), CacheUtils.LOCK_WAITTIME_SECONDS);//获得锁
-
             try {
-
                 if (!isLock || baseMapper.updateById(acc)<= 0) {
                     throw new AccountOperationBusyException();
                 } else {

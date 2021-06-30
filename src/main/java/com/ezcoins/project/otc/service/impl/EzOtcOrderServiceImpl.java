@@ -12,8 +12,10 @@ import com.ezcoins.context.ContextHandler;
 import com.ezcoins.exception.CheckException;
 import com.ezcoins.exception.coin.AccountOperationBusyException;
 import com.ezcoins.mq.RabbitMQConfiguration;
+import com.ezcoins.project.coin.entity.Type;
 import com.ezcoins.project.coin.entity.vo.BalanceChange;
 import com.ezcoins.project.coin.service.AccountService;
+import com.ezcoins.project.coin.service.TypeService;
 import com.ezcoins.project.config.entity.EzCountryConfig;
 import com.ezcoins.project.config.service.EzCountryConfigService;
 import com.ezcoins.project.consumer.entity.EzUser;
@@ -82,24 +84,20 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
     @Autowired
     private AmqpTemplate rabbitTemplate;
 
-
     @Autowired
     private EzPaymentMethodService paymentMethodService;
-
-
 
     @Autowired
     private EzPaymentInfoService paymentInfoService;
 
+    @Autowired
+    private TypeService typeService;
 
     @Autowired
     private EzAdvertisingBusinessService advertisingBusinessService;
 
-
     @Autowired
     private AccountService accountService;
-
-
 
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
@@ -109,25 +107,43 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         LambdaQueryWrapper<EzCountryConfig> configLambdaQueryWrapper = new LambdaQueryWrapper<>();
         configLambdaQueryWrapper.eq(EzCountryConfig::getCurrencyCode, currencyCode);
         EzCountryConfig one = countryConfigService.getOne(configLambdaQueryWrapper);
-        if (null == one) {
-           return BaseResponse.error("国家货币代码不存在");
-        }
-
         String countryCode = one.getCountryCode();//国家编号
         String orderNo = orderIndexService.getOrderNo(countryCode, IndexOrderNoKey.ORDER_INFO);
-        BigDecimal amount = otcOrderReqDto.getTotalAmount();
 
+        BigDecimal amount = otcOrderReqDto.getTotalAmount();
         String userId = ContextHandler.getUserId();
+        EzOtcConfig otcConfig = otcConfigService.getById(1);
+
+        BigDecimal minimumLimit = otcOrderReqDto.getMinimumLimit();
+        BigDecimal maximumLimit = otcOrderReqDto.getMaximumLimit();
+        if(maximumLimit.compareTo(otcConfig.getMaxAmount())>0){
+            return BaseResponse.error("超过限额");
+        }
+        if(minimumLimit.compareTo(otcConfig.getMinAmount())<0){
+            return BaseResponse.error("低于限额");
+        }
+        Integer prompt = otcOrderReqDto.getPrompt();
+        if (prompt>otcConfig.getMaxPayTime()|| prompt<otcConfig.getMinPayTime()){
+            return BaseResponse.error("付款时间错误");
+        }
+
+        LambdaQueryWrapper<Type> queryWrapper=new LambdaQueryWrapper<Type>();
+        queryWrapper.eq(Type::getCoinName,otcOrderReqDto.getCoinName());
+        Type coinType = typeService.getOne(queryWrapper);//查询到币种
+
+        if ("1".equals(coinType.getOtcStatus())){
+            return BaseResponse.error("当前币种OTC交易尚未开");
+        }
 
         //判断订单 买卖
         if ("0".equals(otcOrderReqDto.getType())){//买
         }else if ("1".equals(otcOrderReqDto.getType())){//卖
             //将卖出订单金额冻结
             //手续费
-            EzOtcConfig otcConfig = otcConfigService.getById(1);
-            BigDecimal advertisingFee = otcConfig.getAdvertisingFee();
-            BigDecimal fee = advertisingFee.multiply(amount);
-            BigDecimal totalAmount=amount.add(fee);
+            BigDecimal advertisingFeeRatio = coinType.getOtcFeeRatio();//比例手续费
+            BigDecimal fee = advertisingFeeRatio.multiply(amount);//手续费
+            BigDecimal totalAmount=amount.add(fee);//总扣除
+
             //冻结卖出的USDT
             List<BalanceChange> cList = new ArrayList<>();
             BalanceChange b = new BalanceChange();
@@ -138,20 +154,16 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
             b.setUserId(userId);
             b.setMainType(CoinConstants.MainType.FROZEN.getType());
             b.setFee(fee);
-
             cList.add(b);
             accountService.balanceChangeSYNC(cList);
         }
-
         EzOtcOrder ezOtcOrder = new EzOtcOrder();
         ezOtcOrder.setOrderNo(orderNo);
         ezOtcOrder.setFrozeAmount(amount);
         ezOtcOrder.setUserId(userId);
         BeanUtils.copyBeanProp(ezOtcOrder, otcOrderReqDto);
-
         //存入新的订单
         baseMapper.insert(ezOtcOrder);
-
         return BaseResponse.success();
     }
 
@@ -266,6 +278,9 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         match.setOtcOrderUserId(ezOtcOrder.getUserId());
         match.setAmount(placeOrderReqDto.getAmount());
         match.setPrice(ezOtcOrder.getPrice());
+        match.setOrderType("1");
+        match.setType(ezOtcOrder.getType());
+        match.setCurrencyCode(ezOtcOrder.getCurrencyCode());
         BigDecimal totalPrice = ezOtcOrder.getPrice().multiply(placeOrderReqDto.getAmount());
         match.setTotalPrice(totalPrice);
         match.setCoinName(ezOtcOrder.getCoinName());

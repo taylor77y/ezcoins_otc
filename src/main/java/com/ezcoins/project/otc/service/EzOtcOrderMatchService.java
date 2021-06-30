@@ -2,9 +2,13 @@ package com.ezcoins.project.otc.service;
 
 import com.ezcoins.project.otc.entity.EzOtcOrderMatch;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.ezcoins.project.otc.entity.req.OrderRecordQueryReqDto;
+import com.ezcoins.project.otc.entity.req.SellOneKeyReqDto;
+import com.ezcoins.project.otc.entity.resp.OrderRecordRespDto;
 import com.ezcoins.project.otc.entity.resp.OtcInfoOrder;
 import com.ezcoins.response.BaseResponse;
 import com.ezcoins.response.Response;
+import com.ezcoins.response.ResponseList;
 
 /**
  * <p>
@@ -54,4 +58,20 @@ public interface EzOtcOrderMatchService extends IService<EzOtcOrderMatch> {
     * @Date: 2021/6/25
     */
     Response<OtcInfoOrder> otcOrderListBy(String userId);
+
+
+    /**
+     * 一键卖币
+     * @param sellOneKeyReqDto
+     * @return
+     */
+    BaseResponse sellOneKey(SellOneKeyReqDto sellOneKeyReqDto);
+
+
+    /**
+     * 订单记录
+     * @param orderRecordQueryReqDto
+     * @return
+     */
+    ResponseList<OrderRecordRespDto> orderRecord(OrderRecordQueryReqDto orderRecordQueryReqDto);
 }

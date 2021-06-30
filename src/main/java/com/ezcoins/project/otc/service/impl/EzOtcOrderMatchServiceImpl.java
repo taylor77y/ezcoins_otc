@@ -1,23 +1,35 @@
 package com.ezcoins.project.otc.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ezcoins.base.BaseException;
 import com.ezcoins.constant.enums.coin.CoinConstants;
 import com.ezcoins.constant.enums.otc.MatchOrderStatus;
+import com.ezcoins.constant.interf.IndexOrderNoKey;
 import com.ezcoins.constant.interf.RedisConstants;
 import com.ezcoins.context.ContextHandler;
+import com.ezcoins.exception.CheckException;
 import com.ezcoins.exception.coin.AccountOperationBusyException;
+import com.ezcoins.project.coin.entity.Record;
 import com.ezcoins.project.coin.entity.vo.BalanceChange;
 import com.ezcoins.project.coin.service.AccountService;
+import com.ezcoins.project.otc.entity.EzOneSellConfig;
+import com.ezcoins.project.otc.entity.EzOneSellOrder;
 import com.ezcoins.project.otc.entity.EzOtcOrder;
 import com.ezcoins.project.otc.entity.EzOtcOrderMatch;
+import com.ezcoins.project.otc.entity.req.OrderRecordQueryReqDto;
+import com.ezcoins.project.otc.entity.req.SellOneKeyReqDto;
+import com.ezcoins.project.otc.entity.resp.OrderRecordRespDto;
 import com.ezcoins.project.otc.entity.resp.OtcInfoOrder;
 import com.ezcoins.project.otc.mapper.EzOtcOrderMatchMapper;
-import com.ezcoins.project.otc.service.EzOtcOrderMatchService;
+import com.ezcoins.project.otc.service.*;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.ezcoins.project.otc.service.EzOtcOrderService;
 import com.ezcoins.redis.RedisCache;
 import com.ezcoins.response.BaseResponse;
 import com.ezcoins.response.Response;
+import com.ezcoins.response.ResponseList;
+import com.ezcoins.utils.BeanUtils;
 import com.ezcoins.utils.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,6 +38,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -50,6 +63,14 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
     @Autowired
     private AccountService accountService;
 
+    @Autowired
+    private EzSellConfigService sellConfigService;
+
+    @Autowired
+    private EzOtcOrderIndexService orderIndexService;
+
+    @Autowired
+    private EzPaymentInfoService paymentInfoService;
 
     /***
      * @Description: 用户 取消订单（两个状态可取消订单  1：接单广告（卖家未接受订单）用户免费取消 2：接单广告/普通广告（用户未支付状态） 用户取消次数增加）
@@ -201,4 +222,98 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
     }
 
 
+    /**
+     * 一键卖币 (只支持人民币)
+     *
+     * @param sellOneKeyReqDto
+     * @return
+     */
+    @Override
+    public BaseResponse sellOneKey(SellOneKeyReqDto sellOneKeyReqDto) {
+        LambdaQueryWrapper<EzOneSellConfig> queryWrapper=new LambdaQueryWrapper<>();
+        queryWrapper.eq(EzOneSellConfig::getCoinName,sellOneKeyReqDto.getCoinName());
+        EzOneSellConfig ezSellConfig = sellConfigService.getOne(queryWrapper);
+        if ("1".equals(ezSellConfig.getStatus())){
+            return BaseResponse.error("当前币种一键卖币已关闭");
+        }
+
+        BigDecimal amount = sellOneKeyReqDto.getAmount();
+        BigDecimal maxAmount = ezSellConfig.getMaxAmount();
+        BigDecimal minAmount = ezSellConfig.getMinAmount();
+
+        if (amount.compareTo(maxAmount)>0 || amount.compareTo(minAmount)<0){
+            return BaseResponse.error("输入数量错误");
+        }
+
+        //手续费计算
+        BigDecimal fee=amount.multiply(ezSellConfig.getFeeRatio()).setScale(8, RoundingMode.FLOOR).add(ezSellConfig.getFee());
+
+        //冻结用户卖出 数量
+        List<BalanceChange> cList = new ArrayList<>();
+        BalanceChange b = new BalanceChange();
+        String userId = ContextHandler.getUserId();
+        BigDecimal total = amount.add(fee);
+        b.setAvailable(total);
+        b.setCoinName(sellOneKeyReqDto.getCoinName());
+        b.setUserId(userId);
+        b.setIncomeType(CoinConstants.IncomeType.PAYOUT.getType());
+        b.setFrozen(total);
+        b.setFee(fee);
+        b.setMainType(CoinConstants.MainType.FROZEN.getType());
+        accountService.balanceChangeSYNC(cList);
+
+        //生成 订单（订单类型一键）
+        EzOtcOrderMatch match = new EzOtcOrderMatch();
+        //得到订单号
+        String orderMatchNo = orderIndexService.getOrderNo("156", IndexOrderNoKey.ORDER_MATCH_INFO);
+        match.setOrderMatchNo(orderMatchNo);
+        match.setAdvertisingName("app收币商铺");
+        match.setPrice(ezSellConfig.getPrice());
+        match.setAmount(amount);
+        match.setCoinName(sellOneKeyReqDto.getCoinName());
+        match.setTotalPrice(amount.multiply(ezSellConfig.getPrice()));
+
+        return BaseResponse.success();
+    }
+
+    /**
+     * 订单记录
+     * @param orderRecordQueryReqDto
+     * @return
+     */
+    @Override
+    public ResponseList<OrderRecordRespDto> orderRecord(OrderRecordQueryReqDto orderRecordQueryReqDto) {
+        Page<EzOtcOrderMatch> page=new Page<EzOtcOrderMatch>(orderRecordQueryReqDto.getPage(),orderRecordQueryReqDto.getLimit());
+        LambdaQueryWrapper<EzOtcOrderMatch> queryWrapper=new LambdaQueryWrapper<>();
+        queryWrapper.eq(EzOtcOrderMatch::getUserId,ContextHandler.getUserId());
+
+        String status = orderRecordQueryReqDto.getStatus();
+        CheckException.checkNotEmpty(status, () -> {
+            queryWrapper.eq(EzOtcOrderMatch::getStatus,orderRecordQueryReqDto.getStatus());
+        });
+        String orderType = orderRecordQueryReqDto.getOrderType();
+        CheckException.checkNotEmpty(orderType, () -> {
+            queryWrapper.eq(EzOtcOrderMatch::getOrderType,orderRecordQueryReqDto.getOrderType());
+        });
+        String type = orderRecordQueryReqDto.getType();
+        CheckException.checkNotEmpty(type, () -> {
+            queryWrapper.eq(EzOtcOrderMatch::getType,orderRecordQueryReqDto.getType());
+        });
+        Page<EzOtcOrderMatch> ezOtcOrderMatchPage = baseMapper.selectPage(page, queryWrapper);
+        List<OrderRecordRespDto> orderRecordRespDtos = new ArrayList<>();
+
+        ezOtcOrderMatchPage.getRecords().forEach(e->{
+            OrderRecordRespDto orderRecordRespDto = new OrderRecordRespDto();
+            BeanUtils.copyBeanProp(orderRecordRespDto,e);
+            if (!e.getStatus().equals(MatchOrderStatus.CANCELLED.getCode())
+                    || !e.getStatus().equals(MatchOrderStatus.ORDERBEENCANCELLED.getCode())
+            || !e.getStatus().equals(MatchOrderStatus.REFUSE.getCode())){
+
+                orderRecordRespDto.setPaymentInfo(paymentInfoService.getById(e.getPaymentInfoId()));
+
+            }
+            orderRecordRespDtos.add(orderRecordRespDto);
+        });
+        return ResponseList.success(orderRecordRespDtos);
+    }
 }

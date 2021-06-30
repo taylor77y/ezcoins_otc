@@ -33,9 +33,6 @@ public class EzOtcConfig implements Serializable {
     @ApiModelProperty(value = "最小发布订单数量")
     private BigDecimal minAmount;
 
-    @ApiModelProperty(value = "广告手续费")
-    private BigDecimal advertisingFee;
-
     @ApiModelProperty(value = "每日最大取消数量")
     private Integer maxCancelNum;
 
