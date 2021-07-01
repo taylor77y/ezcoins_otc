@@ -13,6 +13,8 @@ import com.ezcoins.context.ContextHandler;
 import com.ezcoins.exception.user.SecurityPasswordNotMatchException;
 import com.ezcoins.project.coin.entity.resp.AccountRespDto;
 import com.ezcoins.project.common.service.mapper.SearchModel;
+import com.ezcoins.project.consumer.entity.EzUser;
+import com.ezcoins.project.consumer.service.EzUserService;
 import com.ezcoins.project.otc.entity.*;
 import com.ezcoins.project.otc.entity.req.*;
 import com.ezcoins.project.otc.entity.resp.*;
@@ -30,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -65,6 +68,9 @@ public class OtcController {
     @Autowired
     private EzOtcChatMsgService otcChatMsgService;
 
+    @Autowired
+    private EzUserService userService;
+
 
     @NoRepeatSubmit
     @AuthToken
@@ -76,18 +82,29 @@ public class OtcController {
     }
 
     @ApiOperation(value = "OTC 交易信息")
-    @PostMapping("advertisingBusiness/{userId}")
+    @PostMapping({"advertisingBusiness/{userId}","advertisingBusiness"})
     @AuthToken
-    public Response<EzAdvertisingBusiness> advertisingBusiness(@PathVariable(value = "userId", required = false) String userId) {
+    public Response<AdvertisingBusinessInfoRespDto> advertisingBusiness(@PathVariable(value = "userId", required = false) String userId) {
         String userId1 = StringUtils.isNotEmpty(userId) ? userId : ContextHandler.getUserId();
         LambdaQueryWrapper<EzAdvertisingBusiness> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(EzAdvertisingBusiness::getUserId, userId1);
         EzAdvertisingBusiness one = advertisingBusinessService.getOne(lambdaQueryWrapper);
-        if (one == null && StringUtils.isEmpty(userId)) {
+        EzUser user = userService.getById(userId);
+        String kycStatus = user.getKycStatus();
+        Date createTime = user.getCreateTime();
+        String level = user.getLevel();
+        if (one.getAdvertisingName().equals(userId)  && StringUtils.isEmpty(userId)) {
             return Response.error("请先完善otc交易信息");
         }
-        return Response.success(one);
+        AdvertisingBusinessInfoRespDto advertisingBusinessInfoRespDto = new AdvertisingBusinessInfoRespDto();
+        BeanUtils.copyBeanProp(advertisingBusinessInfoRespDto,one);
+        advertisingBusinessInfoRespDto.setKycStatus(kycStatus);
+        advertisingBusinessInfoRespDto.setAdvertisingStatus(level);
+        advertisingBusinessInfoRespDto.setRegistrationTime(createTime);
+        return Response.success(advertisingBusinessInfoRespDto);
     }
+
+
     @AuthToken
     @ApiOperation(value = "收款方式 列表")
     @GetMapping("paymentInfoList")

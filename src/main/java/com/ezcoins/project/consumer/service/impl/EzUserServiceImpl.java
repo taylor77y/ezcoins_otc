@@ -292,6 +292,11 @@ public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> impleme
         String token = jwtHelper.createToken(jwtInfo);
         log.info("  require logging... >>userToken:{}<<", token);
         String userId = ezUser.getUserId();
+        ezUser.setLoginDate(DateUtils.getNowDate());
+        final String ip = IpUtils.getIpAddr(ServletUtils.getRequest());
+        ezUser.setLoginIp(ip);
+        baseMapper.updateById(ezUser);
+
         loginProducer.sendMsgLoginFollowUp(ezUser.getUserName(), userId, ezUser.getNickName(), LoginType.APP.getType());
         return token;
     }

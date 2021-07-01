@@ -15,6 +15,7 @@ import com.ezcoins.project.consumer.service.EzUserKycService;
 import com.ezcoins.project.otc.service.EzAdvertisingBusinessService;
 import com.ezcoins.response.BaseResponse;
 import com.ezcoins.response.ResponsePageList;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.*;
  * @since 2021-06-30
  */
 @RestController
+@Api(tags = "Admin-高级认证")
 @RequestMapping("/admin/consumer/ezAdvertisingApprove")
 public class EzAdvertisingApproveController {
     @Autowired

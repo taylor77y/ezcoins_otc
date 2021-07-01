@@ -108,6 +108,7 @@ public class EzAdvertisingApproveServiceImpl extends ServiceImpl<EzAdvertisingAp
             advertisingApprove.setCreateBy(SecurityUtils.getUsername());
             advertisingApprove.setCreateTime(DateUtils.getNowDate());
             advertisingApprove.setStatus(KycStatus.PENDINGREVIEW.getCode());
+            advertisingApprove.setUserId(ContextHandler.getUserId());
             baseMapper.insert(advertisingApprove);
         }else {
             if (advertisingApprove.getStatus().equals(KycStatus.BY.getCode())){

@@ -16,6 +16,7 @@ import com.ezcoins.response.BaseResponse;
 import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponsePageList;
 import com.ezcoins.utils.StringUtils;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
@@ -38,6 +39,7 @@ import java.util.HashMap;
  * @since 2021-06-30
  */
 @RestController
+@Api(tags = "Admin-高级认证配置")
 @RequestMapping("/admin/consumer/ezAdvertisingConfig")
 public class EzAdvertisingConfigController {
 
