@@ -18,8 +18,6 @@ import java.util.List;
  * @since 2021-06-17
  */
 public interface AccountService extends IService<Account> {
-
-
     List<AccountRespDto> coinAccountListByUserId(String userId);
 
     Account getAccountByUserIdAndCoinId(String userId, String coinName) throws AccountOperationBusyException;

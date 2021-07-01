@@ -193,11 +193,10 @@ public class ConsumerController extends BaseController {
                 verifiedInfoRespDto.setMargin(advertisingApprove.getMargin());
             }
         } else {
-            verifiedInfoRespDto.setKycStatus("3");
+            verifiedInfoRespDto.setAdvertisingStatus("3");
         }
         return Response.success(verifiedInfoRespDto);
     }
-
     @ApiOperation(value = "国家列表")
     @GetMapping("countryList")
     public ResponseList<EzCountryConfig> countryList() {

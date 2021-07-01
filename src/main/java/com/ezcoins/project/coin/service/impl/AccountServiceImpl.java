@@ -88,7 +88,6 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
                             for (Type coin : coinList) {  //遍历启用的币种
                                 accountQueryWrapper.eq(Account::getCoinId, coin.getId());
                                 Account account = baseMapper.selectOne(accountQueryWrapper);//通过用户id和币种id查询账户
-
                                 if (account == null && CoinStatus.ENABLE.getCode().equals(coin.getStatus())) {/** 币种状态（0启用 1禁用 ） */
                                     Date d = DateUtils.getNowDate();
                                     account = new Account();
