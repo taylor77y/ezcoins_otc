@@ -1,8 +1,5 @@
 package com.ezcoins.project.otc.entity.resp;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.ezcoins.project.otc.entity.EzPaymentInfo;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
@@ -23,10 +20,10 @@ public class OrderRecordRespDto {
     @ApiModelProperty(value = "订单号")
     private String orderMatchNo;
 
-    @ApiModelProperty(value = "卖家昵称")
+    @ApiModelProperty(value = "买家/卖家昵称")
     private String advertisingName;
 
-    @ApiModelProperty(value = "订单状态(1:接单已取消 2:待接单 3：已取消 4：等待支付 5：已支付 6：已完成)")
+    @ApiModelProperty(value = "订单状态(1:接单已取消 2:待接单 3：已取消 4：等待支付 5：已支付 6：已完成 7:拒接单)")
     private String status;
 
     @ApiModelProperty(value = "创建时间")
