@@ -58,11 +58,8 @@ public class EzAdvertisingApprove implements Serializable {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
 
-
     @ApiModelProperty(value = "审核时间")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date examineTime;
 
-    @ApiModelProperty(value = "更新者")
-    private String updateBy;
 }

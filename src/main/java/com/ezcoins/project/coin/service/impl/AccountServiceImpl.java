@@ -60,7 +60,8 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
     /**
      * 创建用户 【资金账户】
      */
-    private List<Account> processCoinAccount(String userId) throws AccountOperationBusyException {
+    @Override
+    public List<Account> processCoinAccount(String userId) throws AccountOperationBusyException {
         LambdaQueryWrapper<Type> typeQueryWrapper = new LambdaQueryWrapper<>();
         typeQueryWrapper.eq(Type::getStatus, CoinStatus.ENABLE.getCode());
         List<Type> coinList = typeService.list(typeQueryWrapper);//查询到所有启用的币种
@@ -97,7 +98,6 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
                                     account.setCoinName(coin.getCoinName());
                                     account.setCreateTime(d);
                                     account.setUpdateTime(d);
-                                    account.setCreateBy(ContextHandler.getUserName());
                                     baseMapper.insert(account);//添加账户数据
                                     accountList.add(account);//将创建好的账户放入集合
                                 }

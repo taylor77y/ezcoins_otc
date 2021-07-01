@@ -12,6 +12,7 @@ import com.ezcoins.exception.CheckException;
 import com.ezcoins.exception.user.UserException;
 import com.ezcoins.exception.user.UserPasswordNotMatchException;
 import com.ezcoins.project.acl.entity.req.JwtAuthenticationRequest;
+import com.ezcoins.project.coin.service.AccountService;
 import com.ezcoins.project.common.mq.producer.LoginProducer;
 import com.ezcoins.project.common.service.EmailService;
 import com.ezcoins.project.common.service.MailBean;
@@ -24,6 +25,8 @@ import com.ezcoins.project.consumer.entity.req.VerificationCodeReqDto;
 import com.ezcoins.project.consumer.mapper.EzUserMapper;
 import com.ezcoins.project.consumer.service.EzUserLimitLogService;
 import com.ezcoins.project.consumer.service.EzUserService;
+import com.ezcoins.project.otc.entity.EzAdvertisingBusiness;
+import com.ezcoins.project.otc.service.EzAdvertisingBusinessService;
 import com.ezcoins.redis.RedisCache;
 import com.ezcoins.security.util.JWTHelper;
 import com.ezcoins.security.util.JWTInfo;
@@ -70,6 +73,12 @@ public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> impleme
 
     @Autowired
     private EzUserLimitLogService ezUserLimitLogService;
+
+    @Autowired
+    private EzAdvertisingBusinessService businessService;
+
+    @Autowired
+    private AccountService accountService;
 
 
     /**
@@ -248,8 +257,16 @@ public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> impleme
         ezUser.setInviteCode(inviteCode);
         ezUser.setPassword(EncoderUtil.encode(password));
         baseMapper.insert(ezUser);
-    }
 
+        //初始化OTC信息
+        EzAdvertisingBusiness advertisingBusiness = new EzAdvertisingBusiness();
+        advertisingBusiness.setAdvertisingName(ezUser.getUserId());
+        advertisingBusiness.setUserId(ezUser.getUserId());
+        businessService.save(advertisingBusiness);
+
+        //初始化账户信息
+        accountService.processCoinAccount(ezUser.getUserId());
+    }
     /**
      * 用户登录
      *

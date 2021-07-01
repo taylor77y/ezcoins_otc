@@ -66,9 +66,6 @@ public class Account implements Serializable {
     private Date updateTime;
 
 
-    @ApiModelProperty(value = "创建者")
-    private String createBy;
-
     @ApiModelProperty(value = "更新者")
     private String updateBy;
 

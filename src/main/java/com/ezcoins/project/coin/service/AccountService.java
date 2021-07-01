@@ -24,6 +24,7 @@ public interface AccountService extends IService<Account> {
 
     Account getAccountByUserIdAndCoinId(String userId, String coinName) throws AccountOperationBusyException;
 
+    List<Account> processCoinAccount(String userId);
 
     // 同步操作资产[余额/冻结/锁仓]
     boolean balanceChangeSYNC(List<BalanceChange> cList)
