@@ -1,5 +1,6 @@
 package com.ezcoins.project.otc.entity.resp;
 
+import com.ezcoins.project.otc.entity.EzOtcOrderPayment;
 import com.ezcoins.project.otc.entity.EzPaymentInfo;
 import com.ezcoins.project.otc.entity.EzPaymentMethod;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -41,9 +42,11 @@ public class PaymentDetails {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date dueTime;
 
-
     @ApiModelProperty(value = "收款方式")
-    private List<EzPaymentMethod> paymentMethodList;
+    private List<EzOtcOrderPayment> ezOtcOrderPayments;
+
+    @ApiModelProperty(value = "广告类型(0:买  1：卖)")
+    private String type;
 
     @ApiModelProperty(value = "订单状态(1:接单已取消 2:待接单 3：已取消 4：等待支付 5：已支付 6：已完成)")
     private String status;

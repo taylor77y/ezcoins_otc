@@ -13,8 +13,6 @@ import java.math.BigDecimal;
 public class BalanceChange {
 	/**用户ID*/
 	private String userId;
-	/**币种ID*/
-    private Integer coinId;
 	/**币种名称(大写)*/
 	private String coinName;
 	/**操作余额(正数加余额/负数减余额)**/

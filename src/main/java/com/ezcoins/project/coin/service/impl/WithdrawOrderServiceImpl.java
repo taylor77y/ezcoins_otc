@@ -97,7 +97,6 @@ public class WithdrawOrderServiceImpl extends ServiceImpl<WithdrawOrderMapper, W
                 c.setAvailable(total.negate());// 扣除金额包括 提现数量+固定额度+比例额度
                 c.setFrozen(total); //设置冻结金额
                 c.setCoinName(withdrawOrder.getCoinName());
-                c.setCoinId(one.getId());
                 c.setIncomeType(CoinConstants.IncomeType.PAYOUT.getType());
                 c.setMainType(CoinConstants.MainType.WITHDRAWAL.getType());
                 c.setSonType("withdrawal");

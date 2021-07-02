@@ -46,29 +46,20 @@ import java.util.List;
 public class OtcController {
     @Autowired
     private EzPaymentInfoService paymentInfoService;
-
     @Autowired
     private EzPaymentMethodService methodService;
-
     @Autowired
     private EzAdvertisingBusinessService advertisingBusinessService;
-
     @Autowired
     private EzOtcOrderService otcOrderService;
-
     @Autowired
     private EzOtcOrderMatchService orderMatchService;
-
     @Autowired
     private EzAdvertisingBusinessService businessService;
-
     @Autowired
     private EzOtcChatMsgService otcChatMsgService;
-
     @Autowired
     private EzUserService userService;
-
-
     @NoRepeatSubmit
     @AuthToken
     @ApiOperation(value = "完善otc交易信息")
@@ -77,7 +68,6 @@ public class OtcController {
     public BaseResponse otcSetting(@RequestBody OtcSettingReqDto otcSettingReqDto) {
         return businessService.otcSetting(otcSettingReqDto);
     }
-
     @ApiOperation(value = "OTC 交易信息")
     @PostMapping({"advertisingBusiness/{userId}","advertisingBusiness"})
     @AuthToken
@@ -107,11 +97,8 @@ public class OtcController {
         q.gt(EzOtcOrderMatch::getFinishTime,ndayStart);
         q.lt(EzOtcOrderMatch::getFinishTime,DateUtils.getNowDate());
         advertisingBusinessInfoRespDto.setMouthCount(orderMatchService.count());
-
         return Response.success(advertisingBusinessInfoRespDto);
     }
-
-
     @AuthToken
     @ApiOperation(value = "收款方式 列表")
     @GetMapping("paymentInfoList")
@@ -137,24 +124,22 @@ public class OtcController {
         return ResponseList.success(respDtos);
     }
     @NoRepeatSubmit
-    @AuthToken
-    @ApiOperation(value = "添加/修改  收款方式")
+    @AuthToken(kyc = true)
+    @ApiOperation(value = "添加/修改收款方式")
     @PostMapping("updateOrAddPaymentInfo")
     @Log(title = "添加 收款方式", businessType = BusinessType.INSERT, operatorType = OperatorType.MOBILE)
     public BaseResponse updateOrAddPaymentInfo(@RequestBody PaymentQrcodeTypeReqDto qrcodeTypeReqDto) {
         return paymentInfoService.alipayPaymentMethod(qrcodeTypeReqDto);
     }
-
     @NoRepeatSubmit
     @AuthToken
-    @ApiOperation(value = "删除 收款方式")
+    @ApiOperation(value = "删除收款方式")
     @PostMapping("deletePaymentInfo/{id}")
     @Log(title = "删除 收款方式", businessType = BusinessType.DELETE, operatorType = OperatorType.MOBILE)
     public BaseResponse deletePaymentInfo(@PathVariable String id) {
         paymentInfoService.removeById(id);
         return BaseResponse.success();
     }
-
     @NoRepeatSubmit
     @AuthToken
     @ApiImplicitParams({
@@ -176,14 +161,26 @@ public class OtcController {
         return BaseResponse.success();
     }
 
+//    -----------------------------------------------------------------------------------------------------------
     @NoRepeatSubmit
-    @ApiOperation(value = "发布 广告订单")
+    @ApiOperation(value = "发布广告订单")
     @PostMapping("releaseAdvertisingOrder")
     @AuthToken(advertisingStatus = true)
     @Log(title = "发布 广告订单", businessType = BusinessType.INSERT, operatorType = OperatorType.MOBILE)
     public BaseResponse releaseAdvertisingOrder(@RequestBody OtcOrderReqDto otcOrderReqDto) {
         return otcOrderService.releaseAdvertisingOrder(otcOrderReqDto);
     }
+
+    @NoRepeatSubmit
+    @ApiOperation(value = "用户根据订单号下单购买/出售")
+    @PostMapping("placeAnOrder")
+    @AuthToken(kyc = true)
+    @Log(title = "下单", businessType = BusinessType.INSERT, operatorType = OperatorType.MOBILE)
+    public Response<PaymentDetails> placeAnOrder(@RequestBody PlaceOrderReqDto placeOrderReqDto) {
+        return otcOrderService.placeAnOrder(placeOrderReqDto);
+    }
+
+
 
     @ApiOperation(value = "订单 列表")
     @PostMapping("otcOrderList")
@@ -206,14 +203,9 @@ public class OtcController {
         return otcOrderService.orderInfo(otcOrderNo);
     }
 
-    @NoRepeatSubmit
-    @ApiOperation(value = "用户 根据订单号下单 购买/出售")
-    @PostMapping("placeAnOrder")
-    @AuthToken(kyc = true)
-    @Log(title = "下单", businessType = BusinessType.INSERT, operatorType = OperatorType.MOBILE)
-    public Response<PaymentDetails> placeAnOrder(@RequestBody PlaceOrderReqDto placeOrderReqDto) {
-        return otcOrderService.placeAnOrder(placeOrderReqDto);
-    }
+
+
+
 
     @NoRepeatSubmit
     @ApiOperation(value = "商户 下架广告订单")

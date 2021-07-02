@@ -161,7 +161,7 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
         }
         for (BalanceChange c : cList) {
             // 判断参数
-            if (StringUtils.isNull(c.getCoinId()) || StringUtils.isNull(c.getUserId())
+            if (StringUtils.isNull(c.getCoinName()) || StringUtils.isNull(c.getUserId())
                     || StringUtils.isNull(c.getMainType())) {
                 log.error("参数异常{}", JSON.toJSON(c));
                 return false;
@@ -178,7 +178,7 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
                 return false;
             }
             c.setCoinName(acc.getCoinName());
-            log.info("操作用户ID[{}]币种ID[{}-{}]余额数量[{}]冻结数量[{}]锁仓数量[{}],操作主类型[{}],操作子类型[{}]", c.getUserId(), c.getCoinId(), c.getCoinName(),
+            log.info("操作用户ID[{}]币种ID[{}-{}]余额数量[{}]冻结数量[{}]锁仓数量[{}],操作主类型[{}],操作子类型[{}]", c.getUserId(), c.getCoinName(), c.getCoinName(),
                     c.getAvailable(), c.getFrozen(), c.getLockup(), c.getMainType(), c.getSonType());
 
             if (StringUtils.isNotNull(c.getAvailable()) && c.getAvailable().compareTo(BigDecimal.ZERO) != 0) {//判断 操作剩余金额
@@ -218,7 +218,6 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
                     }else {
                         Record rec = new Record();
                         rec.setUserId(c.getUserId());
-//                        rec.setCoinId(c.getCoinId());
                         rec.setCoinName(c.getCoinName());
                         rec.setFee(c.getFee());
                         rec.setMemo(c.getMemo());
@@ -227,7 +226,6 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
                         rec.setSonType(c.getSonType());
                         rec.setStatus(CoinConstants.RecordStatus.OK.getStatus());
                         rec.setAmount(c.getAvailable());
-
                         recordService.save(rec);
                     }
                 }

@@ -109,7 +109,6 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
             List<BalanceChange> cList = new ArrayList<BalanceChange>();
             BalanceChange c = new BalanceChange();
             c.setFrozen(cr.getAmount().negate());
-            c.setCoinId(cr.getCoinId());
             c.setUserId(cr.getUserId());
             c.setIncomeType(CoinConstants.IncomeType.PAYOUT.getType());
             c.setMainType(CoinConstants.MainType.WITHDRAWAL.getType());
@@ -130,7 +129,6 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
             BalanceChange c = new BalanceChange();
             c.setAvailable(cr.getAmount().add(cr.getFee()));
             c.setFrozen(cr.getAmount().negate());
-            c.setCoinId(cr.getCoinId());
             c.setUserId(cr.getUserId());
             c.setIncomeType(CoinConstants.IncomeType.PAYOUT.getType());
             c.setMainType(CoinConstants.MainType.WITHDRAWAL.getType());

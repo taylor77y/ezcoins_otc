@@ -1,6 +1,5 @@
-tt:
+ezcoins:
   name: taskezcoins项目
-  # 文件路径 示例（ Windows配置D:/ht/uploadPath，Linux配置 /data/ht/uploadPath）
   profile: /data/ezcoins/uploadPath
   addressEnabled: false
   captchaType: math
@@ -18,36 +17,18 @@ bipay:
   host: http://Hotelmillionaire.com
   supported-coins: BTC,ETH,TRX
 
-server:
-  port: 8080
-  servlet:
-    context-path: /
-  tomcat:
-    uri-encoding: UTF-8
-
 logging:
   level:
-    com.ht: debug
+    com.ezcoins: debug
     org.springframework: warn
     io.lettuce.core.protocol: error
-    
+
 spring:
-  messages:
-    basename: i18n/messages
-  profiles: 
-    active: druid
-  servlet:
-     multipart:
-       max-file-size:  10MB
-       max-request-size:  20MB
-  devtools:
-    restart:
-      enabled: true
-  redis:  #"tIWdmMdxkpKQXkt9"  "@we&dse34%&434*P"
+  redis:
     host: 127.0.0.1
     port: 6379
-    database: 0
-    password: wanglei
+    database: 9
+    password: "@#!666666pk.123^%!*"
     timeout: 15s
     lettuce:
       pool:
@@ -55,22 +36,19 @@ spring:
         max-idle: 8
         max-active: 11
         max-wait: -1ms
-
+  rabbitmq:
+    host: 127.0.0.1
+    port: 5672
+    username: admin
+    password: kckjQHrjnZsSYF6
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
     driverClassName: com.mysql.cj.jdbc.Driver
     druid:
       master:
-        url: jdbc:mysql://127.0.0.1:3306/db_ht?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=Asia/Shanghai
-        username: root
-        password: wanglei
-      # 从库数据源
-      slave:
-        # 从数据源开关/默认关闭
-        enabled: false
-        url:
-        username:
-        password:
+        url: jdbc:mysql://127.0.0.1:3306/db_ezcoins?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=Asia/Shanghai
+        username: dbadmin
+        password: viZ%2EMEe@7eoMG6%5=28
       initialSize: 5
       minIdle: 10
       maxActive: 30
@@ -121,21 +99,30 @@ spring:
     port: 587
 
 token:
-    header: Authorization
-    secret: abcdefghijklmnopqrstuvwxyz
-    # 令牌有效期（默认30分钟）（7天=10080分钟）
-    expireTime: 10080
-  
-mybatis:
-    typeAliasesPackage: com.ezcoins.project.**.domain
-    mapperLocations: classpath*:mybatis/**/*Mapper.xml
-    configLocation: classpath:mybatis/mybatis-config.xml
+  header: Authorization
+  secret: abcdefghijklmnopqrstuvwxyz
+  # 令牌有效期（默认30分钟）（7天=10080分钟）
+  expireTime: 10080
 
-pagehelper: 
+mybatis-plus:
+  configuration:
+    cache-enabled: true
+    use-generated-keys: true
+    default-executor-type: reuse
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+    map-underscore-to-camel-case: true
+  mapper-locations: classpath*:mybatis/**/*Mapper.xml
+  global-config:
+    db-config:
+      logic-delete-value: 1 # 逻辑已删除值(默认为 1)
+      logic-not-delete-value: 0 # 逻辑未删除值(默认为 0)
+  type-aliases-package: com.ezcoins.project.**.domain
+
+pagehelper:
   helperDialect: mysql
   reasonable: true
   supportMethodsArguments: true
-  params: count=countSql 
+  params: count=countSql
 
 aliyun:
   oss:
