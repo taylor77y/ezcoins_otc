@@ -25,7 +25,6 @@
 // * @Description：
 // * @Date： created in 15:56 2019/5/13
 // */
-//
 //@Component
 //@ServerEndpoint("/connectWebSocket/{name}")
 //public class WebSocketService {
@@ -35,14 +34,10 @@
 //     * 在线人数
 //     */
 //    public static int onlineNumber = 0;
-//
 //    /**
 //     * 以OTC昵称为key，WebSocket为对象保存起来
 //     */
 //    private static ConcurrentHashMap<String, Session> nameMap = new ConcurrentHashMap<String, Session>();
-//
-//
-//
 //    /**
 //     * 会话
 //     */
@@ -57,13 +52,23 @@
 //
 //
 //    /**
+//     * 连接建立成功调用的方法
+//     */
+//    @OnOpen
+//    public void onOpen(@PathParam("name") String userId,Session session) {
+//        this.session = session;
+//        addOnlineCount();
+//    }
+//
+//
+//    /**
 //     * 建立连接
 //     *
 //     * @param session
 //     */
 //    @OnOpen
 //    public void onOpen(@PathParam("name") String userId, Session session) {
-//        if (null != clients.get(userId)) {
+//        if (null != nameMap.get(userId)) {
 //            clients.remove(userId);
 //            onlineNumber--;
 //        }

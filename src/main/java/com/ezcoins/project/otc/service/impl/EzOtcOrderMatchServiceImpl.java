@@ -150,12 +150,9 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
     public BaseResponse sellerPut(String matchOrderNo) {
         EzOtcOrderMatch orderMatch = baseMapper.selectById(matchOrderNo);
         //判断订单状态
-        if (!orderMatch.getStatus().equals(MatchOrderStatus.PAID.getCode())
-                || !orderMatch.getStatus().equals(MatchOrderStatus.WAITFORPAYMENT.getCode())) {
+        if (!orderMatch.getStatus().equals(MatchOrderStatus.WAITFORPAYMENT.getCode())) {
             throw new BaseException("订单状态已发生变化");
         }
-
-
         //匹配订单分为 买单 和 卖单  //查询到otc 订单
         EzOtcOrder ezOtcOrder = otcOrderService.getById(orderMatch.getOrderNo());
         List<BalanceChange> cList = new ArrayList<>();
@@ -180,7 +177,7 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
 
 
         //改变OTC信息
-        LambdaQueryWrapper<EzAdvertisingBusiness> lambdaQueryWrapper=new LambdaQueryWrapper<>();
+        LambdaQueryWrapper<EzAdvertisingBusiness> lambdaQueryWrapper = new LambdaQueryWrapper<>();
 
 
         if ("0".equals(ezOtcOrder.getType())) {//买单
@@ -215,12 +212,12 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
     }
 
     /**
+     * @param userId
      * @Description:
      * @Param: [userId]
      * @return: com.ezcoins.response.Response<com.ezcoins.project.otc.entity.resp.OtcInfoOrder>
      * @Author: Wanglei
      * @Date: 2021/6/25
-     * @param userId
      */
     @Override
     public Response<OtcInfoOrder> otcOrderListBy(String userId) {
@@ -243,14 +240,14 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
                 .eq(EzOtcOrderMatch::getStatus, MatchOrderStatus.WAITFORPAYMENT.getCode());
         EzOtcOrderMatch orderMatch = baseMapper.selectOne(matchLambdaQueryWrapper);
 
-        if (orderMatch!=null){
+        if (orderMatch != null) {
             return BaseResponse.error("请先完成当前未完成的订单")
-                    .data("orderMatchNo",orderMatch.getOrderMatchNo());
+                    .data("orderMatchNo", orderMatch.getOrderMatchNo());
         }
-        LambdaQueryWrapper<EzOneSellConfig> queryWrapper=new LambdaQueryWrapper<>();
-        queryWrapper.eq(EzOneSellConfig::getCoinName,sellOneKeyReqDto.getCoinName());
+        LambdaQueryWrapper<EzOneSellConfig> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(EzOneSellConfig::getCoinName, sellOneKeyReqDto.getCoinName());
         EzOneSellConfig ezSellConfig = sellConfigService.getOne(queryWrapper);
-        if ("1".equals(ezSellConfig.getStatus())){
+        if ("1".equals(ezSellConfig.getStatus())) {
             return BaseResponse.error(MessageUtils.message("当前币种一键卖币已关闭"));
         }
 
@@ -258,11 +255,11 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
         BigDecimal maxAmount = ezSellConfig.getMaxAmount();
         BigDecimal minAmount = ezSellConfig.getMinAmount();
 
-        if (amount.compareTo(maxAmount)>0 || amount.compareTo(minAmount)<0){
+        if (amount.compareTo(maxAmount) > 0 || amount.compareTo(minAmount) < 0) {
             return BaseResponse.error(MessageUtils.message("输入数量错误"));
         }
         //手续费计算
-        BigDecimal fee=amount.multiply(ezSellConfig.getFeeRatio()).setScale(8, RoundingMode.FLOOR).add(ezSellConfig.getFee());
+        BigDecimal fee = amount.multiply(ezSellConfig.getFeeRatio()).setScale(8, RoundingMode.FLOOR).add(ezSellConfig.getFee());
 
         //冻结用户卖出 数量
         List<BalanceChange> cList = new ArrayList<>();
@@ -296,40 +293,44 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
 
     /**
      * 订单记录
+     *
      * @param orderRecordQueryReqDto
      * @return
      */
     @Override
     public ResponseList<OrderRecordRespDto> orderRecord(OrderRecordQueryReqDto orderRecordQueryReqDto) {
-        Page<EzOtcOrderMatch> page=new Page<EzOtcOrderMatch>(orderRecordQueryReqDto.getPage(),orderRecordQueryReqDto.getLimit());
-        LambdaQueryWrapper<EzOtcOrderMatch> queryWrapper=new LambdaQueryWrapper<>();
-        queryWrapper.eq(EzOtcOrderMatch::getUserId,ContextHandler.getUserId());
+        Page<EzOtcOrderMatch> page = new Page<EzOtcOrderMatch>(orderRecordQueryReqDto.getPage(), orderRecordQueryReqDto.getLimit());
+        LambdaQueryWrapper<EzOtcOrderMatch> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(EzOtcOrderMatch::getUserId, ContextHandler.getUserId());
 
         String status = orderRecordQueryReqDto.getStatus();
         CheckException.checkNotEmpty(status, () -> {
-            queryWrapper.eq(EzOtcOrderMatch::getStatus,orderRecordQueryReqDto.getStatus());
+            queryWrapper.eq(EzOtcOrderMatch::getStatus, orderRecordQueryReqDto.getStatus());
         });
         String orderType = orderRecordQueryReqDto.getOrderType();
         CheckException.checkNotEmpty(orderType, () -> {
-            queryWrapper.eq(EzOtcOrderMatch::getOrderType,orderRecordQueryReqDto.getOrderType());
+            queryWrapper.eq(EzOtcOrderMatch::getOrderType, orderRecordQueryReqDto.getOrderType());
         });
         String type = orderRecordQueryReqDto.getType();
         CheckException.checkNotEmpty(type, () -> {
-            queryWrapper.eq(EzOtcOrderMatch::getType,orderRecordQueryReqDto.getType());
+            queryWrapper.eq(EzOtcOrderMatch::getType, orderRecordQueryReqDto.getType());
         });
         Page<EzOtcOrderMatch> ezOtcOrderMatchPage = baseMapper.selectPage(page, queryWrapper);
         List<OrderRecordRespDto> orderRecordRespDtos = new ArrayList<>();
 
-        ezOtcOrderMatchPage.getRecords().forEach(e->{
+        ezOtcOrderMatchPage.getRecords().forEach(e -> {
             OrderRecordRespDto orderRecordRespDto = new OrderRecordRespDto();
-            BeanUtils.copyBeanProp(orderRecordRespDto,e);
+            BeanUtils.copyBeanProp(orderRecordRespDto, e);
             if (!e.getStatus().equals(MatchOrderStatus.CANCELLED.getCode())
-                    || !e.getStatus().equals(MatchOrderStatus.ORDERBEENCANCELLED.getCode())
-            || !e.getStatus().equals(MatchOrderStatus.REFUSE.getCode())){
-
-                orderRecordRespDto.setPaymentInfo(paymentInfoService.getById(e.getPaymentInfoId()));
-
+                    && !e.getStatus().equals(MatchOrderStatus.ORDERBEENCANCELLED.getCode())
+                    && !e.getStatus().equals(MatchOrderStatus.REFUSE.getCode())) {
+                if (e.getStatus().equals(MatchOrderStatus.WAITFORPAYMENT.getCode())) {
+                } else {
+                    orderRecordRespDto.setPaymentInfo(paymentInfoService.getById(e.getPaymentInfoId()));
+                }
             }
+
+
             orderRecordRespDtos.add(orderRecordRespDto);
         });
         return ResponseList.success(orderRecordRespDtos);

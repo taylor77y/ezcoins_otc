@@ -35,7 +35,7 @@ public class OtcOrderRespDto {
     private Double mouthFinishRate;
 
     @ApiModelProperty(value = "支付方式")
-    private List<String> icons;
+    private List<Integer> paymentMethods;
 
     @ApiModelProperty(value = "币种类型")
     private String coinName;

@@ -2,6 +2,7 @@ package com.ezcoins.project.coin.service;
 
 import com.ezcoins.project.coin.entity.Wallet;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.ezcoins.project.coin.udun.Trade;
 import com.ezcoins.response.BaseResponse;
 
 /**
@@ -22,4 +23,10 @@ public interface WalletService extends IService<Wallet> {
      * @return
      */
     BaseResponse rechargeAddress(String userId,String id);
+
+
+    /**
+     * 处理第三方提币审核结果 [审核通过][审核拒绝][到账返回Txid]
+     */
+    boolean handleThirdpartyWithdrawal(Trade trade);
 }

@@ -32,16 +32,14 @@ public class BaseException extends RuntimeException{
      */
     private String defaultMessage;
 
-    public BaseException(String module, String code, Object[] args, String defaultMessage)
-    {
+    public BaseException(String module, String code, Object[] args, String defaultMessage){
         this.module = module;
         this.code = code;
         this.args = args;
         this.defaultMessage = defaultMessage;
     }
 
-    public BaseException(String module, String code, Object[] args)
-    {
+    public BaseException(String module, String code, Object[] args){
         this(module, code, args, null);
     }
 

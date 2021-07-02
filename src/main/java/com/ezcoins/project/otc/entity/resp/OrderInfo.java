@@ -22,11 +22,10 @@ public class OrderInfo {
     private String tradingTips;
 
     @ApiModelProperty(value = "支付方式")
-    private List<String> icons;
+    private List<Integer> paymentMethods;
 
     @ApiModelProperty(value = "卖家昵称")
     private String advertisingName;
-
 
     @ApiModelProperty(value = "币种类型")
     private String coinName;
@@ -36,7 +35,6 @@ public class OrderInfo {
 
     @ApiModelProperty(value = "最大限额")
     private BigDecimal maximumLimit;
-
 
     @ApiModelProperty(value = "剩余数量")
     private BigDecimal lastAmount;

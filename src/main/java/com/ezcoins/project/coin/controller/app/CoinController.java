@@ -1,22 +1,28 @@
 package com.ezcoins.project.coin.controller.app;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.ezcoins.aspectj.lang.annotation.AuthToken;
+import com.ezcoins.aspectj.lang.annotation.Log;
 import com.ezcoins.base.BaseController;
-import com.ezcoins.project.coin.entity.Type;
+import com.ezcoins.constant.enums.BusinessType;
+import com.ezcoins.constant.enums.OperatorType;
+import com.ezcoins.context.ContextHandler;
+import com.ezcoins.project.coin.entity.*;
+import com.ezcoins.project.coin.entity.req.WithdrawReqDto;
 import com.ezcoins.project.coin.entity.resp.AccountRespDto;
-import com.ezcoins.project.coin.service.AccountService;
-import com.ezcoins.project.coin.service.TypeService;
-import com.ezcoins.project.coin.service.WalletService;
+import com.ezcoins.project.coin.service.*;
+import com.ezcoins.project.common.service.mapper.Field;
+import com.ezcoins.project.common.service.mapper.QueryMethod;
+import com.ezcoins.project.common.service.mapper.SearchModel;
 import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponseList;
 import com.ezcoins.response.ResponsePageList;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -41,6 +47,15 @@ public class CoinController extends BaseController {
     @Autowired
     private WalletService walletService;
 
+    @Autowired
+    private WithdrawConfigService withdrawConfigService;
+
+    @Autowired
+    private WithdrawOrderService withdrawOrderService;
+
+    @Autowired
+    private RecordService recordService;
+
     @ApiOperation(value = "资产列表")
     @AuthToken
     @GetMapping("coinAccountList")
@@ -56,7 +71,6 @@ public class CoinController extends BaseController {
     }
 
 
-
     @ApiOperation(value = "充值 地址二维码")
     @AuthToken
     @GetMapping("rechargeAddress/{id}")
@@ -64,5 +78,40 @@ public class CoinController extends BaseController {
         return walletService.rechargeAddress(getUserId(),id);
     }
 
+    @ApiOperation(value = "根据币种名查询余额")
+    @AuthToken
+    @GetMapping("coinAccount/{coinName}")
+    public BaseResponse coinAccount(@PathVariable String coinName) {
+        return BaseResponse.success()
+                .data("balance",accountService.getAccountByUserIdAndCoinId(ContextHandler.getUserId(),coinName)
+                        .getAvailable());
+    }
 
+    @ApiOperation(value = "提币配置")
+    @AuthToken
+    @GetMapping("withdrawConfigs/{coinName}")
+    public Response<WithdrawConfig> withdrawConfigs(@PathVariable String coinName) {
+        LambdaQueryWrapper<WithdrawConfig> lambdaQueryWrapper=new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(WithdrawConfig::getCoinName,coinName);
+        return Response.success(withdrawConfigService.getOne(lambdaQueryWrapper));
+    }
+
+    @ApiOperation(value = "发起提现")
+    @AuthToken
+    @PostMapping("withdraw")
+    @Log(title = "发起提现", businessType = BusinessType.INSERT, operatorType = OperatorType.MOBILE)
+    public BaseResponse withdraw(@RequestBody WithdrawReqDto withdrawReqDto) {
+        return withdrawOrderService.withdraw(withdrawReqDto);
+    }
+
+    @ApiOperation(value = "账户记录")
+    @AuthToken
+    @PostMapping("accountRecord")
+    public ResponsePageList<Record> accountRecord(@RequestBody SearchModel<Record> searchModel) {
+        Field field=new Field();
+        field.setName("user_id");
+        field.setValue(ContextHandler.getUserId());
+        field.setQueryMethod(QueryMethod.eq);
+        return ResponsePageList.success(recordService.page(searchModel.getPage(), searchModel.getQueryModel()));
+    }
 }

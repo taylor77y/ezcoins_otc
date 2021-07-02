@@ -1,5 +1,6 @@
 package com.ezcoins.project.otc.entity.resp;
 
+import com.ezcoins.project.otc.entity.EzPaymentInfo;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -22,7 +23,7 @@ public class ReleaseOrderRespDto {
     private BigDecimal price;
 
     @ApiModelProperty(value = "支付方式")
-    private List<String> icons;
+    private List<Integer> paymentMethods;
 
     @ApiModelProperty(value = "币种类型")
     private String coinName;

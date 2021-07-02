@@ -3,6 +3,8 @@ package com.ezcoins.project.coin.service;
 import com.ezcoins.project.coin.entity.WithdrawOrder;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ezcoins.project.coin.entity.req.CheckWithdrewOrderReqDto;
+import com.ezcoins.project.coin.entity.req.WithdrawReqDto;
+import com.ezcoins.response.BaseResponse;
 
 /**
  * <p>
@@ -22,4 +24,12 @@ public interface WithdrawOrderService extends IService<WithdrawOrder> {
     * @Date: 2021/6/17
     */
     void reviewWithdrawOrder(CheckWithdrewOrderReqDto checkWithdrewOrderReqDto);
+
+
+    /**
+     * 发起提现
+     * @param withdrawReqDto
+     * @return
+     */
+    BaseResponse withdraw(WithdrawReqDto withdrawReqDto);
 }

@@ -16,31 +16,34 @@ public class CoinConstants {
 		/** 提币 **/
 		WITHDRAWAL("withdrawal", "提币"),
 
+		/** 手续费 **/
+		HANDLINGFEE("handlingfee", "手续费"),
+
 		BUY("buy", "购买"),
 
 		SELL("sell", "卖出"),
 
         /** 转入 **/
 		TRANSFERIN("transferin", "转入"),
-        
+
         /** 转出 **/
 		TRANSFEROUT("transferout", "转出"),
-        
+
         /** 空投 **/
 		AIRDROP("airdrop", "空投"),
-        
+
         /** 使用 **/
 		USE("use", "使用"),
-        
+
         /** 冻结 **/
 		FROZEN("frozen", "冻结"),
-        
+
         /** 解冻 **/
 		UNFREEZE("unfreeze", "解冻"),
-        
+
         /** 锁仓 **/
 		LOCKUP("lockup", "锁仓"),
-	    
+
 	    /** 解锁 **/
 		UNLOCK("unlock", "解锁");
 

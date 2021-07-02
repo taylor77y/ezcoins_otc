@@ -1,10 +1,12 @@
 package com.ezcoins.project.coin.udun;
 
+import com.ezcoins.project.coin.service.WalletService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 @Service
@@ -24,7 +26,7 @@ public class BiPayService {
     /**
      * 创建币种地址
      *
-     * @param coinType 币种
+     * @param
      * @param alias
      * @param walletId
      * @return
@@ -143,23 +145,24 @@ public class BiPayService {
 //        return rs;
 //    }
 //
-//    /**
-//     * 提现一条龙回调
-//     *
-//     * @param Trade 交易实体
-//     * @return
-//     * @throws Exception
-//     */
-//    public boolean withdrawCallback(Trade trade) throws Exception {
-//
-//        //金额为最小单位，需要转换,包括amount和fee字段
-//        BigDecimal amount = trade.getAmount().divide(BigDecimal.TEN.pow(trade.getDecimals()), 8, RoundingMode.DOWN);
-//        BigDecimal fee = trade.getFee().divide(BigDecimal.TEN.pow(trade.getDecimals()), 8, RoundingMode.DOWN);
-//        trade.setAmount(amount);
-//        trade.setFee(fee);
-//
-//        boolean rs = coinWalletService.handleThirdpartyWithdrawal(trade);
-////        boolean rs = true;
-//        return rs;
-//    }
+@Autowired
+private WalletService walletService;
+    /**
+     * 提现一条龙回调
+     *
+     * @param Trade 交易实体
+     * @return
+     * @throws Exception
+     */
+    public boolean withdrawCallback(Trade trade) throws Exception {
+
+        //金额为最小单位，需要转换,包括amount和fee字段
+        BigDecimal amount = trade.getAmount().divide(BigDecimal.TEN.pow(trade.getDecimals()), 8, RoundingMode.DOWN);
+        BigDecimal fee = trade.getFee().divide(BigDecimal.TEN.pow(trade.getDecimals()), 8, RoundingMode.DOWN);
+        trade.setAmount(amount);
+        trade.setFee(fee);
+
+        boolean rs = walletService.handleThirdpartyWithdrawal(trade);
+        return rs;
+    }
 }

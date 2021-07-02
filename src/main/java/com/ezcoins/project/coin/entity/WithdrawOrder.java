@@ -1,11 +1,13 @@
 package com.ezcoins.project.coin.entity;
 
 import java.math.BigDecimal;
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.annotation.IdType;
+
+import com.baomidou.mybatisplus.annotation.*;
+
 import java.util.Date;
-import com.baomidou.mybatisplus.annotation.TableId;
 import java.io.Serializable;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -52,7 +54,7 @@ public class WithdrawOrder implements Serializable {
     @ApiModelProperty(value = "手续费")
     private BigDecimal fee;
 
-    @ApiModelProperty(value = "状态 1待审核 2审核通过 3提币拒绝 -1提币失败")
+    @ApiModelProperty(value = "状态 1待审核 2审核通过 3提币拒绝 4提币失败")
     private String status;
 
     @ApiModelProperty(value = "失败原因")
@@ -62,13 +64,16 @@ public class WithdrawOrder implements Serializable {
     private String createBy;
 
     @ApiModelProperty(value = "创建时间")
+    @TableField(fill = FieldFill.INSERT)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
+
+    @ApiModelProperty(value = "更新时间")
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date updateTime;
 
     @ApiModelProperty(value = "审核者")
     private String updateBy;
-
-    @ApiModelProperty(value = "更新时间")
-    private Date updateTime;
-
 
 }
