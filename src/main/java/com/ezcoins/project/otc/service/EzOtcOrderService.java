@@ -37,8 +37,6 @@ public interface EzOtcOrderService extends IService<EzOtcOrder> {
     */
     Response<PaymentDetails> placeAnOrder(PlaceOrderReqDto placeOrderReqDto);
 
-    
-    
     /*** 
     * @Description: 商户 下架广告订单
     * @Param: [orderNo]

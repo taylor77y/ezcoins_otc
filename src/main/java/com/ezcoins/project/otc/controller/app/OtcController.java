@@ -198,12 +198,14 @@ public class OtcController {
     public ResponseList<NewOrderRespDto> nowOrderList(@RequestBody PageQuery pageQuery) {
         return otcOrderService.nowOrderList(pageQuery);
     }
+
     @ApiOperation(value = "购买 查询订单详情")
     @GetMapping("orderInfo/{otcOrderNo}")
     @AuthToken
     public Response<OrderInfo> orderInfo(@PathVariable String otcOrderNo) {
         return otcOrderService.orderInfo(otcOrderNo);
     }
+
     @NoRepeatSubmit
     @ApiOperation(value = "用户 根据订单号下单 购买/出售")
     @PostMapping("placeAnOrder")
