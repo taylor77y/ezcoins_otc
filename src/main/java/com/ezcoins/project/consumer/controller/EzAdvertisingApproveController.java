@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.*;
 @Api(tags = "Admin-高级认证")
 @RequestMapping("/admin/consumer/ezAdvertisingApprove")
 public class EzAdvertisingApproveController {
+
     @Autowired
     private EzAdvertisingApproveService advertisingApproveService;
 

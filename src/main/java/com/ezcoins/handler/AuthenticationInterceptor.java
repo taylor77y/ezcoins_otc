@@ -2,8 +2,15 @@ package com.ezcoins.handler;
 
 import com.ezcoins.aspectj.lang.annotation.AuthToken;
 import com.ezcoins.aspectj.lang.annotation.IgnoreUserToken;
+import com.ezcoins.constant.UserConstants;
+import com.ezcoins.constant.enums.LoginType;
 import com.ezcoins.context.ContextHandler;
+import com.ezcoins.exception.CheckException;
 import com.ezcoins.exception.jwt.TokenException;
+import com.ezcoins.project.acl.entity.AclUser;
+import com.ezcoins.project.acl.service.AclUserService;
+import com.ezcoins.project.consumer.entity.EzUser;
+import com.ezcoins.project.consumer.service.EzUserService;
 import com.ezcoins.security.util.IJWTInfo;
 import com.ezcoins.security.util.JWTHelper;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +20,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Method;
@@ -29,13 +37,24 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
     @Autowired
     private JWTHelper jwtHelper;
 
+
+    @Resource
+    private EzUserService userService;
+
+
+    @Resource
+    private AclUserService aclUserService;
+
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         // 如果不是映射到方法直接通过
-        if (!(handler instanceof HandlerMethod)) {return true;}
+        if (!(handler instanceof HandlerMethod)) {
+            return true;
+        }
         HandlerMethod handlerMethod = (HandlerMethod) handler;
         IgnoreUserToken annotation = handlerMethod.getBeanType().getAnnotation(IgnoreUserToken.class);
-        if (annotation!=null){
+        if (annotation != null) {
             return true;
         }
         Method method = handlerMethod.getMethod();
@@ -57,58 +76,47 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
             //根据token存储的值，redis判断是否失效
             boolean checkToken = jwtHelper.verifyToken(fromToken);
             if (!checkToken) {
-                log.info("请求路径{} token为空",request.getPathInfo());
+                log.info("请求路径{} token为空", request.getPathInfo());
                 throw new TokenException();
             }
             ContextHandler.setUserId(fromToken.getUserId());
             ContextHandler.setUserName(fromToken.getUserName());
             ContextHandler.setUserType(fromToken.getUserType());
 
+            //APP权限
+            if (fromToken.getUserType().equals(LoginType.APP.getType())) {
+                EzUser user = null;
+                if (authToken.advertisingStatus()) {
+                    user = userService.getById(fromToken.getUserId());
+                    CheckException.checkToken(user == null, () -> {
+                        log.error("token失效，请重新登录");
+                    });
+                    CheckException.check("1".equals(user.getLevel()), "请先进行高级认证", () -> {
+                        log.error("请先进行高级认证");
+                    });
+                }
 
-           //存储数据
+                if (authToken.kyc()) {
+                    if (user == null) {
+                        user = userService.getById(fromToken.getUserId());
+                        CheckException.checkToken(user == null, () -> {
+                            log.error("token失效，请重新登录");
+                        });
+                    }
+                    CheckException.check(!"1".equals(user.getKycStatus()), "实名认证未通过");
+                }
 
-//
-//            //APP权限
-//            if (userLogin.getUserType().equals(LoginType.APP.getType())) {
-//                PingUser user = null;
-//                if (authToken.active()) {
-//                    user = userMapper.selectById(userLogin.getUserId());
-//                    CheckException.checkToken(user == null);
-//                    CheckException.check(user.getActive().equals(UserConstant.OpenOrClose.ZERO), "用户未激活");
-//                }
-//
-//                if (authToken.kyc()) {
-//                    if (user == null) {
-//                        user = userMapper.selectById(userLogin.getUserId());
-//                        CheckException.checkToken(user == null);
-//                        CheckException.check(!user.getKycStatus().equals(UserConstant.KycStatus.adopt), "实名认证未通过");
-//                    }
-//                }
-//
-//                if (authToken.status()) {
-//                    if (user == null) {
-//                        user = userMapper.selectById(userLogin.getUserId());
-//                        CheckException.checkToken(user == null);
-//                        CheckException.check(user.getStatus().equals(UserConstant.OpenOrClose.ZERO), "用户被禁止");
-//                    }
-//                }
-//            } else if (userLogin.getUserType().equals(LoginType.WEB.getType())) {
-//                //WEB权限
-//                PingAdmin admin;
-//                if (authToken.status()) {
-//                    admin = adminMapper.selectById(userLogin.getUserId());
-//                    CheckException.checkToken(admin == null);
-//                    CheckException.check(admin.getStatus().equals(UserConstant.OpenOrClose.ZERO), "用户被禁止");
-//                }
-//            } else {
-//                //SHOP权限
-//                PingShopUser shopUser;
-//                if (authToken.status()) {
-//                    shopUser = shopUserMapper.selectById(userLogin.getUserId());
-//                    CheckException.checkToken(shopUser == null);
-//                    CheckException.check(shopUser.getStatus().equals(UserConstant.OpenOrClose.ZERO), "用户被禁止");
-//                }
-//            }
+                if (authToken.status()) {
+                    if (user == null) {
+                        user = userService.getById(fromToken.getUserId());
+                        CheckException.checkToken(user == null, () -> {
+                            log.error("token失效，请重新登录");
+                        });
+                    }
+                    CheckException.check("1".equals(user.getStatus()), "用户被禁止");
+                }
+            } else if (fromToken.getUserType().equals(LoginType.WEB.getType())) {
+            }
         }
         return true;
     }

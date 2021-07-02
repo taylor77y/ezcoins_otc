@@ -40,6 +40,10 @@ public class PaymentDetails {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date dueTime;
 
+    @ApiModelProperty(value = "待接单时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date pendingOrderTime;
+
     @ApiModelProperty(value = "收款方式")
     private List<EzPaymentMethod> paymentMethodList;
 

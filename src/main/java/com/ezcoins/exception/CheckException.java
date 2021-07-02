@@ -1,6 +1,7 @@
 package com.ezcoins.exception;
 
 import com.ezcoins.base.BaseException;
+import com.ezcoins.exception.jwt.TokenException;
 import com.ezcoins.utils.StringUtils;
 
 public class CheckException {
@@ -22,6 +23,23 @@ public class CheckException {
         }
     }
 
+    public static void check(boolean flag, String message, OnOperate onOperate) {
+        if (flag) {
+            if (onOperate != null) {
+                onOperate.operate();
+            }
+            throw new CommonException(message);
+        }
+    }
+
+    public static void checkToken(boolean flag, OnOperate onOperate) {
+        if (flag) {
+            if (onOperate != null) {
+                onOperate.operate();
+            }
+            throw new TokenException();
+        }
+    }
 
     public static void checkDb(int flag, OnOperate onOperate) {
         if (flag != 1) {
@@ -98,6 +116,8 @@ public class CheckException {
             throw new BaseException(message);
         }
     }
+
+
 
 
     public interface OnOperate {

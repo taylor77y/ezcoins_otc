@@ -23,10 +23,7 @@ import com.ezcoins.response.BaseResponse;
 import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponseList;
 import com.ezcoins.response.ResponsePageList;
-import com.ezcoins.utils.BeanUtils;
-import com.ezcoins.utils.EncoderUtil;
-import com.ezcoins.utils.Md5Util;
-import com.ezcoins.utils.StringUtils;
+import com.ezcoins.utils.*;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -89,11 +86,11 @@ public class OtcController {
         LambdaQueryWrapper<EzAdvertisingBusiness> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(EzAdvertisingBusiness::getUserId, userId1);
         EzAdvertisingBusiness one = advertisingBusinessService.getOne(lambdaQueryWrapper);
-        EzUser user = userService.getById(userId);
+        EzUser user = userService.getById(userId1);
         String kycStatus = user.getKycStatus();
         Date createTime = user.getCreateTime();
         String level = user.getLevel();
-        if (one.getAdvertisingName().equals(userId)  && StringUtils.isEmpty(userId)) {
+        if (StringUtils.isNotEmpty(userId) && one.getAdvertisingName().equals(userId)) {
             return Response.error("请先完善otc交易信息");
         }
         AdvertisingBusinessInfoRespDto advertisingBusinessInfoRespDto = new AdvertisingBusinessInfoRespDto();
@@ -101,6 +98,15 @@ public class OtcController {
         advertisingBusinessInfoRespDto.setKycStatus(kycStatus);
         advertisingBusinessInfoRespDto.setAdvertisingStatus(level);
         advertisingBusinessInfoRespDto.setRegistrationTime(createTime);
+        //三十天成单
+        LambdaQueryWrapper<EzOtcOrderMatch> q=new LambdaQueryWrapper<EzOtcOrderMatch>();
+        q.eq(EzOtcOrderMatch::getOtcOrderUserId,userId1);
+        q.eq(EzOtcOrderMatch::getStatus,MatchOrderStatus.COMPLETED);
+        Date ndayStart = DateUtils.getNdayStart(-30);
+        q.gt(EzOtcOrderMatch::getFinishTime,ndayStart);
+        q.lt(EzOtcOrderMatch::getFinishTime,DateUtils.getNowDate());
+        advertisingBusinessInfoRespDto.setMouthCount(orderMatchService.count());
+
         return Response.success(advertisingBusinessInfoRespDto);
     }
 
@@ -204,7 +210,7 @@ public class OtcController {
     @NoRepeatSubmit
     @ApiOperation(value = "用户 根据订单号下单 购买/出售")
     @PostMapping("placeAnOrder")
-    @AuthToken
+    @AuthToken(kyc = true)
     @Log(title = "下单", businessType = BusinessType.INSERT, operatorType = OperatorType.MOBILE)
     public Response<PaymentDetails> placeAnOrder(@RequestBody PlaceOrderReqDto placeOrderReqDto) {
         return otcOrderService.placeAnOrder(placeOrderReqDto);

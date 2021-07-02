@@ -70,8 +70,6 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
     @Autowired
     private EzPaymentInfoService paymentInfoService;
 
-    @Autowired
-    private EzAdvertisingBusinessService businessService;
 
     /***
      * @Description: 用户 取消订单（两个状态可取消订单  1：接单广告（卖家未接受订单）用户免费取消 2：接单广告/普通广告（用户未支付状态） 用户取消次数增加）
@@ -213,12 +211,6 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
         if (!accountService.balanceChangeSYNC(cList)) {// 资产变更异常
             throw new AccountOperationBusyException();
         }
-
-
-
-
-
-
         return BaseResponse.success();
     }
 
@@ -244,6 +236,17 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
      */
     @Override
     public BaseResponse sellOneKey(SellOneKeyReqDto sellOneKeyReqDto) {
+        //查看是否有未完成的的订单
+        LambdaQueryWrapper<EzOtcOrderMatch> matchLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        matchLambdaQueryWrapper.eq(EzOtcOrderMatch::getUserId, ContextHandler.getUserId());
+        matchLambdaQueryWrapper.eq(EzOtcOrderMatch::getStatus, MatchOrderStatus.PENDINGORDER.getCode()).or()
+                .eq(EzOtcOrderMatch::getStatus, MatchOrderStatus.WAITFORPAYMENT.getCode());
+        EzOtcOrderMatch orderMatch = baseMapper.selectOne(matchLambdaQueryWrapper);
+
+        if (orderMatch!=null){
+            return BaseResponse.error("请先完成当前未完成的订单")
+                    .data("orderMatchNo",orderMatch.getOrderMatchNo());
+        }
         LambdaQueryWrapper<EzOneSellConfig> queryWrapper=new LambdaQueryWrapper<>();
         queryWrapper.eq(EzOneSellConfig::getCoinName,sellOneKeyReqDto.getCoinName());
         EzOneSellConfig ezSellConfig = sellConfigService.getOne(queryWrapper);

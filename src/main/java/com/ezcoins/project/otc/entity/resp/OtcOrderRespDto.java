@@ -49,4 +49,7 @@ public class OtcOrderRespDto {
     @ApiModelProperty(value = "最大限额")
     private BigDecimal maximumLimit;
 
+    @ApiModelProperty(value = "是否为接单广告(0:是 1：否)")
+    private String isAdvertising;
+
 }

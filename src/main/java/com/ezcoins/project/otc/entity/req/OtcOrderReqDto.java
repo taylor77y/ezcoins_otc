@@ -49,13 +49,13 @@ public class OtcOrderReqDto {
     private String isAdvertising;
 
     @ApiModelProperty(value = "支付方式1")
-    private String paymentMethod1;
+    private Integer paymentMethod1;
 
     @ApiModelProperty(value = "支付方式2")
-    private String paymentMethod2;
+    private Integer paymentMethod2;
 
     @ApiModelProperty(value = "支付方式3")
-    private String paymentMethod3;
+    private Integer paymentMethod3;
 
     @ApiModelProperty(value = "付款期限(分钟)")
     @NotNull(message = "{付款期限不能为空}")

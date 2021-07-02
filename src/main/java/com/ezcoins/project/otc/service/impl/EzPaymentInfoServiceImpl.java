@@ -62,6 +62,7 @@ public class EzPaymentInfoServiceImpl extends ServiceImpl<EzPaymentInfoMapper, E
         String id = qrcodeTypeReqDto.getId();
         EzPaymentInfo paymentInfo = new EzPaymentInfo();
         BeanUtils.copyBeanProp(paymentInfo, qrcodeTypeReqDto);
+        paymentInfo.setUserId(ContextHandler.getUserId());
         if (StringUtils.isEmpty(id)) {//添加
             baseMapper.insert(paymentInfo);
         } else {//修改

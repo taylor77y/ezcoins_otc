@@ -66,11 +66,17 @@ public class OrderFailureListener {
         //取消订单
         if (status.equals(MatchOrderStatus.WAITFORPAYMENT.getCode())) {
             EzOtcOrderMatch match = matchService.getById(otcOrderMatchNo);
+            if (match==null){
+                return;
+            }
             match.setStatus(MatchOrderStatus.CANCELLED.getCode());
             matchService.updateById(match);
 
             //将订单匹配数量增加回去
             EzOtcOrder ezOtcOrder = otcOrderService.getById(match.getOrderNo());
+            if (ezOtcOrder==null){
+                return;
+            }
             ezOtcOrder.setQuotaAmount(ezOtcOrder.getQuotaAmount().subtract(match.getAmount()));
             otcOrderService.updateById(ezOtcOrder);
 
@@ -84,7 +90,7 @@ public class OrderFailureListener {
         }
         //接单广告取消
         if (status.equals(MatchOrderStatus.PENDINGORDER.getCode())) {
-            matchLambdaQueryWrapper.eq(EzOtcOrderMatch::getOrderMatchNo, otcOrderMatchNo).set(EzOtcOrderMatch::getStatus, MatchOrderStatus.ORDERBEENCANCELLED);
+            matchLambdaQueryWrapper.eq(EzOtcOrderMatch::getOrderMatchNo, otcOrderMatchNo).set(EzOtcOrderMatch::getStatus, MatchOrderStatus.ORDERBEENCANCELLED.getCode());
             matchService.update(null, matchLambdaQueryWrapper);
         }
         System.out.println("执行结束....");
