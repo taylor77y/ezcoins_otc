@@ -168,6 +168,7 @@ public class WithdrawOrderServiceImpl extends ServiceImpl<WithdrawOrderMapper, W
         BigDecimal fee = amount.multiply(one.getFeeRate()).add(one.getFee());
         withdrawOrder.setFee(fee);
         withdrawOrder.setCoinType(one.getCoinType());
+        withdrawOrder.setUserId(ContextHandler.getUserId());
         withdrawOrder.setMainCoinType(one.getMainCoinType());
         withdrawOrder.setCreateBy(ContextHandler.getUserName());
         baseMapper.insert(withdrawOrder);

@@ -208,9 +208,26 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
 
         //通过订单号查询到购买的订单
         String orderNo = placeOrderReqDto.getOrderNo();
-        EzOtcOrder ezOtcOrder = baseMapper.selectById(orderNo);
-        List<EzPaymentMethod> list=new ArrayList<>();
 
+        EzOtcOrder ezOtcOrder = baseMapper.selectById(orderNo);
+
+        Integer paymentMethod1 = ezOtcOrder.getPaymentMethod1();
+        Integer paymentMethod2 = ezOtcOrder.getPaymentMethod2();
+        Integer paymentMethod3 = ezOtcOrder.getPaymentMethod3();
+
+
+
+        List<EzPaymentMethod> paymentMethodList=new ArrayList<>();
+        if (StringUtils.isNotNull(paymentMethod1)){
+            paymentMethodList.add(paymentMethodService.getById(paymentMethod1-1));
+        }
+        if (StringUtils.isNotNull(paymentMethod2)){
+            paymentMethodList.add(paymentMethodService.getById(paymentMethod2-1));
+        }
+        if (StringUtils.isNotNull(paymentMethod3)){
+            paymentMethodList.add(paymentMethodService.getById(paymentMethod3-1));
+        }
+        details.setPaymentMethodList(paymentMethodList);
         if (null != orderMatch) {
             details.setAmount(orderMatch.getAmount());
             details.setCoinName(orderMatch.getCoinName());

@@ -191,6 +191,7 @@ public class OtcController {
     public ResponseList<OtcOrderRespDto> otcOrderList(@RequestBody OtcOrderQueryReqDto orderQueryReqDto) {
         return otcOrderService.otcOrderList(orderQueryReqDto);
     }
+
     @ApiOperation(value = "NEW ORDER")
     @PostMapping("newOrderList")
     @AuthToken
@@ -417,7 +418,6 @@ public class OtcController {
                     .eq(EzOtcOrderMatch::getStatus, MatchOrderStatus.WAITFORPAYMENT.getCode());
         }
         Page<EzOtcOrderMatch> matchPage = orderMatchService.page(page, queryWrapper);
-
         List<EzOtcOrderMatch> records = matchPage.getRecords();
 
         List<OrderRecordRespDto> orderRecordRespDtos = new ArrayList<>();

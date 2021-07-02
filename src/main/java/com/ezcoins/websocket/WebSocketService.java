@@ -26,9 +26,8 @@
 // * @Date： created in 15:56 2019/5/13
 // */
 //@Component
-//@ServerEndpoint("/connectWebSocket/{name}")
+//@ServerEndpoint("/connectWebSocket/{userId}")
 //public class WebSocketService {
-//
 //    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 //    /**
 //     * 在线人数
@@ -37,7 +36,7 @@
 //    /**
 //     * 以OTC昵称为key，WebSocket为对象保存起来
 //     */
-//    private static ConcurrentHashMap<String, Session> nameMap = new ConcurrentHashMap<String, Session>();
+//    private static ConcurrentHashMap<String, Session> userIdMap = new ConcurrentHashMap<String, Session>();
 //    /**
 //     * 会话
 //     */
@@ -50,46 +49,29 @@
 //    @Autowired
 //    private static final RedisCache redisCache = SpringUtils.getBean(RedisCache.class);
 //
-//
 //    /**
 //     * 连接建立成功调用的方法
 //     */
 //    @OnOpen
-//    public void onOpen(@PathParam("name") String userId,Session session) {
-//        this.session = session;
+//    public void onOpen(@PathParam("userId") String userId,Session session) {
+//        logger.info("现在来连接的客户id：" + session.getId() + "用户名：" + userId);
+//        this.userId=userId;
+//        this.session=session;
+//        userIdMap.put(userId,session);
 //        addOnlineCount();
 //    }
 //
-//
-//    /**
-//     * 建立连接
-//     *
-//     * @param session
-//     */
-//    @OnOpen
-//    public void onOpen(@PathParam("name") String userId, Session session) {
-//        if (null != nameMap.get(userId)) {
-//            clients.remove(userId);
-//            onlineNumber--;
-//        }
-//        onlineNumber++;
-//        logger.info("现在来连接的客户id：" + session.getId() + "用户名：" + userId);
-//        this.userId = userId;
-//        this.session = session;
-//        clients.put(userId, this);
-//        List<String> strings = redisCache.getCacheObject(Constants.WEBSOCKET_USER_CACHE+userId);
-//        if (null != strings) {
-//            for (int i = 0; i < strings.size(); i++) {
-//                try {
-//                    session.getBasicRemote().sendText(strings.get(i));
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        }
-//        logger.info("有新连接加入！ 当前在线人数" + onlineNumber);
+//    public static synchronized int getOnlineCount() {
+//        return onlineNumber;
 //    }
 //
+//    public static synchronized void addOnlineCount() {
+//        WebSocketService.onlineNumber++;
+//    }
+//
+//    public static synchronized void subOnlineCount() {
+//        WebSocketService.onlineNumber--;
+//    }
 //    @OnError
 //    public void onError(Session session, Throwable error) {
 //        logger.info("服务端发生了错误" + error.getMessage());
@@ -101,8 +83,7 @@
 //    @OnClose
 //    public void onClose() {
 //        onlineNumber--;
-//        clients.remove(userId);
-//        logger.info("有连接关闭！ 当前在线人数" + clients.size());
+//        userIdMap.remove(userId);
 //    }
 //
 //    /**
@@ -186,9 +167,6 @@
 //        }
 //    }
 //
-//    public static synchronized int getOnlineCount() {
-//        return onlineNumber;
-//    }
 //
 //}
 //
