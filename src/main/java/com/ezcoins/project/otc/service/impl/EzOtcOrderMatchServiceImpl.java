@@ -69,6 +69,8 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
 
     @Autowired
     private EzPaymentInfoService paymentInfoService;
+    @Autowired
+    private EzOtcOrderPaymentService orderPaymentService;
 
 
     /***
@@ -84,28 +86,29 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
         String userId = ContextHandler.getUserId();
         //根据订单号查询到订单
         EzOtcOrderMatch orderMatch = baseMapper.selectById(matchOrderNo);
-
+        if ("0".equals(orderMatch.getType())){
+            return BaseResponse.error(MessageUtils.message("该订单类型不能取消"));
+        }
         //查看订单状态
         if (orderMatch.getStatus().equals(MatchOrderStatus.PENDINGORDER.getCode())) {
             //用户免费取消
             orderMatch.setStatus(MatchOrderStatus.ORDERBEENCANCELLED.getCode());
         } else if (orderMatch.getStatus().equals(MatchOrderStatus.WAITFORPAYMENT.getCode())) {
             orderMatch.setStatus(MatchOrderStatus.CANCELLED.getCode());
-
             //将订单匹配数量增加回去
             EzOtcOrder ezOtcOrder = otcOrderService.getById(orderMatch.getOrderNo());
             ezOtcOrder.setQuotaAmount(ezOtcOrder.getQuotaAmount().subtract(orderMatch.getAmount()));
             otcOrderService.updateById(ezOtcOrder);
-
             //查询当前用户取消订单数量
             int count = 1;
-            if (null != redisCache.getCacheObject(RedisConstants.CANCEL_ORDER_COUNT_KEY + userId)) {
-                count = redisCache.getCacheObject(RedisConstants.CANCEL_ORDER_COUNT_KEY + userId);
+            Object object = redisCache.getCacheObject(RedisConstants.CANCEL_ORDER_COUNT_KEY + userId);
+            if (null != object) {
+                count =(Integer) object;
                 count += 1; //用户取消次数增加
             }
             redisCache.setCacheObject(RedisConstants.CANCEL_ORDER_COUNT_KEY + userId, count, Math.toIntExact(DateUtils.getSecondsNextEarlyMorning()), TimeUnit.SECONDS);
         } else {
-            throw new BaseException("订单状态已发生变化");
+            throw new BaseException(MessageUtils.message("订单状态已发生变化"));
         }
         baseMapper.updateById(orderMatch);
         return BaseResponse.success();
@@ -273,8 +276,9 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
         b.setFrozen(total);
         b.setFee(fee);
         b.setMainType(CoinConstants.MainType.FROZEN.getType());
-        accountService.balanceChangeSYNC(cList);
-
+        if (!accountService.balanceChangeSYNC(cList)) {// 资产变更异常
+            throw new AccountOperationBusyException();
+        }
         //生成 订单（订单类型一键）
         EzOtcOrderMatch match = new EzOtcOrderMatch();
         //得到订单号
@@ -285,7 +289,7 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
         match.setAmount(amount);
         match.setCoinName(sellOneKeyReqDto.getCoinName());
         match.setTotalPrice(amount.multiply(ezSellConfig.getPrice()));
-        match.setPaymentInfoId(sellOneKeyReqDto.getPaymentInfoId());
+        match.setOrderPaymentId(sellOneKeyReqDto.getPaymentInfoId());
         match.setOrderType("2");
         match.setType("1");
         return BaseResponse.success();
@@ -317,7 +321,6 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
         });
         Page<EzOtcOrderMatch> ezOtcOrderMatchPage = baseMapper.selectPage(page, queryWrapper);
         List<OrderRecordRespDto> orderRecordRespDtos = new ArrayList<>();
-
         ezOtcOrderMatchPage.getRecords().forEach(e -> {
             OrderRecordRespDto orderRecordRespDto = new OrderRecordRespDto();
             BeanUtils.copyBeanProp(orderRecordRespDto, e);
@@ -326,11 +329,9 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
                     && !e.getStatus().equals(MatchOrderStatus.REFUSE.getCode())) {
                 if (e.getStatus().equals(MatchOrderStatus.WAITFORPAYMENT.getCode())) {
                 } else {
-                    orderRecordRespDto.setPaymentInfo(paymentInfoService.getById(e.getPaymentInfoId()));
+                    orderRecordRespDto.setEzOtcOrderPayment(orderPaymentService.getById(e.getOrderPaymentId()));
                 }
             }
-
-
             orderRecordRespDtos.add(orderRecordRespDto);
         });
         return ResponseList.success(orderRecordRespDtos);

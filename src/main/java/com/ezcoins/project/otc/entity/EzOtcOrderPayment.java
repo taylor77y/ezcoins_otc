@@ -24,11 +24,14 @@ public class EzOtcOrderPayment implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @ApiModelProperty(value = "id")
-      @TableId(value = "id", type = IdType.AUTO)
+    @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
     @ApiModelProperty(value = "匹配订单号")
     private String orderMatchNo;
+
+    @ApiModelProperty(value = "发布订单号")
+    private String orderNo;
 
     @ApiModelProperty(value = "开户银行名")
     private String bankName;
@@ -45,5 +48,7 @@ public class EzOtcOrderPayment implements Serializable {
     @ApiModelProperty(value = "收款二维码类型：1:银行 2：支付宝 3：微信")
     private Integer paymentMethodId;
 
+    @ApiModelProperty(value = " 0：发布订单  1：匹配订单")
+    private String type;
 
 }

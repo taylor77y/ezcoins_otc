@@ -48,6 +48,9 @@ public class PaymentDetails {
     @ApiModelProperty(value = "广告类型(0:买  1：卖)")
     private String type;
 
+    @ApiModelProperty(value = "是否为接单广告(0:是 1：否)")
+    private String isAdvertising;
+
     @ApiModelProperty(value = "订单状态(1:接单已取消 2:待接单 3：已取消 4：等待支付 5：已支付 6：已完成)")
     private String status;
 

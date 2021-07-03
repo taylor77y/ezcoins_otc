@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -33,6 +34,9 @@ public class AdvertisingBusinessInfoRespDto {
     @ApiModelProperty(value = "注册时间")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date registrationTime;
+
+    @ApiModelProperty(value = "保证金")
+    private BigDecimal margin;
 
     @ApiModelProperty(value = "实名认证状态 状态：0:已认证 1：未认证 ")
     private String kycStatus;

@@ -1,5 +1,6 @@
 package com.ezcoins.project.otc.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.ezcoins.base.BaseException;
 import com.ezcoins.constant.enums.otc.PaymentMethod;
 import com.ezcoins.context.ContextHandler;
@@ -51,8 +52,9 @@ public class EzPaymentInfoServiceImpl extends ServiceImpl<EzPaymentInfoMapper, E
                 return BaseResponse.error(MessageUtils.message("请先上传支付二维码"));
             }
         }
+        String userId = ContextHandler.getUserId();
         String realName = qrcodeTypeReqDto.getRealName();
-        EzUserKyc one = kycService.getOneApprove(ContextHandler.getUserId());
+        EzUserKyc one = kycService.getOneApprove(userId);
         if (null == one) {
             throw new BaseException(MessageUtils.message("用户实名认证尚未通过"));
         }
@@ -62,8 +64,16 @@ public class EzPaymentInfoServiceImpl extends ServiceImpl<EzPaymentInfoMapper, E
         String id = qrcodeTypeReqDto.getId();
         EzPaymentInfo paymentInfo = new EzPaymentInfo();
         BeanUtils.copyBeanProp(paymentInfo, qrcodeTypeReqDto);
-        paymentInfo.setUserId(ContextHandler.getUserId());
+        paymentInfo.setUserId(userId);
         if (StringUtils.isEmpty(id)) {//添加
+            //查看是否纯在此支付方式
+            LambdaQueryWrapper<EzPaymentInfo> lambdaQueryWrapper=new LambdaQueryWrapper<>();
+            lambdaQueryWrapper.eq(EzPaymentInfo::getUserId,userId);
+            lambdaQueryWrapper.eq(EzPaymentInfo::getPaymentMethodId,qrcodeTypeReqDto.getPaymentMethodId());
+            Integer integer = baseMapper.selectCount(lambdaQueryWrapper);
+            if (integer!=0){
+                return BaseResponse.error(MessageUtils.message("每种支付方式只能上传一种"));
+            }
             baseMapper.insert(paymentInfo);
         } else {//修改
             baseMapper.updateById(paymentInfo);

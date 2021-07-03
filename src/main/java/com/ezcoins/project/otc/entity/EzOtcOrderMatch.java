@@ -90,6 +90,6 @@ public class EzOtcOrderMatch implements Serializable {
     private String type;
 
     @ApiModelProperty(value = "支付详情id")
-    private String paymentInfoId;
+    private String orderPaymentId;
 
 }

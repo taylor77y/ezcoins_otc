@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ezcoins.base.BaseException;
+import com.ezcoins.constant.RecordSonType;
 import com.ezcoins.constant.enums.coin.CoinConstants;
 import com.ezcoins.constant.enums.otc.MatchOrderStatus;
 import com.ezcoins.constant.interf.IndexOrderNoKey;
@@ -110,16 +111,14 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         businessLambdaQueryWrapper.eq(EzAdvertisingBusiness::getAdvertisingName, userId1);
         businessLambdaQueryWrapper.eq(EzAdvertisingBusiness::getUserId, userId1);
         if (advertisingBusinessService.count(businessLambdaQueryWrapper) == 1) {
-            return BaseResponse.error(MessageUtils.message("请先完善otc交易信息"));
+            return BaseResponse.error(MessageUtils.message("请先完善otc交易信息")).code(700);
         }
-
         LambdaQueryWrapper<Type> queryWrapper = new LambdaQueryWrapper<Type>();
         queryWrapper.eq(Type::getCoinName, otcOrderReqDto.getCoinName());
         Type coinType = typeService.getOne(queryWrapper);//查询到币种
         if ("1".equals(coinType.getOtcStatus())) {
             return BaseResponse.error(MessageUtils.message("当前币种OTC交易尚未开"));
         }
-
         //获得订单号  国家代码+订单日期
         String currencyCode = otcOrderReqDto.getCurrencyCode();
         LambdaQueryWrapper<EzCountryConfig> configLambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -128,13 +127,11 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         String countryCode = one.getCountryCode();//国家编号
         String orderNo = orderIndexService.getOrderNo(countryCode, IndexOrderNoKey.ORDER_INFO);
 
-        BigDecimal amount = otcOrderReqDto.getTotalAmount();
+        BigDecimal amount = otcOrderReqDto.getTotalAmount();//发布数量
         String userId = ContextHandler.getUserId();
-        EzOtcConfig otcConfig = otcConfigService.getById(1);
-
+        EzOtcConfig otcConfig = otcConfigService.getById(1);//otc配置
         BigDecimal minimumLimit = otcOrderReqDto.getMinimumLimit();
         BigDecimal maximumLimit = otcOrderReqDto.getMaximumLimit();
-
         if (maximumLimit.compareTo(otcConfig.getMaxAmount()) > 0) {
             return BaseResponse.error(MessageUtils.message("超过限额"));
         }
@@ -147,16 +144,18 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         }
         //冻结卖出的USDT
         List<BalanceChange> cList = new ArrayList<>();
+
+        BalanceChange b = new BalanceChange();
+        b.setCoinName(otcOrderReqDto.getCoinName());
+        b.setUserId(userId);
+        b.setIncomeType(CoinConstants.IncomeType.PAYOUT.getType());
+        b.setMainType(CoinConstants.MainType.RELEASEORDER.getType());
         //判断订单 买卖
         if ("0".equals(otcOrderReqDto.getType())) {//买
             BigDecimal advertisingFeeRatio = coinType.getOtcFeeRatio();//比例手续费
             BigDecimal fee = advertisingFeeRatio.multiply(amount);//手续费
-            BalanceChange b = new BalanceChange();
-            b.setCoinName(otcOrderReqDto.getCoinName());
             b.setAvailable(fee.negate());
-            b.setIncomeType(CoinConstants.IncomeType.PAYOUT.getType());
-            b.setUserId(userId);
-            b.setMainType(CoinConstants.MainType.HANDLINGFEE.getType());
+            b.setSonType(RecordSonType.RELEASE_BUY_ORDER);//手续费
             b.setFee(fee);
             cList.add(b);
         } else if ("1".equals(otcOrderReqDto.getType())) {//卖
@@ -165,17 +164,32 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
             BigDecimal advertisingFeeRatio = coinType.getOtcFeeRatio();//比例手续费
             BigDecimal fee = advertisingFeeRatio.multiply(amount);//手续费
             BigDecimal totalAmount = amount.add(fee);//总扣除
-            BalanceChange b = new BalanceChange();
-            b.setCoinName(otcOrderReqDto.getCoinName());
-            b.setAvailable(totalAmount.negate());
             b.setFrozen(amount);
-            b.setIncomeType(CoinConstants.IncomeType.PAYOUT.getType());
-            b.setUserId(userId);
-            b.setMainType(CoinConstants.MainType.FROZEN.getType());
+            b.setAvailable(totalAmount.negate());
+            b.setSonType(RecordSonType.RELEASE_SELL_ORDER);
             b.setFee(fee);
             cList.add(b);
+            Integer paymentMethod1 = otcOrderReqDto.getPaymentMethod1();
+            Integer paymentMethod2 = otcOrderReqDto.getPaymentMethod2();
+            Integer paymentMethod3 = otcOrderReqDto.getPaymentMethod3();
+            LambdaQueryWrapper<EzPaymentInfo> queryWrapper1 = new LambdaQueryWrapper<>();
+            queryWrapper1.eq(EzPaymentInfo::getPaymentMethodId, paymentMethod1).or().
+                    eq(EzPaymentInfo::getPaymentMethodId, paymentMethod2).or().
+                    eq(EzPaymentInfo::getPaymentMethodId, paymentMethod3);
+            queryWrapper1.eq(EzPaymentInfo::getUserId, userId);
+            List<EzPaymentInfo> list = paymentInfoService.list(queryWrapper1);
+            List<EzOtcOrderPayment> list1 = new ArrayList<EzOtcOrderPayment>();
+            list.forEach(e -> {
+                EzOtcOrderPayment ezOtcOrderPayment = new EzOtcOrderPayment();
+                BeanUtils.copyBeanProp(ezOtcOrderPayment, e);
+                ezOtcOrderPayment.setType("0");
+                ezOtcOrderPayment.setOrderNo(orderNo);
+                list1.add(ezOtcOrderPayment);
+            });
+            paymentService.saveBatch(list1);
         }
         accountService.balanceChangeSYNC(cList);
+
         EzOtcOrder ezOtcOrder = new EzOtcOrder();
         ezOtcOrder.setOrderNo(orderNo);
         ezOtcOrder.setFrozeAmount(amount);
@@ -185,6 +199,7 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         baseMapper.insert(ezOtcOrder);
         return BaseResponse.success();
     }
+
 
     /**
      * @param placeOrderReqDto
@@ -196,7 +211,6 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
      */
     @Override
     public Response<PaymentDetails> placeAnOrder(PlaceOrderReqDto placeOrderReqDto) {
-        PaymentDetails details = new PaymentDetails();
         String userId = ContextHandler.getUserId();
         //查询当前用户是否被取消订单是否超过规定数量
         //获取otc基本配置
@@ -207,6 +221,7 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         if (object != null && (Integer) object > maxCancelNum) {//5后面从配置数据库得到
             return Response.error(MessageUtils.message("你今天取消次数超过上线,每天再来"));
         }
+        PaymentDetails details = new PaymentDetails();
         //查看用户是否有未完成的订单
         LambdaQueryWrapper<EzOtcOrderMatch> matchLambdaQueryWrapper = new LambdaQueryWrapper<>();
         matchLambdaQueryWrapper.eq(EzOtcOrderMatch::getUserId, userId);
@@ -217,15 +232,22 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         //通过订单号查询到购买的订单
         String orderNo = placeOrderReqDto.getOrderNo();
         EzOtcOrder ezOtcOrder = baseMapper.selectById(orderNo);
-
         if (null != orderMatch) {
-            LambdaQueryWrapper<EzOtcOrderPayment> paymentLambdaQueryWrapper = new LambdaQueryWrapper<>();
-            paymentLambdaQueryWrapper.eq(EzOtcOrderPayment::getOrderMatchNo, orderMatch.getOrderMatchNo());
-            details.setEzOtcOrderPayments(paymentService.list(paymentLambdaQueryWrapper));
+            //判断订单类型
+            if ("0".equals(orderMatch.getType())) {//买单
+                LambdaQueryWrapper<EzOtcOrderPayment> paymentLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                paymentLambdaQueryWrapper.eq(EzOtcOrderPayment::getOrderNo, orderMatch.getOrderMatchNo());
+                details.setEzOtcOrderPayments(paymentService.list(paymentLambdaQueryWrapper));
+            } else {//卖单   查询发布订单的支付详情
+                LambdaQueryWrapper<EzOtcOrderPayment> paymentLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                paymentLambdaQueryWrapper.eq(EzOtcOrderPayment::getOrderNo, orderMatch.getOrderNo());
+                details.setEzOtcOrderPayments(paymentService.list(paymentLambdaQueryWrapper));
+            }
             details.setAmount(orderMatch.getAmount());
             details.setCoinName(orderMatch.getCoinName());
             details.setOrderMatchNo(orderMatch.getOrderMatchNo());
             details.setDueTime(orderMatch.getDueTime());
+            details.setIsAdvertising(ezOtcOrder.getIsAdvertising());
             details.setTotalPrice(orderMatch.getTotalPrice());
             details.setAdvertisingName(orderMatch.getAdvertisingName());
             details.setPrice(orderMatch.getPrice());
@@ -233,6 +255,21 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
             details.setType(orderMatch.getType());
             return Response.success(MessageUtils.message("请先完成当前未完成的订单"), details);//将订单返回
         }
+
+
+
+        //判断用户注册的国籍是否满足购买条件
+        String currencyCode = ezOtcOrder.getCurrencyCode();
+        EzUser user = userService.getById(userId);
+        String countryCode = user.getCountryCode();
+        //通过国家编号查询到国家
+        LambdaQueryWrapper<EzCountryConfig> configLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        configLambdaQueryWrapper.eq(EzCountryConfig::getCountryCode, countryCode);
+        EzCountryConfig one = countryConfigService.getOne(configLambdaQueryWrapper);
+        if (!one.getCurrencyCode().equals(currencyCode)) {
+            throw new BaseException(null, "701", null, "根据您注册所在地的相关规定，您只能交易本地区的法币");
+        }
+
         BigDecimal maximumLimit = ezOtcOrder.getMaximumLimit();//最大限额
         BigDecimal minimumLimit = ezOtcOrder.getMinimumLimit();//最小限额
         BigDecimal amount = placeOrderReqDto.getAmount();//购买数量
@@ -240,26 +277,12 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         if (amount.compareTo(maximumLimit) > 0 || amount.compareTo(minimumLimit) < 0) {
             return Response.error(MessageUtils.message("输入数量不满足条件范围"));
         }
-
         BigDecimal totalAmount = ezOtcOrder.getTotalAmount();//广告总数量
         BigDecimal quotaAmount = ezOtcOrder.getQuotaAmount();//匹配数量
         BigDecimal nuQuotaAmount = totalAmount.subtract(quotaAmount);//未匹配的数量
-
         //判断冻结数量/未匹配的数量  是否大于购买数量
         if (nuQuotaAmount.compareTo(amount) < 0) {
             return Response.error("订单数量已发生改变");
-        }
-        //判断用户注册的国籍是否满足购买条件
-        String currencyCode = ezOtcOrder.getCurrencyCode();
-        EzUser user = userService.getById(userId);
-        String countryCode = user.getCountryCode();
-
-        //通过国家编号查询到国家
-        LambdaQueryWrapper<EzCountryConfig> configLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        configLambdaQueryWrapper.eq(EzCountryConfig::getCountryCode, countryCode);
-        EzCountryConfig one = countryConfigService.getOne(configLambdaQueryWrapper);
-        if (!one.getCurrencyCode().equals(currencyCode)) {
-            throw new BaseException(null, "701", null, "根据您注册所在地的相关规定，您只能交易本地区的法币");
         }
 
         //OTC信息
@@ -285,12 +308,15 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         match.setCoinName(ezOtcOrder.getCoinName());
         match.setAdvertisingName(advertisingBusiness.getAdvertisingName());
 
+
         details.setAmount(placeOrderReqDto.getAmount());
+        details.setIsAdvertising(ezOtcOrder.getIsAdvertising());
         details.setCoinName(ezOtcOrder.getCoinName());
         details.setOrderMatchNo(orderMatchNo);
         details.setTotalPrice(totalPrice);
         details.setAdvertisingName(advertisingBusiness.getAdvertisingName());
         details.setPrice(ezOtcOrder.getPrice());
+
         //查看订单是否为接单广告
         String isAdvertising = ezOtcOrder.getIsAdvertising();
 
@@ -298,37 +324,56 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         Integer paymentMethod1 = ezOtcOrder.getPaymentMethod1();
         Integer paymentMethod2 = ezOtcOrder.getPaymentMethod2();
         Integer paymentMethod3 = ezOtcOrder.getPaymentMethod3();
-        LambdaQueryWrapper<EzPaymentInfo> lambdaQueryWrapper=new LambdaQueryWrapper<>();
-        if ("1".equals(ezOtcOrder.getType())){//卖单
-            lambdaQueryWrapper.eq(EzPaymentInfo::getUserId,userId);
-        }else {
-            lambdaQueryWrapper.eq(EzPaymentInfo::getUserId,ezOtcOrder.getUserId());
+        List<Integer> list1=new ArrayList();
+        if (null!=paymentMethod1){
+            list1.add(paymentMethod1);
         }
-        lambdaQueryWrapper.eq(EzPaymentInfo::getPaymentMethodId,paymentMethod1).or()
-                .eq(EzPaymentInfo::getPaymentMethodId,paymentMethod2).or()
-                .eq(EzPaymentInfo::getPaymentMethodId,paymentMethod3);
-        List<EzPaymentInfo> ezPaymentInfos = paymentInfoService.list(lambdaQueryWrapper);
-        if ("1".equals(ezOtcOrder.getType()) && null==ezPaymentInfos){//卖单
-            return Response.error("未匹配到支付方式");
+        if (null!=paymentMethod2){
+            list1.add(paymentMethod2);
         }
-        List<EzOtcOrderPayment> ezOtcOrderPayments=new ArrayList<>();
-        ezPaymentInfos.forEach(e->{
-            EzOtcOrderPayment ezOtcOrderPayment = new EzOtcOrderPayment();
-            ezOtcOrderPayment.setOrderMatchNo(orderMatchNo);
-            ezOtcOrderPayment.setPaymentQrCode(e.getPaymentQrCode());
-            ezOtcOrderPayment.setAccountNumber(e.getAccountNumber());
-            ezOtcOrderPayment.setBankName(e.getBankName());
-            ezOtcOrderPayment.setRealName(e.getRealName());
-            paymentService.save(ezOtcOrderPayment);
-            ezOtcOrderPayments.add(ezOtcOrderPayment);
+        if (null!=paymentMethod3){
+            list1.add(paymentMethod3);
+        }
 
-        });
-        details.setEzOtcOrderPayments(ezOtcOrderPayments);
-        
-        
-        if ("1".equals(isAdvertising) || "1".equals(ezOtcOrder.getType())) {//不为接单广告 并且为卖单
-            match.setStatus(MatchOrderStatus.WAITFORPAYMENT.getCode()); //不是接单广告直接进入待支付状态
-            details.setStatus(MatchOrderStatus.WAITFORPAYMENT.getCode()); //不是接单广告直接进入待支付状态
+        if ("1".equals(ezOtcOrder.getType())) {//卖单的时候
+            LambdaQueryWrapper<EzOtcOrderPayment> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+            lambdaQueryWrapper.eq(EzOtcOrderPayment::getOrderNo, ezOtcOrder.getOrderNo());
+            List<EzOtcOrderPayment> list = paymentService.list(lambdaQueryWrapper);
+            //根据发布订单号查询到支付详情
+            details.setEzOtcOrderPayments(list);
+
+        } else {//买的时候
+            LambdaQueryWrapper<EzPaymentInfo> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+            lambdaQueryWrapper.eq(EzPaymentInfo::getUserId, ezOtcOrder.getUserId());
+            lambdaQueryWrapper.in(EzPaymentInfo::getPaymentMethodId,list1);
+            List<EzPaymentInfo> ezPaymentInfos = paymentInfoService.list(lambdaQueryWrapper);
+
+
+            if (null == ezPaymentInfos) {//买单
+                throw new BaseException(null, "801", null, "未匹配到支付方式");
+            }
+            List<EzOtcOrderPayment> ezOtcOrderPayments = new ArrayList<>();
+
+            List<EzOtcOrderPayment> ezOtcOrderPayments1 = new ArrayList<>();
+            ezPaymentInfos.forEach(e -> {
+                EzOtcOrderPayment ezOtcOrderPayment = new EzOtcOrderPayment();
+                ezOtcOrderPayment.setOrderMatchNo(orderMatchNo);
+                ezOtcOrderPayment.setPaymentQrCode(e.getPaymentQrCode());
+                ezOtcOrderPayment.setAccountNumber(e.getAccountNumber());
+                ezOtcOrderPayment.setBankName(e.getBankName());
+                ezOtcOrderPayment.setRealName(e.getRealName());
+                ezOtcOrderPayment.setPaymentMethodId(e.getPaymentMethodId());
+                ezOtcOrderPayment.setType("1");
+                ezOtcOrderPayments1.add(ezOtcOrderPayment);
+                ezOtcOrderPayments.add(ezOtcOrderPayment);
+            });
+            paymentService.saveBatch(ezOtcOrderPayments1);
+            details.setEzOtcOrderPayments(ezOtcOrderPayments);
+        }
+
+        if ("1".equals(isAdvertising) || "0".equals(ezOtcOrder.getType())) {//不为接单广告 或者为买单
+            match.setStatus(MatchOrderStatus.WAITFORPAYMENT.getCode());
+            details.setStatus(MatchOrderStatus.WAITFORPAYMENT.getCode());
             //增加商家匹配数量
             ezOtcOrder.setQuotaAmount(quotaAmount.add(placeOrderReqDto.getAmount()));
             //订单到期时间=当前时间+付款期限(分钟)   根据用户设置的订单付款期限
@@ -342,8 +387,6 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
                     RabbitMQConfiguration.routingKeyOrder, //订单定routingKey
                     orderMatchNo + "_" + MatchOrderStatus.WAITFORPAYMENT.getCode() //订单号   这里可以传对象 比如直接传订单对象
                     , message -> {
-                        // 如果配置了 params.put("x-message-ttl", 5 * 1000);
-                        // 那么这一句也可以省略,具体根据业务需要是声明 Queue 的时候就指定好延迟时间还是在发送自己控制时间
                         message.getMessageProperties().setExpiration(1000 * 60 * prompt + "");
                         return message;
                     });
@@ -354,6 +397,7 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
             Integer prompt = otcConfig.getOrderTime();//付款期限(分钟)
             Date beForeTime = DateUtils.getBeForeTime(prompt);
             match.setDueTime(beForeTime);
+            details.setDueTime(beForeTime);
             //TODO: 将订单存入rabbitmq进行死信通信  时间到了就取消订单  接单时间根据otc设置而定
             this.rabbitTemplate.convertAndSend(
                     RabbitMQConfiguration.orderExchange, //发送至订单交换机
@@ -370,7 +414,7 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         return Response.success("下单成功", details);//将订单返回
     }
 
-    /***
+    /**
      * @Description: 商户 下架广告订单
      * @Param: [orderNo]
      * @return: com.ezcoins.response.BaseResponse
@@ -386,15 +430,13 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         matchLambdaQueryWrapper.eq(EzOtcOrderMatch::getStatus, MatchOrderStatus.WAITFORPAYMENT).or().
                 eq(EzOtcOrderMatch::getStatus, MatchOrderStatus.PAID).or().
                 eq(EzOtcOrderMatch::getStatus, MatchOrderStatus.PENDINGORDER);
-
         List<EzOtcOrderMatch> list = orderMatchService.list(matchLambdaQueryWrapper);
         if (list.size() > 0) {
-            return BaseResponse.error("下架失败!有用户订单未完成,请先处理");
+            return BaseResponse.error(MessageUtils.message("下架失败!有用户订单未完成,请先处理"));
         }
         //订单状态（0：正常 1：已下架）
         //根据订单号查询到订单
         EzOtcOrder ezOtcOrder = baseMapper.selectById(orderNo);
-
         if ("1".equals(ezOtcOrder.getType())) {
             BigDecimal frozeAmount = ezOtcOrder.getFrozeAmount();
             //TODO: 将冻结数量返回商户的资产中
@@ -412,17 +454,15 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
             if (!accountService.balanceChangeSYNC(cList)) {// 资产变更异常
                 throw new AccountOperationBusyException();
             }
-
         }
         //改变订单状态
         ezOtcOrder.setStatus("1");
         ezOtcOrder.setEndTime(DateUtils.getNowDate());
         baseMapper.updateById(ezOtcOrder);
-
         return BaseResponse.success();
     }
 
-    /***
+    /**
      * @Description: 商户 接单(订单广告)
      * @Param: [matchOrderNo]
      * @return: com.ezcoins.response.BaseResponse
@@ -435,7 +475,7 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         //根据订单号查询订单
         EzOtcOrderMatch orderMatch = orderMatchService.getById(orderOperateReqDto.getMatchOrderNo());
         if (!orderMatch.getStatus().equals(MatchOrderStatus.PENDINGORDER.getCode())) {
-            throw new BaseException("订单状态已发生变化");
+            throw new BaseException(MessageUtils.message("订单状态已发生变化"));
         }
         if ("1".equals(orderOperateReqDto.getOperate())) {
             //拒绝接受订单
@@ -452,27 +492,22 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         BigDecimal quotaAmount = ezOtcOrder.getQuotaAmount();
         //未匹配的数量
         BigDecimal nuQuotaAmount = totalAmount.subtract(quotaAmount);
-
         if (amount.compareTo(nuQuotaAmount) > 0) {
-            //拒绝接受订单
-            orderMatch.setStatus(MatchOrderStatus.ORDERBEENCANCELLED.getCode());
-            orderMatchService.updateById(orderMatch);
-            return BaseResponse.error("订单数量不足 已取消接受定单");
+            return BaseResponse.error(MessageUtils.message("订单数量不足"));
         }
         //订单到期时间=当前时间+付款期限(分钟)   根据用户设置的订单付款期限
         Integer prompt = ezOtcOrder.getPrompt();//付款期限(分钟)
         Date beForeTime = DateUtils.getBeForeTime(prompt);
         orderMatch.setDueTime(beForeTime);
-
         //修改订单状态
         orderMatch.setStatus(MatchOrderStatus.WAITFORPAYMENT.getCode());
         orderMatchService.updateById(orderMatch);
-
         //增加商家匹配数量
         ezOtcOrder.setQuotaAmount(quotaAmount.add(amount));
         baseMapper.updateById(ezOtcOrder);
         return BaseResponse.success();
     }
+
 
     /**
      * app订单列表

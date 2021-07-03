@@ -182,13 +182,13 @@ public class ConsumerController extends BaseController {
         EzAdvertisingApprove advertisingApprove = approveService.getOne(queryWrapper);
         if (StringUtils.isNotNull(advertisingApprove)) {
             if (advertisingApprove.getStatus().equals(KycStatus.REFUSE.getCode())) {
-                verifiedInfoRespDto.setKycStatus("2");
+                verifiedInfoRespDto.setAdvertisingStatus("2");
             }
             if (advertisingApprove.getStatus().equals(KycStatus.PENDINGREVIEW.getCode()) || advertisingApprove.getStatus().equals(KycStatus.BY.getCode())) {
                 if (advertisingApprove.getStatus().equals(KycStatus.BY.getCode())) {
-                    verifiedInfoRespDto.setKycStatus("0");
+                    verifiedInfoRespDto.setAdvertisingStatus("0");
                 } else {
-                    verifiedInfoRespDto.setKycStatus("1");
+                    verifiedInfoRespDto.setAdvertisingStatus("1");
                 }
                 verifiedInfoRespDto.setMargin(advertisingApprove.getMargin());
             }

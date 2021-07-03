@@ -60,6 +60,8 @@ public class OtcController {
     private EzOtcChatMsgService otcChatMsgService;
     @Autowired
     private EzUserService userService;
+    @Autowired
+    private EzOtcOrderPaymentService orderPaymentService;
     @NoRepeatSubmit
     @AuthToken
     @ApiOperation(value = "完善otc交易信息")
@@ -68,27 +70,45 @@ public class OtcController {
     public BaseResponse otcSetting(@RequestBody OtcSettingReqDto otcSettingReqDto) {
         return businessService.otcSetting(otcSettingReqDto);
     }
+    @GetMapping("isUpdateAdName")
+    @ApiOperation(value = "判断是否修改过昵称")
+    @AuthToken
+    public BaseResponse isUpdateAdName() {
+        String userId = ContextHandler.getUserId();
+        LambdaQueryWrapper<EzAdvertisingBusiness> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(EzAdvertisingBusiness::getUserId,userId);
+        EzAdvertisingBusiness one = advertisingBusinessService.getOne(lambdaQueryWrapper);
+        if (one.getAdvertisingName().equals(userId)){
+            return BaseResponse.error();
+        }else {
+            return BaseResponse.success();
+        }
+    }
     @ApiOperation(value = "OTC 交易信息")
     @PostMapping({"advertisingBusiness/{userId}","advertisingBusiness"})
     @AuthToken
     public Response<AdvertisingBusinessInfoRespDto> advertisingBusiness(@PathVariable(value = "userId", required = false) String userId) {
         String userId2 = ContextHandler.getUserId();
         String userId1 = StringUtils.isNotEmpty(userId) ? userId : userId2;
+
         LambdaQueryWrapper<EzAdvertisingBusiness> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(EzAdvertisingBusiness::getUserId, userId1);
         EzAdvertisingBusiness one = advertisingBusinessService.getOne(lambdaQueryWrapper);
+
+
         EzUser user = userService.getById(userId1);
         String kycStatus = user.getKycStatus();
         Date createTime = user.getCreateTime();
         String level = user.getLevel();
         if (StringUtils.isEmpty(userId) && one.getAdvertisingName().equals(userId2)) {
-            return Response.error(MessageUtils.message("请先完善otc交易信息"));
+            return Response.error(MessageUtils.message("请先完善otc交易信息"),700);
         }
         AdvertisingBusinessInfoRespDto advertisingBusinessInfoRespDto = new AdvertisingBusinessInfoRespDto();
         BeanUtils.copyBeanProp(advertisingBusinessInfoRespDto,one);
         advertisingBusinessInfoRespDto.setKycStatus(kycStatus);
         advertisingBusinessInfoRespDto.setAdvertisingStatus(level);
         advertisingBusinessInfoRespDto.setRegistrationTime(createTime);
+        advertisingBusinessInfoRespDto.setMargin(one.getMargin());
         //三十天成单
         LambdaQueryWrapper<EzOtcOrderMatch> q=new LambdaQueryWrapper<EzOtcOrderMatch>();
         q.eq(EzOtcOrderMatch::getOtcOrderUserId,userId1);
@@ -96,9 +116,11 @@ public class OtcController {
         Date ndayStart = DateUtils.getNdayStart(-30);
         q.gt(EzOtcOrderMatch::getFinishTime,ndayStart);
         q.lt(EzOtcOrderMatch::getFinishTime,DateUtils.getNowDate());
-        advertisingBusinessInfoRespDto.setMouthCount(orderMatchService.count());
+        advertisingBusinessInfoRespDto.setMouthCount(orderMatchService.count(q));
         return Response.success(advertisingBusinessInfoRespDto);
     }
+
+
     @AuthToken
     @ApiOperation(value = "收款方式 列表")
     @GetMapping("paymentInfoList")
@@ -123,6 +145,7 @@ public class OtcController {
         });
         return ResponseList.success(respDtos);
     }
+
     @NoRepeatSubmit
     @AuthToken(kyc = true)
     @ApiOperation(value = "添加/修改收款方式")
@@ -161,6 +184,7 @@ public class OtcController {
         return BaseResponse.success();
     }
 
+
 //    -----------------------------------------------------------------------------------------------------------
     @NoRepeatSubmit
     @ApiOperation(value = "发布广告订单")
@@ -179,8 +203,6 @@ public class OtcController {
     public Response<PaymentDetails> placeAnOrder(@RequestBody PlaceOrderReqDto placeOrderReqDto) {
         return otcOrderService.placeAnOrder(placeOrderReqDto);
     }
-
-
 
     @ApiOperation(value = "订单 列表")
     @PostMapping("otcOrderList")
@@ -203,10 +225,6 @@ public class OtcController {
         return otcOrderService.orderInfo(otcOrderNo);
     }
 
-
-
-
-
     @NoRepeatSubmit
     @ApiOperation(value = "商户 下架广告订单")
     @PutMapping("offShelfOrder/{orderNo}")
@@ -216,18 +234,18 @@ public class OtcController {
         return otcOrderService.offShelfOrder(orderNo);
     }
 
-
     @NoRepeatSubmit
-    @ApiOperation(value = "商户 接单/拒接 (订单广告)")
+    @ApiOperation(value = "商户接单/拒接 (订单广告)")
     @PutMapping("operateOrderAd")
     @AuthToken
-    @Log(title = "商户 接单(订单广告)", businessType = BusinessType.UPDATE, operatorType = OperatorType.MOBILE)
+    @Log(title = "商户接单(订单广告)", businessType = BusinessType.UPDATE, operatorType = OperatorType.MOBILE)
     public BaseResponse operateOrderAd(@RequestBody OrderOperateReqDto orderOperateReqDto) {
         return otcOrderService.merchantOrder(orderOperateReqDto);
     }
 
     @NoRepeatSubmit
-    @ApiOperation(value = "用户 取消订单（两个状态可取消订单  1：接单广告（卖家未接受订单）用户免费取消 2：接单广告/普通广告（用户未支付状态） 用户取消次数增加）")
+    @ApiOperation(value = "用户 取消订单（两个状态可取消订单  1：接单广告（卖家未接受订单）用户免费取消 " +
+            "2：接单广告/普通广告（用户未支付状态） 用户取消次数增加）")
     @PutMapping("cancelOrder/{matchOrderNo}")
     @AuthToken
     @Log(title = "用户 取消订单", businessType = BusinessType.UPDATE, operatorType = OperatorType.MOBILE)
@@ -236,7 +254,7 @@ public class OtcController {
     }
 
     @NoRepeatSubmit
-    @ApiOperation(value = "根据用户id 查询订单")
+    @ApiOperation(value = "根据用户id查询订单列表")
     @GetMapping("otcOrderListBy/{userId}")
     @AuthToken
     public Response<OtcInfoOrder> otcOrderListBy(@PathVariable String userId) {
@@ -260,7 +278,6 @@ public class OtcController {
 
         ReleaseOrderRespDto releaseOrderRespDto = new ReleaseOrderRespDto();
         List<EzPaymentMethod> methods = methodService.list();
-
         list.forEach(e -> {
             List<Integer> paymentMethods = new ArrayList<>();
             if (StringUtils.isNotNull(e.getPaymentMethod1())) {
@@ -286,8 +303,6 @@ public class OtcController {
         return ResponseList.success(releaseOrderRespDtos);
     }
 
-
-
     @ApiOperation(value = "订单记录")
     @PostMapping("orderRecord")
     @AuthToken
@@ -295,12 +310,11 @@ public class OtcController {
         return orderMatchService.orderRecord(orderRecordQueryReqDto);
     }
 
-
     @NoRepeatSubmit
-    @ApiOperation(value = "买家确认 付款")
+    @ApiOperation(value = "买家确认付款")
     @PutMapping("confirmPayment/{matchOrderNo}")
     @AuthToken
-    @Log(title = "买家确认 付款", businessType = BusinessType.UPDATE, operatorType = OperatorType.MOBILE)
+    @Log(title = "买家确认付款", businessType = BusinessType.UPDATE, operatorType = OperatorType.MOBILE)
     public BaseResponse confirmPayment(@PathVariable String matchOrderNo) {
         return orderMatchService.confirmPayment(matchOrderNo);
     }
@@ -346,31 +360,20 @@ public class OtcController {
 
 
     @ApiOperation(value = "根据订单号查询支付详情")
-    @GetMapping("paymentInfo/{orderMatchNo}/{paymentMethodId}")
+    @GetMapping("paymentInfo/{orderMatchNo}/{orderPaymentId}")
     @AuthToken
-    public Response<PaymentMethodRespDto> paymentInfo(@PathVariable String orderMatchNo, @PathVariable String paymentMethodId) {
-        PaymentMethodRespDto paymentMethodRespDto = new PaymentMethodRespDto();
-
+    public Response<OrderPaymentRspDto> paymentInfo(@PathVariable String orderMatchNo, @PathVariable String orderPaymentId) {
+        OrderPaymentRspDto paymentMethodRespDto = new OrderPaymentRspDto();
         EzOtcOrderMatch orderMatch = orderMatchService.getById(orderMatchNo);
-
-        LambdaQueryWrapper<EzPaymentInfo> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(EzPaymentInfo::getUserId, orderMatch.getOtcOrderUserId());
-        queryWrapper.eq(EzPaymentInfo::getPaymentMethodId, paymentMethodId);
-        EzPaymentInfo one = paymentInfoService.getOne(queryWrapper);
-        EzPaymentMethod paymentMethod = methodService.getById(one.getPaymentMethodId());
-
-        if (one.getPaymentMethodId().equals(PaymentMethod.BANK.getCode())) {
+        if ("1".equals(orderMatch.getType())){//卖
+            EzOtcOrderPayment one = orderPaymentService.getById(orderPaymentId);
+            paymentMethodRespDto.setRealName(one.getRealName());
+            paymentMethodRespDto.setAccountNumber(one.getAccountNumber());
+            paymentMethodRespDto.setPaymentMethodId(one.getPaymentMethodId());
             paymentMethodRespDto.setBankName(one.getBankName());
-        } else {
             paymentMethodRespDto.setPaymentQrCode(one.getPaymentQrCode());
+            orderMatch.setOrderPaymentId(orderPaymentId);
         }
-        paymentMethodRespDto.setRealName(one.getRealName());
-        paymentMethodRespDto.setIcon(paymentMethod.getIcon());
-        paymentMethodRespDto.setAccountNumber(one.getAccountNumber());
-        paymentMethodRespDto.setPaymentMethodId(one.getPaymentMethodId());
-
-        //改变支付方式
-        orderMatch.setPaymentInfoId(one.getId());
         orderMatchService.updateById(orderMatch);
         return Response.success(paymentMethodRespDto);
     }
@@ -418,7 +421,7 @@ public class OtcController {
         records.forEach(e -> {
             OrderRecordRespDto orderRespDto = new OrderRecordRespDto();
             BeanUtils.copyBeanProp(orderRespDto,e);
-            orderRespDto.setPaymentInfo(paymentInfoService.getById(e.getPaymentInfoId()));
+            orderRespDto.setEzOtcOrderPayment(orderPaymentService.getById(e.getOrderPaymentId()));
             orderRecordRespDtos.add(orderRespDto);
         });
         return ResponseList.success(orderRecordRespDtos);

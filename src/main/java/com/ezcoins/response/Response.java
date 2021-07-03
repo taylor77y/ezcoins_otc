@@ -62,6 +62,15 @@ public class Response<T>{
         return r;
     }
 
+    //成功静态方法
+    public static <T> Response<T> error(String message,Integer code) {
+        Response<T> r = new Response<T>();
+        r.setSuccess(false);
+        r.setCode(code);
+        r.setMessage(message);
+        return r;
+    }
+
     public Response<T> message(String message){
         this.setMessage(message);
         return this;

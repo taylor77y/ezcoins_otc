@@ -103,7 +103,7 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
                             log.error("token失效，请重新登录");
                         });
                     }
-                    CheckException.check(!"1".equals(user.getKycStatus()), "实名认证未通过");
+                    CheckException.check("1".equals(user.getKycStatus()), "实名认证未通过");
                 }
 
                 if (authToken.status()) {

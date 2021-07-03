@@ -60,7 +60,7 @@ public class EzAdvertisingConfigController {
             @ApiImplicitParam(name = "minMargin", value = "最低保证金", required = true),
     })
     @Log(title = "修改高级认证配置",businessType = BusinessType.UPDATE,operatorType= OperatorType.MANAGE)
-    public BaseResponse update(HashMap<String,Object> params) {
+    public BaseResponse update(@RequestBody HashMap<String,Object> params) {
         String minMargin1 = (String) params.get("minMargin");
         if (StringUtils.isEmpty(minMargin1)){
             return BaseResponse.error();

@@ -20,7 +20,7 @@ import lombok.EqualsAndHashCode;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@TableName("ez_country_Config")
+@TableName("ez_country_config")
 @ApiModel(value="EzCountryConfig对象", description="国家电话区号配置 表")
 public class EzCountryConfig implements Serializable {
 

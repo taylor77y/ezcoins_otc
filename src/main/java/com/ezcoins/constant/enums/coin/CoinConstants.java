@@ -16,8 +16,8 @@ public class CoinConstants {
 		/** 提币 **/
 		WITHDRAWAL("withdrawal", "提币"),
 
-		/** 手续费 **/
-		HANDLINGFEE("handlingfee", "手续费"),
+		/** 发布订单 **/
+		RELEASEORDER("releaseorder", "发布订单"),
 
 		BUY("buy", "购买"),
 

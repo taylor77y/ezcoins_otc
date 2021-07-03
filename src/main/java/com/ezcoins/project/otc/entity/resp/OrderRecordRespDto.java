@@ -1,5 +1,6 @@
 package com.ezcoins.project.otc.entity.resp;
 
+import com.ezcoins.project.otc.entity.EzOtcOrderPayment;
 import com.ezcoins.project.otc.entity.EzPaymentInfo;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
@@ -49,7 +50,7 @@ public class OrderRecordRespDto {
     private BigDecimal totalPrice;
 
     @ApiModelProperty(value = "支付方式")
-    private EzPaymentInfo paymentInfo;
+    private EzOtcOrderPayment ezOtcOrderPayment;
 
     @ApiModelProperty(value = "单价")
     private BigDecimal price;

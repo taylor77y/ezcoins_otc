@@ -16,6 +16,6 @@ public class AccountOperationBusyException extends CoinException
      */
     public AccountOperationBusyException()
     {
-    	super("coin.busy.error", null);
+    	super("资金账户繁忙", null);
     }
 }

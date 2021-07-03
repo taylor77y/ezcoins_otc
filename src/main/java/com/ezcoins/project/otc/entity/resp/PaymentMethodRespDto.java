@@ -2,6 +2,7 @@ package com.ezcoins.project.otc.entity.resp;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.ezcoins.project.otc.entity.EzOtcOrderPayment;
 import com.ezcoins.project.otc.entity.EzPaymentBank;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
