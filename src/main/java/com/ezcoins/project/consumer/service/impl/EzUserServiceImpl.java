@@ -39,6 +39,9 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * <p>
  * 服务实现类
@@ -274,7 +277,7 @@ public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> impleme
      * @return
      */
     @Override
-    public String login(JwtAuthenticationRequest authenticationRequest) {
+    public Map<String,String> login(JwtAuthenticationRequest authenticationRequest) {
         //登录的时候 如果绑定了邮箱/电话号码 都可以用来登录
         LambdaQueryWrapper<EzUser> lambdaQueryWrapper=new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(EzUser::getPhone,authenticationRequest.getUsername()).or().eq(EzUser::getEmail,authenticationRequest.getUsername());
@@ -298,7 +301,12 @@ public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> impleme
         baseMapper.updateById(ezUser);
 
         loginProducer.sendMsgLoginFollowUp(ezUser.getUserName(), userId, ezUser.getNickName(), LoginType.APP.getType());
-        return token;
+
+        Map<String,String> map=new HashMap<>(2);
+        map.put("token",token);
+        map.put("userId",userId);
+
+        return map;
     }
 
     @Override
@@ -318,11 +326,6 @@ public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> impleme
         CheckException.checkNotEmpty(phone, () -> {
             ezUser.setPhone(phone);
         });
-//        //安全密码
-//        String securePassword = ezUserDto.getSecurityPassword();
-//        CheckException.checkNotEmpty(securePassword, () -> {
-//            ezUser.setSecurityPassword(securePassword);
-//        });
         ezUser.setUpdateBy(SecurityUtils.getUsername());
         ezUser.setUpdateTime(DateUtils.getNowDate());
         CheckException.checkDb(baseMapper.updateById(ezUser), "用户更新失败");

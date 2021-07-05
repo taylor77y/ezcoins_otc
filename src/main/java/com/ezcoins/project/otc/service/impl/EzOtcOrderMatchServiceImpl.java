@@ -282,7 +282,7 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
         //生成 订单（订单类型一键）
         EzOtcOrderMatch match = new EzOtcOrderMatch();
         //得到订单号
-        String orderMatchNo = orderIndexService.getOrderNo("156", IndexOrderNoKey.ORDER_MATCH_INFO);
+        String orderMatchNo = orderIndexService.getOrderNoByCountryCode("156", IndexOrderNoKey.ORDER_MATCH_INFO);
         match.setOrderMatchNo(orderMatchNo);
         match.setAdvertisingName("System shop");
         match.setPrice(ezSellConfig.getPrice());
@@ -324,14 +324,9 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
         ezOtcOrderMatchPage.getRecords().forEach(e -> {
             OrderRecordRespDto orderRecordRespDto = new OrderRecordRespDto();
             BeanUtils.copyBeanProp(orderRecordRespDto, e);
-            if (!e.getStatus().equals(MatchOrderStatus.CANCELLED.getCode())
-                    && !e.getStatus().equals(MatchOrderStatus.ORDERBEENCANCELLED.getCode())
-                    && !e.getStatus().equals(MatchOrderStatus.REFUSE.getCode())) {
-                if (e.getStatus().equals(MatchOrderStatus.WAITFORPAYMENT.getCode())) {
-                } else {
-                    orderRecordRespDto.setEzOtcOrderPayment(orderPaymentService.getById(e.getOrderPaymentId()));
-                }
-            }
+            LambdaQueryWrapper<EzOtcOrderPayment> lambdaQueryWrapper=new LambdaQueryWrapper();
+            lambdaQueryWrapper.eq(EzOtcOrderPayment::getOrderMatchNo,e.getOrderMatchNo());
+            orderRecordRespDto.setEzOtcOrderPayments(orderPaymentService.list(lambdaQueryWrapper));
             orderRecordRespDtos.add(orderRecordRespDto);
         });
         return ResponseList.success(orderRecordRespDtos);

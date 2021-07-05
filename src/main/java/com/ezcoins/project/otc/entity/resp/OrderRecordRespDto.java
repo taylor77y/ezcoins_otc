@@ -8,6 +8,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @Author: WangLei
@@ -50,7 +51,7 @@ public class OrderRecordRespDto {
     private BigDecimal totalPrice;
 
     @ApiModelProperty(value = "支付方式")
-    private EzOtcOrderPayment ezOtcOrderPayment;
+    private List<EzOtcOrderPayment> ezOtcOrderPayments;
 
     @ApiModelProperty(value = "单价")
     private BigDecimal price;

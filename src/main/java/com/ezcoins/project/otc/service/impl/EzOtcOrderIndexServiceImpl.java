@@ -1,10 +1,14 @@
 package com.ezcoins.project.otc.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.ezcoins.project.config.entity.EzCountryConfig;
+import com.ezcoins.project.config.service.EzCountryConfigService;
 import com.ezcoins.project.otc.entity.EzOtcOrderIndex;
 import com.ezcoins.project.otc.mapper.EzOtcOrderIndexMapper;
 import com.ezcoins.project.otc.service.EzOtcOrderIndexService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ezcoins.utils.OrderNoUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -18,8 +22,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class EzOtcOrderIndexServiceImpl extends ServiceImpl<EzOtcOrderIndexMapper, EzOtcOrderIndex> implements EzOtcOrderIndexService {
 
+
+    @Autowired
+    private EzCountryConfigService countryConfigService;
+
     @Override
-    public String getOrderNo(String countryCode,String id) {
+    public String getOrderNoByCountryCode(String countryCode,String id) {
         EzOtcOrderIndex index = baseMapper.selectById(id);
         Integer currentValue = index.getCurrentValue();
         String orderNo = OrderNoUtils.getOrderNo();
@@ -45,5 +53,20 @@ public class EzOtcOrderIndexServiceImpl extends ServiceImpl<EzOtcOrderIndexMappe
             baseMapper.updateById(index);
         }
         return String.valueOf(stringBuilder);
+    }
+
+    /**
+     * 根据国家货币获取订单号
+     *
+     * @param currencyCode
+     * @param id
+     */
+    @Override
+    public String getOrderNoByCurrencyCode(String currencyCode, String id) {
+        LambdaQueryWrapper<EzCountryConfig> configLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        configLambdaQueryWrapper.eq(EzCountryConfig::getCurrencyCode, currencyCode);
+        EzCountryConfig one = countryConfigService.getOne(configLambdaQueryWrapper);
+        String countryCode = one.getCountryCode();//国家编号
+        return getOrderNoByCountryCode(countryCode,id);
     }
 }

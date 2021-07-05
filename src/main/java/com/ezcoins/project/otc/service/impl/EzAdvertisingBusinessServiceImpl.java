@@ -88,4 +88,20 @@ public class EzAdvertisingBusinessServiceImpl extends ServiceImpl<EzAdvertisingB
         var time = Math.floor(releaseTime / 60 % 60);
         buyInfo.setMouthAveragePass((time + sellInfo.getMouthAveragePass() * sellInfo.getSellCount()) / (sellInfo.getSellCount() + 1));//平均放行时间
     }
+
+    /**
+     * 查看是否修改过OTC 交易信息
+     *
+     * @param userId
+     */
+    @Override
+    public boolean isUpdate(String userId) {
+        LambdaQueryWrapper<EzAdvertisingBusiness> businessLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        businessLambdaQueryWrapper.eq(EzAdvertisingBusiness::getAdvertisingName, userId);
+        businessLambdaQueryWrapper.eq(EzAdvertisingBusiness::getUserId, userId);
+        if (baseMapper.selectCount(businessLambdaQueryWrapper) == 1) {
+            return false;
+        }
+        return true;
+    }
 }

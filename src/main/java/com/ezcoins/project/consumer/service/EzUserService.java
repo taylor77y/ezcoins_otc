@@ -7,6 +7,8 @@ import com.ezcoins.project.consumer.entity.req.EzUserReqDto;
 import com.ezcoins.project.consumer.entity.req.UserLimitReqDto;
 import com.ezcoins.project.consumer.entity.req.VerificationCodeReqDto;
 
+import java.util.Map;
+
 /**
  * <p>
  *  服务类
@@ -55,14 +57,12 @@ public interface EzUserService extends IService<EzUser> {
      */
     void addUser(EzUserReqDto ezUserDto);
 
-
     /**
      * 用户登录
      * @param
      * @return
      */
-    String login(JwtAuthenticationRequest jwtAuthenticationRequest);
-
+    Map<String,String> login(JwtAuthenticationRequest jwtAuthenticationRequest);
 
     /**
      * 更改基本资料密码

@@ -15,10 +15,6 @@ public class NotifyMessage {
     String userId;
     Object data;
 
-    public NotifyMessage(String userId,Object data) {
-        this.userId = userId;
-        this.data = data;
-    }
 
     @Override
     public String toString() {

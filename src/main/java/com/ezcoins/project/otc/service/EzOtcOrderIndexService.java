@@ -14,13 +14,16 @@ import com.baomidou.mybatisplus.extension.service.IService;
 public interface EzOtcOrderIndexService extends IService<EzOtcOrderIndex> {
 
     /**
-     * 获取订单号
+     * 根据国家代码获取订单号
      * @param countryCode
      * @param id
      * @return
      */
-    String getOrderNo(String countryCode,String id);
+    String getOrderNoByCountryCode(String countryCode,String id);
 
-
+    /**
+     * 根据国家货币获取订单号
+     */
+    String getOrderNoByCurrencyCode(String currencyCode,String id);
 
 }

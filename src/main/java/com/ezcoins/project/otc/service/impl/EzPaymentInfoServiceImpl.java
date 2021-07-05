@@ -43,12 +43,12 @@ public class EzPaymentInfoServiceImpl extends ServiceImpl<EzPaymentInfoMapper, E
      */
     @Override
     public BaseResponse alipayPaymentMethod(PaymentQrcodeTypeReqDto qrcodeTypeReqDto) {
-        if (qrcodeTypeReqDto.getPaymentMethodId()== PaymentMethod.BANK.getCode()){
-            if (StringUtils.isEmpty(qrcodeTypeReqDto.getBankName())){
+        if (qrcodeTypeReqDto.getPaymentMethodId() == PaymentMethod.BANK.getCode()) {
+            if (StringUtils.isEmpty(qrcodeTypeReqDto.getBankName())) {
                 return BaseResponse.error(MessageUtils.message("银行名称不能为空"));
             }
-        }else {
-            if (StringUtils.isEmpty(qrcodeTypeReqDto.getPaymentQrCode())){
+        } else {
+            if (StringUtils.isEmpty(qrcodeTypeReqDto.getPaymentQrCode())) {
                 return BaseResponse.error(MessageUtils.message("请先上传支付二维码"));
             }
         }
@@ -67,11 +67,11 @@ public class EzPaymentInfoServiceImpl extends ServiceImpl<EzPaymentInfoMapper, E
         paymentInfo.setUserId(userId);
         if (StringUtils.isEmpty(id)) {//添加
             //查看是否纯在此支付方式
-            LambdaQueryWrapper<EzPaymentInfo> lambdaQueryWrapper=new LambdaQueryWrapper<>();
-            lambdaQueryWrapper.eq(EzPaymentInfo::getUserId,userId);
-            lambdaQueryWrapper.eq(EzPaymentInfo::getPaymentMethodId,qrcodeTypeReqDto.getPaymentMethodId());
+            LambdaQueryWrapper<EzPaymentInfo> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+            lambdaQueryWrapper.eq(EzPaymentInfo::getUserId, userId);
+            lambdaQueryWrapper.eq(EzPaymentInfo::getPaymentMethodId, qrcodeTypeReqDto.getPaymentMethodId());
             Integer integer = baseMapper.selectCount(lambdaQueryWrapper);
-            if (integer!=0){
+            if (integer != 0) {
                 return BaseResponse.error(MessageUtils.message("每种支付方式只能上传一种"));
             }
             baseMapper.insert(paymentInfo);
