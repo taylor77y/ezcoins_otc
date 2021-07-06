@@ -4,8 +4,10 @@ import com.ezcoins.exception.coin.AccountBalanceNotEnoughException;
 import com.ezcoins.exception.coin.AccountOperationBusyException;
 import com.ezcoins.project.coin.entity.Account;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.ezcoins.project.coin.entity.req.ReviseAccountReqDto;
 import com.ezcoins.project.coin.entity.resp.AccountRespDto;
 import com.ezcoins.project.coin.entity.vo.BalanceChange;
+import com.ezcoins.response.BaseResponse;
 
 import java.util.List;
 
@@ -28,5 +30,5 @@ public interface AccountService extends IService<Account> {
     boolean balanceChangeSYNC(List<BalanceChange> cList)
             throws AccountBalanceNotEnoughException, AccountOperationBusyException;
 
-
+    BaseResponse revise(ReviseAccountReqDto reviseAccountReqDto);
 }

@@ -28,6 +28,7 @@ import com.ezcoins.security.util.SecurityUtils;
 import com.ezcoins.utils.BeanUtils;
 import com.ezcoins.utils.DateUtils;
 import com.ezcoins.utils.MessageUtils;
+import com.ezcoins.websocket.WebSocketHandle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -48,7 +49,6 @@ import java.util.List;
  */
 @Service
 public class EzAdvertisingApproveServiceImpl extends ServiceImpl<EzAdvertisingApproveMapper, EzAdvertisingApprove> implements EzAdvertisingApproveService {
-
     @Autowired
     private EzUserService userService;
 
@@ -93,6 +93,8 @@ public class EzAdvertisingApproveServiceImpl extends ServiceImpl<EzAdvertisingAp
             b.setMainType(CoinConstants.MainType.UNFREEZE.getType());
             cList.add(b);
             accountService.balanceChangeSYNC(cList);
+            //给用户一个信号
+            WebSocketHandle.businessAuthentication(advertisingApprove.getUserId(),KycStatus.BY.getCode());
         }else {
             advertisingApprove.setStatus(KycStatus.REFUSE.getCode());
             //冻结用户卖出 数量
@@ -106,7 +108,8 @@ public class EzAdvertisingApproveServiceImpl extends ServiceImpl<EzAdvertisingAp
             b.setMainType(CoinConstants.MainType.UNFREEZE.getType());
             cList.add(b);
             accountService.balanceChangeSYNC(cList);
-
+            //给用户一个信号
+            WebSocketHandle.businessAuthentication(advertisingApprove.getUserId(),KycStatus.REFUSE.getCode());
         }
         advertisingApprove.setStatus(checkAdvertisingReqDto.getOperate());
         advertisingApprove.setExamineBy(ContextHandler.getUserName());
@@ -131,7 +134,6 @@ public class EzAdvertisingApproveServiceImpl extends ServiceImpl<EzAdvertisingAp
         LambdaQueryWrapper<EzAdvertisingApprove> lambdaQueryWrapper=new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(EzAdvertisingApprove::getUserId,advertisingReqDto.getUserId());
         advertisingApprove= baseMapper.selectOne(lambdaQueryWrapper);
-
 
         //冻结用户卖出 数量
         List<BalanceChange> cList = new ArrayList<>();
@@ -167,5 +169,7 @@ public class EzAdvertisingApproveServiceImpl extends ServiceImpl<EzAdvertisingAp
             advertisingApprove.setStatus(KycStatus.PENDINGREVIEW.getCode());
             baseMapper.updateById(advertisingApprove);
         }
+        //给用户一个信号
+        WebSocketHandle.businessAuthentication(advertisingReqDto.getUserId(),KycStatus.PENDINGREVIEW.getCode());
     }
 }

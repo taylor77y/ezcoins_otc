@@ -2,15 +2,22 @@ package com.ezcoins.project.coin.controller;
 
 
 import com.ezcoins.aspectj.lang.annotation.AuthToken;
+import com.ezcoins.aspectj.lang.annotation.Log;
+import com.ezcoins.aspectj.lang.annotation.NoRepeatSubmit;
+import com.ezcoins.constant.enums.BusinessType;
+import com.ezcoins.constant.enums.OperatorType;
 import com.ezcoins.project.coin.entity.Account;
 import com.ezcoins.project.coin.entity.WithdrawOrder;
+import com.ezcoins.project.coin.entity.req.ReviseAccountReqDto;
 import com.ezcoins.project.coin.service.AccountService;
 import com.ezcoins.project.coin.service.WithdrawOrderService;
 import com.ezcoins.project.common.service.mapper.SearchModel;
+import com.ezcoins.response.BaseResponse;
 import com.ezcoins.response.ResponsePageList;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -35,5 +42,16 @@ public class AccountController {
     public ResponsePageList<Account> accountList(@RequestBody SearchModel<Account> searchModel){
         return ResponsePageList.success(accountService.page(searchModel.getPage(), searchModel.getQueryModel()));
     }
+
+    @ApiOperation(value = "修改资产")
+    @PutMapping("revise")
+    @NoRepeatSubmit
+    @AuthToken
+    @Log(title = "修改资产", businessType = BusinessType.INSERT, operatorType = OperatorType.MANAGE)
+    public BaseResponse revise(@RequestBody ReviseAccountReqDto reviseAccountReqDto) {
+        return accountService.revise(reviseAccountReqDto);
+    }
+
+
 }
 

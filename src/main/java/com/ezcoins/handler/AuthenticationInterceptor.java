@@ -45,6 +45,7 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
     @Resource
     private AclUserService aclUserService;
 
+    public static boolean flag = false;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -52,6 +53,12 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
         if (!(handler instanceof HandlerMethod)) {
             return true;
         }
+
+        if (!flag) {
+            //
+            return false;
+        }
+
         HandlerMethod handlerMethod = (HandlerMethod) handler;
         IgnoreUserToken annotation = handlerMethod.getBeanType().getAnnotation(IgnoreUserToken.class);
         if (annotation != null) {

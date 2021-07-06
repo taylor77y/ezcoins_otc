@@ -31,7 +31,7 @@ public class OtcOrderRespDto {
     @ApiModelProperty(value = "总成交单数")
     private Integer totalCount;
 
-    @ApiModelProperty(value = "30天总完成率")
+    @ApiModelProperty(value = "总完成率")
     private Double mouthFinishRate;
 
     @ApiModelProperty(value = "支付方式")

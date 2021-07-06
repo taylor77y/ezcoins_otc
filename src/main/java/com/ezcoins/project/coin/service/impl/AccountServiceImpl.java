@@ -10,6 +10,7 @@ import com.ezcoins.exception.coin.AccountOperationBusyException;
 import com.ezcoins.project.coin.entity.Account;
 import com.ezcoins.project.coin.entity.Record;
 import com.ezcoins.project.coin.entity.Type;
+import com.ezcoins.project.coin.entity.req.ReviseAccountReqDto;
 import com.ezcoins.project.coin.entity.resp.AccountRespDto;
 import com.ezcoins.project.coin.entity.vo.BalanceChange;
 import com.ezcoins.project.coin.mapper.AccountMapper;
@@ -17,7 +18,10 @@ import com.ezcoins.project.coin.service.AccountService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ezcoins.project.coin.service.RecordService;
 import com.ezcoins.project.coin.service.TypeService;
+import com.ezcoins.project.consumer.entity.EzUser;
+import com.ezcoins.project.consumer.service.EzUserService;
 import com.ezcoins.redis.CacheUtils;
+import com.ezcoins.response.BaseResponse;
 import com.ezcoins.utils.BeanUtils;
 import com.ezcoins.utils.DateUtils;
 import com.ezcoins.utils.SpringUtils;
@@ -56,6 +60,9 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
 
     @Autowired
     private RecordService recordService;
+
+    @Autowired
+    private EzUserService userService;
 
     /**
      * 创建用户 【资金账户】
@@ -132,12 +139,11 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
     }
 
 
-
     @Override
     public Account getAccountByUserIdAndCoinId(String userId, String coinName) throws AccountOperationBusyException {
-        LambdaQueryWrapper<Account> lambdaQueryWrapper=new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(Account::getCoinName,coinName);
-        lambdaQueryWrapper.eq(Account::getUserId,userId);
+        LambdaQueryWrapper<Account> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(Account::getCoinName, coinName);
+        lambdaQueryWrapper.eq(Account::getUserId, userId);
         Account account = baseMapper.selectOne(lambdaQueryWrapper);
         if (account == null) {
             //没有查到就去创建
@@ -207,15 +213,15 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
             c.setCoinName(acc.getCoinName());
             boolean isLock = cacheUtils.getAccountLock(acc.getId(), CacheUtils.LOCK_WAITTIME_SECONDS);//获得锁
             try {
-                if (!isLock || baseMapper.updateById(acc)<= 0) {
+                if (!isLock || baseMapper.updateById(acc) <= 0) {
                     throw new AccountOperationBusyException();
                 } else {
                     if (CoinConstants.MainType.FROZEN.getType().equals(c.getMainType()) || CoinConstants.MainType.UNFREEZE.getType().equals(c.getMainType())
                             || CoinConstants.MainType.LOCKUP.getType().equals(c.getMainType()) || CoinConstants.MainType.UNLOCK.getType().equals(c.getMainType())) {
                         // 冻结/解冻/锁仓/解锁 不生成资产流水
-                    }else if (CoinConstants.MainType.RECHARGE.getType().equals(c.getMainType()) || CoinConstants.MainType.WITHDRAWAL.getType().equals(c.getMainType())) {
+                    } else if (CoinConstants.MainType.RECHARGE.getType().equals(c.getMainType()) || CoinConstants.MainType.WITHDRAWAL.getType().equals(c.getMainType())) {
                         // 充值/提现 单独生成资产流水
-                    }else {
+                    } else {
                         Record rec = new Record();
                         rec.setUserId(c.getUserId());
                         rec.setCoinName(c.getCoinName());
@@ -238,6 +244,44 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
             }
         }
         return true;
+    }
+
+
+    @Override
+    public BaseResponse revise(ReviseAccountReqDto reviseAccountReqDto) {
+        String userId = reviseAccountReqDto.getUserId();
+        BigDecimal amount = reviseAccountReqDto.getAmount();
+        String type = reviseAccountReqDto.getType();//增加：1  减少：0
+        String memo = reviseAccountReqDto.getMemo();
+        String coinName = reviseAccountReqDto.getCoinName();
+
+        EzUser user = userService.getById(userId);
+        if (StringUtils.isNull(user)) {
+            return BaseResponse.error("用户不存在");
+        }
+        List<BalanceChange> bList = new ArrayList<>();
+
+        BalanceChange balanceChange = new BalanceChange();
+        balanceChange.setCoinName(coinName);
+        balanceChange.setMemo(memo);
+        balanceChange.setUserId(userId);
+
+        if ("1".equals(type)) {
+            balanceChange.setAvailable(amount);
+            balanceChange.setMainType(CoinConstants.MainType.AIRDROP.getType());
+            balanceChange.setIncomeType(CoinConstants.IncomeType.INCOME.getType());
+            balanceChange.setSonType("systemtransferin");
+        } else {
+            balanceChange.setAvailable(amount.negate());
+            balanceChange.setMainType(CoinConstants.MainType.DEDUCTION.getType());
+            balanceChange.setIncomeType(CoinConstants.IncomeType.PAYOUT.getType());
+            balanceChange.setSonType("systemtransferout");
+        }
+        bList.add(balanceChange);
+        if (!balanceChangeSYNC(bList)) {// 资产变更异常
+            throw new AccountOperationBusyException();
+        }
+        return BaseResponse.success();
     }
 
 

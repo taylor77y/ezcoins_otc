@@ -38,6 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -68,7 +69,8 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
     private EzOtcOrderIndexService orderIndexService;
 
     @Autowired
-    private EzPaymentInfoService paymentInfoService;
+    private EzAdvertisingBusinessService businessService;
+
     @Autowired
     private EzOtcOrderPaymentService orderPaymentService;
 
@@ -129,12 +131,13 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
         EzOtcOrderMatch orderMatch = baseMapper.selectById(matchOrderNo);
         //判断订单状态
         if (!orderMatch.getStatus().equals(MatchOrderStatus.WAITFORPAYMENT.getCode())) {
-            return BaseResponse.error("订单状态已发生变化");
+            return BaseResponse.error(MessageUtils.message("订单状态已发生变化"));
         }
         orderMatch.setPaymentTime(DateUtils.getNowDate());
         orderMatch.setStatus(MatchOrderStatus.PAID.getCode());
-
         //发送标记到页面
+
+
         baseMapper.updateById(orderMatch);
         return BaseResponse.success();
     }
@@ -154,7 +157,7 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
         EzOtcOrderMatch orderMatch = baseMapper.selectById(matchOrderNo);
         //判断订单状态
         if (!orderMatch.getStatus().equals(MatchOrderStatus.WAITFORPAYMENT.getCode())) {
-            throw new BaseException("订单状态已发生变化");
+            throw new BaseException(MessageUtils.message("订单状态已发生变化"));
         }
         //匹配订单分为 买单 和 卖单  //查询到otc 订单
         EzOtcOrder ezOtcOrder = otcOrderService.getById(orderMatch.getOrderNo());
@@ -168,19 +171,21 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
         b1.setCoinName(orderMatch.getCoinName());
         b1.setAvailable(amount.negate());
         b1.setIncomeType(CoinConstants.IncomeType.PAYOUT.getType());
-        b1.setMainType(CoinConstants.MainType.SELL.getType());
+        b1.setMainType(CoinConstants.MainType.TRANSFEROUT.getType());
         b1.setFee(BigDecimal.ZERO);
 
         BalanceChange b2 = new BalanceChange();
         b2.setCoinName(orderMatch.getCoinName());
         b2.setAvailable(amount);
         b2.setIncomeType(CoinConstants.IncomeType.INCOME.getType());
-        b2.setMainType(CoinConstants.MainType.BUY.getType());
+        b2.setMainType(CoinConstants.MainType.TRANSFERIN.getType());
         b2.setFee(BigDecimal.ZERO);
-
-
         //改变OTC信息
         LambdaQueryWrapper<EzAdvertisingBusiness> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        String sellUserId=null;
+        String buyUserId=null;
+        Date payTime=orderMatch.getPaymentTime();
+
 
 
         if ("0".equals(ezOtcOrder.getType())) {//买单
@@ -188,26 +193,29 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
             cList.add(b1);
             //将amount币存入买家的账户中
             b2.setUserId(ezOtcOrder.getUserId());
-
-
+            sellUserId=orderMatch.getUserId();
+            buyUserId=ezOtcOrder.getUserId();
             cList.add(b2);
         } else if ("1".equals(ezOtcOrder.getType())) {  //卖单 需要广告商户进行放币
             b1.setUserId(ezOtcOrder.getUserId());
             cList.add(b1);
-
             //otc订单冻结币的剩余
             BigDecimal frozeNow = frozeAmount.subtract(amount);
             ezOtcOrder.setFrozeAmount(frozeNow);
-
             //将amount币存入买家的账户中
             b2.setUserId(orderMatch.getUserId());
+            sellUserId=ezOtcOrder.getUserId();
+            buyUserId=orderMatch.getUserId();
             cList.add(b2);
             otcOrderService.updateById(ezOtcOrder);
         }
 
+        Date nowDate = DateUtils.getNowDate();
         //改变订单状态
         orderMatch.setStatus(MatchOrderStatus.COMPLETED.getCode());
+        orderMatch.setFinishTime(nowDate);
         baseMapper.updateById(orderMatch);
+        businessService.updateCount(sellUserId,buyUserId,payTime,nowDate);
         if (!accountService.balanceChangeSYNC(cList)) {// 资产变更异常
             throw new AccountOperationBusyException();
         }

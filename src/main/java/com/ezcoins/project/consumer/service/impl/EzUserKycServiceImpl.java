@@ -17,6 +17,7 @@ import com.ezcoins.project.consumer.service.EzUserService;
 import com.ezcoins.security.util.SecurityUtils;
 import com.ezcoins.utils.BeanUtils;
 import com.ezcoins.utils.DateUtils;
+import com.ezcoins.websocket.WebSocketHandle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -70,6 +71,9 @@ public class EzUserKycServiceImpl extends ServiceImpl<EzUserKycMapper, EzUserKyc
             ezcoinsKyc.setStatus(KycStatus.PENDINGREVIEW.getCode());
             baseMapper.updateById(ezcoinsKyc);
         }
+        //给用户一个信号
+        WebSocketHandle.realNameAuthentication(userKycReqDto.getUserId(),KycStatus.PENDINGREVIEW.getCode());
+
     }
 
     /**
@@ -89,8 +93,12 @@ public class EzUserKycServiceImpl extends ServiceImpl<EzUserKycMapper, EzUserKyc
             LambdaUpdateWrapper<EzUser> updateWrapper=new LambdaUpdateWrapper<>();
             updateWrapper.eq(EzUser::getUserId,ezUserKyc.getUserId()).set(EzUser::getKycStatus,UserKycStatus.VERIFIED.getCode());
             ezUserService.update(null,updateWrapper);
+            //给用户一个信号
+            WebSocketHandle.realNameAuthentication(ezUserKyc.getUserId(),KycStatus.BY.getCode());
         }else {
             ezUserKyc.setStatus(KycStatus.REFUSE.getCode());
+            //给用户一个信号
+            WebSocketHandle.realNameAuthentication(ezUserKyc.getUserId(),KycStatus.REFUSE.getCode());
         }
         ezUserKyc.setStatus(kycReqDto.getOperate());
         ezUserKyc.setExamineBy(ContextHandler.getUserName());

@@ -7,6 +7,8 @@ package com.ezcoins.constant;
 public interface SystemOrderTips {
     String PLACE_ORDER_SUCCESS ="您已成功下单，请及时支付";
 
+    String PLACE_ORDER_SUCCESS_SELL ="您已成功下单，请等待买方付款";
+
     String SYSTEM_CANCEL="您的订单以为超时已被系统取消，如有疑问，请联系客服";
 
     String REFUSE_ORDER="接单已被对方拒绝。如有疑问，请联系客服";

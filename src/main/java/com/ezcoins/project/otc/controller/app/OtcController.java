@@ -175,9 +175,8 @@ public class OtcController {
             @ApiImplicitParam(name = "securityPassword", value = "安全密码", required = true),
     })
     @ApiOperation(value = "判断安全密码是否正确")
-    @PostMapping("deletePaymentInfo")
-    @Log(title = "删除 收款方式", businessType = BusinessType.DELETE, operatorType = OperatorType.MOBILE)
-    public BaseResponse deletePaymentInfo(@RequestBody HashMap<String, String> map) {
+    @PostMapping("checkSecurityPassword")
+    public BaseResponse checkSecurityPassword(@RequestBody HashMap<String, String> map) {
         String securityPassword = map.get("securityPassword");
         String encode = EncoderUtil.encode(securityPassword);
         LambdaQueryWrapper<EzAdvertisingBusiness> queryWrapper = new LambdaQueryWrapper<>();
@@ -189,8 +188,6 @@ public class OtcController {
         }
         return BaseResponse.success();
     }
-
-
     //    -----------------------------------------------------------------------------------------------------------
     @NoRepeatSubmit
     @ApiOperation(value = "发布广告订单")
@@ -200,7 +197,6 @@ public class OtcController {
     public BaseResponse releaseAdvertisingOrder(@RequestBody OtcOrderReqDto otcOrderReqDto) {
         return otcOrderService.releaseAdvertisingOrder(otcOrderReqDto);
     }
-
 
 
     @NoRepeatSubmit
@@ -226,7 +222,7 @@ public class OtcController {
         return otcOrderService.nowOrderList(pageQuery);
     }
 
-    @ApiOperation(value = "购买 查询订单详情")
+    @ApiOperation(value = "购买查询订单详情")
     @GetMapping("orderInfo/{otcOrderNo}")
     @AuthToken
     public Response<OrderInfo> orderInfo(@PathVariable String otcOrderNo) {
@@ -261,7 +257,6 @@ public class OtcController {
         return orderMatchService.cancelOrder(matchOrderNo);
     }
 
-    @NoRepeatSubmit
     @ApiOperation(value = "根据用户id查询订单列表")
     @GetMapping("otcOrderListBy/{userId}")
     @AuthToken
@@ -332,7 +327,7 @@ public class OtcController {
     @ApiOperation(value = "卖家 放款")
     @PutMapping("sellerPut/{matchOrderNo}")
     @AuthToken
-    @Log(title = "卖家 放款", businessType = BusinessType.UPDATE, operatorType = OperatorType.MOBILE)
+    @Log(title = "卖家放款", businessType = BusinessType.UPDATE, operatorType = OperatorType.MOBILE)
     public BaseResponse sellerPut(@PathVariable String matchOrderNo) {
         return orderMatchService.sellerPut(matchOrderNo);
     }

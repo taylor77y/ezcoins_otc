@@ -32,6 +32,9 @@ public class CoinConstants {
         /** 空投 **/
 		AIRDROP("airdrop", "空投"),
 
+        /** 扣除 **/
+		DEDUCTION("deduction", "扣除"),
+
         /** 使用 **/
 		USE("use", "使用"),
 
