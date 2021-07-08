@@ -1,19 +1,17 @@
 package com.ezcoins.websocket;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.ezcoins.constant.enums.LoginType;
+
+import com.ezcoins.constant.RecordSonType;
+import com.ezcoins.constant.enums.coin.CoinConstants;
+import com.ezcoins.constant.enums.coin.CoinConstants.MainType;
 import com.ezcoins.constant.enums.user.KycStatus;
-import com.ezcoins.utils.SpringUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.websocket.Session;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+
 
 
 /**
@@ -49,7 +47,6 @@ public class WebSocketHandle {
             }
         }
     }
-
     public static void price(HashMap hashMap){
         SendMessage sendMessage = new SendMessage();
         sendMessage.setTopic(TopicSocket.PRICE);
@@ -123,7 +120,26 @@ public class WebSocketHandle {
         } else if (status.equals(KycStatus.BY.getCode())) {//通过
             message = String.format("【ezcoins】 %s。", "您的高级认证已通过");
         } else if (status.equals(KycStatus.PENDINGREVIEW.getCode())) {//待审核
-            message = String.format("【PingPay】 %s。", "您的高级认证已发起，请耐心等候");
+            message = String.format("【ezcoins】 %s。", "您的高级认证已发起，请耐心等候");
+        } else {
+            return;
+        }
+        send(userId, message);
+    }
+
+    /**
+     * 资产变化
+     * @param userId
+     * @param coinName
+     * @param amount
+     * @param sonType
+     */
+    public static void accountChange(String userId, String coinName, BigDecimal amount, String sonType) {
+        String message;
+        if (sonType.equals(RecordSonType.SYS_AIRPORT)) {//系统空投
+            message = String.format("【ezcoins】 %s。", "系统空投"+amount+coinName+"，资产已到账");
+        } else if (sonType.equals(RecordSonType.SYS_DEDUCTION)) {//通过
+            message = String.format("【ezcoins】 %s。", "系统已变跟你的资产"+amount+coinName);
         } else {
             return;
         }
@@ -141,7 +157,6 @@ public class WebSocketHandle {
             }
         }
     }
-
 
 //
 //    //提币发起

@@ -3,6 +3,7 @@ package com.ezcoins.project.coin.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.ezcoins.constant.RecordSonType;
 import com.ezcoins.constant.enums.coin.CoinConstants;
 import com.ezcoins.constant.enums.coin.CoinStatus;
 import com.ezcoins.context.ContextHandler;
@@ -27,6 +28,7 @@ import com.ezcoins.utils.BeanUtils;
 import com.ezcoins.utils.DateUtils;
 import com.ezcoins.utils.SpringUtils;
 import com.ezcoins.utils.StringUtils;
+import com.ezcoins.websocket.WebSocketHandle;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -170,44 +172,37 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
         }
         for (BalanceChange c : cList) {
             // 判断参数
-            if (StringUtils.isNull(c.getCoinName()) || StringUtils.isNull(c.getUserId())
-                    || StringUtils.isNull(c.getMainType())) {
+            if (StringUtils.isNull(c.getCoinName()) || StringUtils.isNull(c.getUserId())|| StringUtils.isNull(c.getMainType())) {
                 log.error("参数异常{}", JSON.toJSON(c));
                 return false;
             }
-            if (StringUtils.isNull(c.getAvailable()) && StringUtils.isNull(c.getFrozen())
-                    && StringUtils.isNull(c.getLockup())) {
+            if (StringUtils.isNull(c.getAvailable()) && StringUtils.isNull(c.getFrozen()) && StringUtils.isNull(c.getLockup())) {
                 log.error("参数异常{}", JSON.toJSON(c));
                 return false;
             }
             Account acc = getAccountByUserIdAndCoinId(c.getUserId(), c.getCoinName()); //通过用户id和币种id查询账户
-
             if (StringUtils.isNull(acc)) {
                 log.error("参数异常-{},找到不到账户", JSON.toJSON(c));
                 return false;
             }
-            c.setCoinName(acc.getCoinName());
             log.info("操作用户ID[{}]币种ID[{}-{}]余额数量[{}]冻结数量[{}]锁仓数量[{}],操作主类型[{}],操作子类型[{}]", c.getUserId(), c.getCoinName(), c.getCoinName(),
                     c.getAvailable(), c.getFrozen(), c.getLockup(), c.getMainType(), c.getSonType());
-
             if (StringUtils.isNotNull(c.getAvailable()) && c.getAvailable().compareTo(BigDecimal.ZERO) != 0) {//判断 操作剩余金额
-                if (acc.getAvailable().add(c.getAvailable()).compareTo(BigDecimal.ZERO) == -1) {
+                if (acc.getAvailable().add(c.getAvailable()).compareTo(BigDecimal.ZERO) < 0) {
                     throw new AccountBalanceNotEnoughException();
                 } else {
                     acc.setAvailable(acc.getAvailable().add(c.getAvailable()));
                 }
             }
-
             if (StringUtils.isNotNull(c.getFrozen()) && c.getFrozen().compareTo(BigDecimal.ZERO) != 0) {//判断 操作冻结金额
-                if (acc.getFrozen().add(c.getFrozen()).compareTo(BigDecimal.ZERO) == -1) {
+                if (acc.getFrozen().add(c.getFrozen()).compareTo(BigDecimal.ZERO) < 0) {
                     throw new AccountBalanceNotEnoughException();
                 } else {
                     acc.setFrozen(acc.getFrozen().add(c.getFrozen()));
                 }
             }
-
             if (StringUtils.isNotNull(c.getLockup()) && c.getLockup().compareTo(BigDecimal.ZERO) != 0) { //判断 操作锁仓金额
-                if (acc.getLockup().add(c.getLockup()).compareTo(BigDecimal.ZERO) == -1) {
+                if (acc.getLockup().add(c.getLockup()).compareTo(BigDecimal.ZERO) < 0) {
                     throw new AccountBalanceNotEnoughException();
                 } else {
                     acc.setLockup(acc.getLockup().add(c.getLockup()));
@@ -222,7 +217,8 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
                     if (CoinConstants.MainType.FROZEN.getType().equals(c.getMainType()) || CoinConstants.MainType.UNFREEZE.getType().equals(c.getMainType())
                             || CoinConstants.MainType.LOCKUP.getType().equals(c.getMainType()) || CoinConstants.MainType.UNLOCK.getType().equals(c.getMainType())) {
                         // 冻结/解冻/锁仓/解锁 不生成资产流水
-                    } else if (CoinConstants.MainType.RECHARGE.getType().equals(c.getMainType()) || CoinConstants.MainType.WITHDRAWAL.getType().equals(c.getMainType())) {
+                    } else if (CoinConstants.MainType.RECHARGE.getType().equals(c.getMainType())
+                            || CoinConstants.MainType.WITHDRAWAL.getType().equals(c.getMainType())) {
                         // 充值/提现 单独生成资产流水
                     } else {
                         Record rec = new Record();
@@ -236,6 +232,7 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
                         rec.setStatus(CoinConstants.RecordStatus.OK.getStatus());
                         rec.setAmount(c.getAvailable());
                         recordService.save(rec);
+                        WebSocketHandle.accountChange(c.getUserId(),c.getCoinName(),c.getAvailable(),c.getSonType());
                     }
                 }
             } catch (Exception e) {
@@ -249,7 +246,6 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
         return true;
     }
 
-
     @Override
     public BaseResponse revise(ReviseAccountReqDto reviseAccountReqDto) {
         String userId = reviseAccountReqDto.getUserId();
@@ -257,7 +253,6 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
         String type = reviseAccountReqDto.getType();//增加：1  减少：0
         String memo = reviseAccountReqDto.getMemo();
         String coinName = reviseAccountReqDto.getCoinName();
-
         EzUser user = userService.getById(userId);
         if (StringUtils.isNull(user)) {
             return BaseResponse.error("用户不存在");
@@ -268,17 +263,16 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
         balanceChange.setCoinName(coinName);
         balanceChange.setMemo(memo);
         balanceChange.setUserId(userId);
-
         if ("1".equals(type)) {
             balanceChange.setAvailable(amount);
-            balanceChange.setMainType(CoinConstants.MainType.AIRDROP.getType());
+            balanceChange.setMainType(CoinConstants.MainType.SYS.getType());
             balanceChange.setIncomeType(CoinConstants.IncomeType.INCOME.getType());
-            balanceChange.setSonType("systemtransferin");
+            balanceChange.setSonType(RecordSonType.SYS_AIRPORT);
         } else {
             balanceChange.setAvailable(amount.negate());
-            balanceChange.setMainType(CoinConstants.MainType.DEDUCTION.getType());
+            balanceChange.setMainType(CoinConstants.MainType.SYS.getType());
             balanceChange.setIncomeType(CoinConstants.IncomeType.PAYOUT.getType());
-            balanceChange.setSonType("systemtransferout");
+            balanceChange.setSonType(RecordSonType.SYS_DEDUCTION);
         }
         bList.add(balanceChange);
         if (!balanceChangeSYNC(bList)) {// 资产变更异常

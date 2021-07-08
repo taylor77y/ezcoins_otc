@@ -19,17 +19,18 @@ public interface SystemOrderTips {
 
 
     String SYSTEM_CANCEL="您的订单以为超时已被系统取消，如有疑问，请联系客服";
+    String SYSTEM_CANCEL_2="订单处理已超时，该订单已取消";
 
-
-
-
-
-    String PAYMENT_BUY="您已将订单标记为“已付款”的状态，请等待对方确认收款和放行";
-
-    String PAYMENT_SELL="对方已将订单标记为“已付款”的状态，请确认收款和放行";
-
-    String RELEASE="对方已确认收到您的付款，您所购买的货币已发放到您的账户,请查收";
 
     String CANCEL="订单已取消。如有疑问，请联系客服";
+    String CANCEL_2="对方已取消订单";
+    String ORDERS_CANCEL="您已取消订单";
+
+    String PAYMENT_BUY="您已将订单标记为“已付款”的状态，请等待对方确认收款和放行";
+    String PAYMENT_SELL="对方已将订单标记为“已付款”的状态，请确认收款和放行";
+
+
+    String RELEASE="对方已确认收到您的付款，您所购买的货币已发放到您的账户,请查收";
+    String RELEASE_2="您已经确定收到到付，货币已转出到买家";
 }
 

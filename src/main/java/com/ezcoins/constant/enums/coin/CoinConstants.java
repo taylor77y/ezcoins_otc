@@ -9,7 +9,6 @@ public class CoinConstants {
 	 *  资产流水记录主类型
 	 */
 	public static enum MainType  {
-
 		/** 充币 **/
 		RECHARGE("recharge", "充币"),
 		
@@ -19,7 +18,10 @@ public class CoinConstants {
 		/** 系统空投 **/
 		AIRDROP("airdrop", "空投"),
 
-        /** 转入 **/
+		/**系统**/
+		SYS("sys", "系统"),
+
+		/** 转入 **/
 		TRANSFERIN("transferin", "转入"),
 
         /** 转出 **/

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ezcoins.base.BaseException;
+import com.ezcoins.constant.RecordSonType;
 import com.ezcoins.constant.SystemOrderTips;
 import com.ezcoins.constant.enums.coin.CoinConstants;
 import com.ezcoins.constant.enums.otc.MatchOrderStatus;
@@ -96,9 +97,25 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
         if ("0".equals(orderMatch.getType())){
             return BaseResponse.error(MessageUtils.message("该订单类型不能取消"));
         }
+
+        List<EzOtcChatMsg> list = new ArrayList<>();
+        EzOtcChatMsg ezOtcChatMsg = new EzOtcChatMsg();
+        EzOtcChatMsg ezOtcChatMsg1 = new EzOtcChatMsg();
+        ezOtcChatMsg.setOrderMatchNo(orderMatch.getOrderMatchNo());
+        ezOtcChatMsg1.setOrderMatchNo(orderMatch.getOrderMatchNo());
+
+        ezOtcChatMsg.setReceiveUserId(orderMatch.getOtcOrderUserId());
+        ezOtcChatMsg1.setReceiveUserId(orderMatch.getUserId());
+
         //查看订单状态
         if (orderMatch.getStatus().equals(MatchOrderStatus.PENDINGORDER.getCode())) {
             //用户免费取消
+            ezOtcChatMsg.setSendText(SystemOrderTips.CANCEL_2);
+            ezOtcChatMsg1.setSendText(SystemOrderTips.ORDERS_CANCEL);
+            list.add(ezOtcChatMsg);
+            list.add(ezOtcChatMsg1);
+            otcChatMsgService.sendSysChat(list, MatchOrderStatus.ORDERBEENCANCELLED.getCode());
+
             orderMatch.setStatus(MatchOrderStatus.ORDERBEENCANCELLED.getCode());
         } else if (orderMatch.getStatus().equals(MatchOrderStatus.WAITFORPAYMENT.getCode())) {
             orderMatch.setStatus(MatchOrderStatus.CANCELLED.getCode());
@@ -114,6 +131,13 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
                 count += 1; //用户取消次数增加
             }
             redisCache.setCacheObject(RedisConstants.CANCEL_ORDER_COUNT_KEY + userId, count, Math.toIntExact(DateUtils.getSecondsNextEarlyMorning()), TimeUnit.SECONDS);
+            ezOtcChatMsg.setSendText(SystemOrderTips.CANCEL_2);
+            ezOtcChatMsg1.setSendText(SystemOrderTips.CANCEL);
+            list.add(ezOtcChatMsg);
+            list.add(ezOtcChatMsg1);
+            otcChatMsgService.sendSysChat(list, MatchOrderStatus.CANCELLED.getCode());
+
+            orderMatch.setStatus(MatchOrderStatus.ORDERBEENCANCELLED.getCode());
         } else {
             throw new BaseException(MessageUtils.message("订单状态已发生变化"));
         }
@@ -142,40 +166,31 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
         }
         orderMatch.setPaymentTime(DateUtils.getNowDate());
         orderMatch.setStatus(MatchOrderStatus.PAID.getCode());
-        //发送标记到页面
         //TODO:存入消息
-
-
+        EzOtcChatMsg ezOtcChatMsg1 = new EzOtcChatMsg();
+        EzOtcChatMsg ezOtcChatMsg2 = new EzOtcChatMsg();
         List<EzOtcChatMsg> list=new ArrayList<>();
+        ezOtcChatMsg1.setOrderMatchNo(orderMatch.getOrderMatchNo());
+        ezOtcChatMsg2.setOrderMatchNo(orderMatch.getOrderMatchNo());
         String userId = ContextHandler.getUserId();
         if ("0".equals(orderMatch.getType())){//买单
-            EzOtcChatMsg ezOtcChatMsg1 = new EzOtcChatMsg();
-            ezOtcChatMsg1.setOrderMatchNo(orderMatch.getOrderMatchNo());
             ezOtcChatMsg1.setSendText(SystemOrderTips.PAYMENT_SELL);
             ezOtcChatMsg1.setReceiveUserId(userId);
             list.add(ezOtcChatMsg1);
-
-            EzOtcChatMsg ezOtcChatMsg2 = new EzOtcChatMsg();
-            ezOtcChatMsg2.setOrderMatchNo(orderMatch.getOrderMatchNo());
             ezOtcChatMsg2.setSendText(SystemOrderTips.PAYMENT_BUY);
             ezOtcChatMsg2.setReceiveUserId(orderMatch.getOtcOrderUserId());
             list.add(ezOtcChatMsg2);
-            WebSocketHandle.orderStatusChange(userId,MatchOrderStatus.PAID.getCode());
         }else {
-            EzOtcChatMsg ezOtcChatMsg1 = new EzOtcChatMsg();
             ezOtcChatMsg1.setSendText(SystemOrderTips.PAYMENT_BUY);
             ezOtcChatMsg1.setReceiveUserId(userId);
             ezOtcChatMsg1.setOrderMatchNo(orderMatch.getOrderMatchNo());
             list.add(ezOtcChatMsg1);
-
-            EzOtcChatMsg ezOtcChatMsg2 = new EzOtcChatMsg();
             ezOtcChatMsg2.setSendText(SystemOrderTips.PAYMENT_SELL);
             ezOtcChatMsg2.setOrderMatchNo(orderMatch.getOrderMatchNo());
             ezOtcChatMsg2.setReceiveUserId(orderMatch.getOtcOrderUserId());
             list.add(ezOtcChatMsg2);
-            WebSocketHandle.orderStatusChange(orderMatch.getOtcOrderUserId(),MatchOrderStatus.PAID.getCode());
         }
-        otcChatMsgService.saveBatch(list);
+        otcChatMsgService.sendSysChat(list, MatchOrderStatus.PAID.getCode());
         baseMapper.updateById(orderMatch);
         return BaseResponse.success();
     }
@@ -203,67 +218,77 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
         //减少冻结的币
         BigDecimal frozeAmount = ezOtcOrder.getFrozeAmount();
         BigDecimal amount = orderMatch.getAmount();
-
         BalanceChange b1 = new BalanceChange();
         b1.setCoinName(orderMatch.getCoinName());
-        b1.setAvailable(amount.negate());
+        b1.setFrozen(amount.negate());
         b1.setIncomeType(CoinConstants.IncomeType.PAYOUT.getType());
         b1.setMainType(CoinConstants.MainType.TRANSFEROUT.getType());
         b1.setFee(BigDecimal.ZERO);
+        b1.setSonType(RecordSonType.TRANSFER_OUT);
+
         BalanceChange b2 = new BalanceChange();
         b2.setCoinName(orderMatch.getCoinName());
         b2.setAvailable(amount);
         b2.setIncomeType(CoinConstants.IncomeType.INCOME.getType());
         b2.setMainType(CoinConstants.MainType.TRANSFERIN.getType());
         b2.setFee(BigDecimal.ZERO);
+        b2.setSonType(RecordSonType.TRANSFER_IN);
+
         //改变OTC信息
-        LambdaQueryWrapper<EzAdvertisingBusiness> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         String sellUserId=null;
         String buyUserId=null;
         Date payTime=orderMatch.getPaymentTime();
 
-        EzOtcChatMsg ezOtcChatMsg = new EzOtcChatMsg();
-        ezOtcChatMsg.setSendText(SystemOrderTips.RELEASE);
-        ezOtcChatMsg.setOrderMatchNo(orderMatch.getOrderMatchNo());
+        List<EzOtcChatMsg> list=new ArrayList<>();
+        EzOtcChatMsg ezOtcChatMsg1 = new EzOtcChatMsg();
+        EzOtcChatMsg ezOtcChatMsg2 = new EzOtcChatMsg();
+        ezOtcChatMsg1.setOrderMatchNo(orderMatch.getOrderMatchNo());
+        ezOtcChatMsg2.setOrderMatchNo(orderMatch.getOrderMatchNo());
 
-        String receiveUserId=null;
         if ("0".equals(ezOtcOrder.getType())) {//买单
             b1.setUserId(orderMatch.getUserId());
             cList.add(b1);
+            ezOtcChatMsg1.setSendText(SystemOrderTips.RELEASE_2);
+            ezOtcChatMsg1.setReceiveUserId(orderMatch.getUserId());
             //将amount币存入买家的账户中
             b2.setUserId(ezOtcOrder.getUserId());
+            cList.add(b2);
+            ezOtcChatMsg2.setSendText(SystemOrderTips.RELEASE);
+            ezOtcChatMsg2.setReceiveUserId(ezOtcOrder.getUserId());
+            list.add(ezOtcChatMsg1);
+            list.add(ezOtcChatMsg2);
+
             sellUserId=orderMatch.getUserId();
             buyUserId=ezOtcOrder.getUserId();
-            cList.add(b2);
-
-            receiveUserId=orderMatch.getOtcOrderUserId();
         } else if ("1".equals(ezOtcOrder.getType())) {  //卖单 需要广告商户进行放币
+            BigDecimal frozeNow = frozeAmount.subtract(amount); //otc订单冻结币的剩余
+            ezOtcOrder.setFrozeAmount(frozeNow);
+
             b1.setUserId(ezOtcOrder.getUserId());
             cList.add(b1);
-            //otc订单冻结币的剩余
-            BigDecimal frozeNow = frozeAmount.subtract(amount);
-            ezOtcOrder.setFrozeAmount(frozeNow);
+            ezOtcChatMsg1.setSendText(SystemOrderTips.RELEASE);
+            ezOtcChatMsg1.setReceiveUserId(orderMatch.getUserId());
             //将amount币存入买家的账户中
             b2.setUserId(orderMatch.getUserId());
+            cList.add(b2);
+            ezOtcChatMsg2.setSendText(SystemOrderTips.RELEASE_2);
+            ezOtcChatMsg2.setReceiveUserId(ezOtcOrder.getUserId());
+
             sellUserId=ezOtcOrder.getUserId();
             buyUserId=orderMatch.getUserId();
-            cList.add(b2);
             otcOrderService.updateById(ezOtcOrder);
-            receiveUserId=orderMatch.getUserId();
         }
-        ezOtcChatMsg.setReceiveUserId(receiveUserId);
-        WebSocketHandle.orderStatusChange(receiveUserId,MatchOrderStatus.COMPLETED.getCode());
-        otcChatMsgService.save(ezOtcChatMsg);
-
+        otcChatMsgService.sendSysChat(list, MatchOrderStatus.COMPLETED.getCode());
         Date nowDate = DateUtils.getNowDate();
         //改变订单状态
         orderMatch.setStatus(MatchOrderStatus.COMPLETED.getCode());
         orderMatch.setFinishTime(nowDate);
         baseMapper.updateById(orderMatch);
-        businessService.updateCount(sellUserId,buyUserId,payTime,nowDate);
+
         if (!accountService.balanceChangeSYNC(cList)) {// 资产变更异常
             throw new AccountOperationBusyException();
         }
+        businessService.updateCount(sellUserId,buyUserId,payTime,nowDate);
         return BaseResponse.success();
     }
 

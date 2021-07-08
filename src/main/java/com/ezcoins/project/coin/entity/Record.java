@@ -36,9 +36,6 @@ public class Record implements Serializable {
     @ApiModelProperty(value = "用户ID")
     private String userId;
 
-    @ApiModelProperty(value = "币种ID")
-    private Integer coinId;
-
     @ApiModelProperty(value = "币种名")
     private String coinName;
 

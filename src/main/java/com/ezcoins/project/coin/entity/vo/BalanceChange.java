@@ -21,20 +21,14 @@ public class BalanceChange {
 	private BigDecimal frozen;
 	/**操作锁仓(正数加锁仓/负数减锁仓)**/
     private BigDecimal lockup;
-
-	/**
-	 * 手续费
-	 */
+	/**手续费**/
 	private BigDecimal fee;
     /**收支类型**/
     private String incomeType;
-
 	/**操作主类型**/
 	private String mainType;
-
 	/**操作子类型**/
     private String sonType;
-
 	/**备注**/
     private String memo;
 

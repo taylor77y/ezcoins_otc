@@ -25,9 +25,6 @@ public class PaymentMethodRespDto {
     @ApiModelProperty(value = "卖家真实姓名")
     private String realName;
 
-    @ApiModelProperty(value = "图标")
-    private String icon;
-
     @ApiModelProperty(value = "账号")
     private String accountNumber;
 
