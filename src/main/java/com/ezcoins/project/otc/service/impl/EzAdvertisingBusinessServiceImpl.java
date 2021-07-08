@@ -8,6 +8,7 @@ import com.ezcoins.project.otc.mapper.EzAdvertisingBusinessMapper;
 import com.ezcoins.project.otc.service.EzAdvertisingBusinessService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ezcoins.response.BaseResponse;
+import com.ezcoins.utils.EncoderUtil;
 import com.ezcoins.utils.MessageUtils;
 import com.ezcoins.utils.StringUtils;
 import lombok.var;
@@ -43,7 +44,7 @@ public class EzAdvertisingBusinessServiceImpl extends ServiceImpl<EzAdvertisingB
         LambdaQueryWrapper<EzAdvertisingBusiness> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(EzAdvertisingBusiness::getUserId, userId);
         EzAdvertisingBusiness advertisingBusiness = baseMapper.selectOne(queryWrapper);
-        advertisingBusiness.setSecurityPassword(securityPassword);
+        advertisingBusiness.setSecurityPassword(EncoderUtil.encode(securityPassword));
         advertisingBusiness.setUserId(ContextHandler.getUserId());
         if (StringUtils.isNotEmpty(name) && advertisingBusiness.getAdvertisingName().equals(userId)) {
             LambdaQueryWrapper<EzAdvertisingBusiness> queryWrapper1 = new LambdaQueryWrapper<>();

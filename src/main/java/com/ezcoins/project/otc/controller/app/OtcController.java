@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @Author: WangLei
@@ -149,7 +150,6 @@ public class OtcController {
     }
 
 
-
     @NoRepeatSubmit
     @AuthToken(kyc = true)
     @ApiOperation(value = "添加/修改收款方式")
@@ -168,8 +168,6 @@ public class OtcController {
         paymentInfoService.removeById(id);
         return BaseResponse.success();
     }
-
-    @NoRepeatSubmit
     @AuthToken
     @ApiImplicitParams({
             @ApiImplicitParam(name = "securityPassword", value = "安全密码", required = true),
@@ -188,6 +186,7 @@ public class OtcController {
         }
         return BaseResponse.success();
     }
+
     //    -----------------------------------------------------------------------------------------------------------
     @NoRepeatSubmit
     @ApiOperation(value = "发布广告订单")
@@ -197,7 +196,6 @@ public class OtcController {
     public BaseResponse releaseAdvertisingOrder(@RequestBody OtcOrderReqDto otcOrderReqDto) {
         return otcOrderService.releaseAdvertisingOrder(otcOrderReqDto);
     }
-
 
     @NoRepeatSubmit
     @ApiOperation(value = "用户根据订单号下单购买/出售")
@@ -214,6 +212,7 @@ public class OtcController {
     public ResponseList<OtcOrderRespDto> otcOrderList(@RequestBody OtcOrderQueryReqDto orderQueryReqDto) {
         return otcOrderService.otcOrderList(orderQueryReqDto);
     }
+
 
     @ApiOperation(value = "NEW ORDER")
     @PostMapping("newOrderList")
@@ -339,7 +338,7 @@ public class OtcController {
     @AuthToken
     @Log(title = "订单申诉", businessType = BusinessType.UPDATE, operatorType = OperatorType.MOBILE)
     public BaseResponse appeal() {
-        //TODO:  otcOrderService.sellerPut(orderOperateReqDto);
+//        return otcOrderService.appeal(orderOperateReqDto);
         return BaseResponse.success();
     }
 
@@ -394,7 +393,6 @@ public class OtcController {
     @AuthToken
     public ResponseList<OrderRecordRespDto> adMatchOrder(@RequestBody AdMatchOrderQueryReqDto matchOrderQueryReqDto) {
         Page<EzOtcOrderMatch> page = new Page<>(matchOrderQueryReqDto.getPage(), matchOrderQueryReqDto.getLimit());
-
         LambdaQueryWrapper<EzOtcOrderMatch> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(EzOtcOrderMatch::getOtcOrderUserId, ContextHandler.getUserId());
 
@@ -436,16 +434,59 @@ public class OtcController {
     @PostMapping("sendChat")
     @AuthToken
     public BaseResponse sendChat(@RequestBody ChatMsgReqDto msgReqDto) {
-        return otcChatMsgService.sendChat(msgReqDto);
+        msgReqDto.setIsSystem("1");
+        return otcChatMsgService.sendChat(msgReqDto, ContextHandler.getUserId());
     }
 
-    @ApiOperation(value = "根据 匹配订单id查询聊天记录")
+
+    @ApiOperation(value = "根据匹配订单id查询聊天记录")
     @GetMapping("chatMsg/{orderMatchNo}")
     @AuthToken
-    public ResponseList<EzOtcChatMsg> advertisingBusinessList(@PathVariable String orderMatchNo) {
+    public ResponseList<ChatMsgRespDto> chatMsg(@PathVariable String orderMatchNo) {
+        //查询订单
+        EzOtcOrderMatch match = orderMatchService.getById(orderMatchNo);
+        String userId = match.getUserId();
+        String otcOrderUserId = match.getOtcOrderUserId();
+        String userId1 = ContextHandler.getUserId();
+        String u=null;
+        if (otcOrderUserId.equals(userId1)){
+            u=userId;
+        }else {
+            u=otcOrderUserId;
+        }
+        LambdaQueryWrapper<EzAdvertisingBusiness> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(EzAdvertisingBusiness::getUserId, userId1);
+        String sendName = businessService.getOne(lambdaQueryWrapper).getAdvertisingName();//自己的名字
+
+        LambdaQueryWrapper<EzAdvertisingBusiness> lambdaQueryWrapper2 = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper2.eq(EzAdvertisingBusiness::getUserId, u);
+        String receiveName = businessService.getOne(lambdaQueryWrapper2).getAdvertisingName();//对面的名字
+        //查询双方的
         LambdaQueryWrapper<EzOtcChatMsg> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(EzOtcChatMsg::getOrderMatchNo, orderMatchNo);
-        return ResponseList.success(otcChatMsgService.list(queryWrapper));
+        queryWrapper.orderByDesc(EzOtcChatMsg::getCreateTime);
+        List<EzOtcChatMsg> list = otcChatMsgService.list(queryWrapper);
+
+        List<ChatMsgRespDto> list1 = new ArrayList<>();
+        String finalU = u;
+        list.forEach(e -> {
+            if (!e.getReceiveUserId().equals(userId1) && "0".equals(e.getIsSystem())) {
+            } else {
+                ChatMsgRespDto chatMsgReqDto = new ChatMsgRespDto();
+                BeanUtils.copyBeanProp(chatMsgReqDto, e);
+                if (chatMsgReqDto.getReceiveUserId().equals(userId1)){
+                    chatMsgReqDto.setReceiveUserId(finalU);
+                    chatMsgReqDto.setSendUserId(userId1);
+                }else {
+                    chatMsgReqDto.setSendUserId(finalU);
+                    chatMsgReqDto.setReceiveUserId(chatMsgReqDto.getSendUserId());
+                }
+                chatMsgReqDto.setSendName(sendName);//我的名
+                chatMsgReqDto.setReceiveName(receiveName);//对面的名
+                list1.add(chatMsgReqDto);
+            }
+        });
+        return ResponseList.success(list1);
     }
 
 }

@@ -21,5 +21,6 @@ public interface EzOtcChatMsgService extends IService<EzOtcChatMsg> {
      * @param msgReqDto
      * @return
      */
-    BaseResponse sendChat(ChatMsgReqDto msgReqDto) ;
+    BaseResponse sendChat(ChatMsgReqDto msgReqDto,String sendId);
+
 }

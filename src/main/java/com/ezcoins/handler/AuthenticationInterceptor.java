@@ -55,7 +55,6 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
         }
 
         if (!flag) {
-            //
             return false;
         }
 
@@ -74,12 +73,10 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
             }
             //解析token
             IJWTInfo fromToken = jwtHelper.getInfoFromToken(token);
-
             log.info("用户{}", fromToken);
             if (fromToken == null) {
                 throw new TokenException();
             }
-
             //根据token存储的值，redis判断是否失效
             boolean checkToken = jwtHelper.verifyToken(fromToken);
             if (!checkToken) {
@@ -89,7 +86,6 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
             ContextHandler.setUserId(fromToken.getUserId());
             ContextHandler.setUserName(fromToken.getUserName());
             ContextHandler.setUserType(fromToken.getUserType());
-
             //APP权限
             if (fromToken.getUserType().equals(LoginType.APP.getType())) {
                 EzUser user = null;
@@ -102,7 +98,6 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
                         log.error("请先进行高级认证");
                     });
                 }
-
                 if (authToken.kyc()) {
                     if (user == null) {
                         user = userService.getById(fromToken.getUserId());

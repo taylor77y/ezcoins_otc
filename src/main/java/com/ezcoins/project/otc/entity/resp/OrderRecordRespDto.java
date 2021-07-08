@@ -19,8 +19,11 @@ import java.util.List;
  */
 @Data
 public class OrderRecordRespDto {
-    @ApiModelProperty(value = "订单号")
+    @ApiModelProperty(value = "匹配订单号")
     private String orderMatchNo;
+
+    @ApiModelProperty(value = "发布订单号")
+    private String orderNo;
 
     @ApiModelProperty(value = "买家/卖家昵称")
     private String advertisingName;
@@ -56,4 +59,10 @@ public class OrderRecordRespDto {
     @ApiModelProperty(value = "单价")
     private BigDecimal price;
 
+    @ApiModelProperty(value = "订单到期时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date dueTime;
+
+    @ApiModelProperty(value = "是否为接单广告(0:是 1：否)")
+    private String isAdvertising;
 }

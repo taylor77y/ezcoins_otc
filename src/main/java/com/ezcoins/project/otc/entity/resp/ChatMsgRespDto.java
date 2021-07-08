@@ -1,23 +1,27 @@
-package com.ezcoins.project.otc.entity.req;
+package com.ezcoins.project.otc.entity.resp;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.Serializable;
 import java.util.Date;
 
 /**
  * @Author: WangLei
  * @Email: 1044508403@qq.com
  * @Description:
- * @Date:2021/6/21 10:39
+ * @Date:2021/7/7 14:27
  * @Version:1.0
  */
 @Data
-public class ChatMsgReqDto implements Serializable {
-    @ApiModelProperty(value = "匹配订单号")
-    private String orderMatchNo;
+public class ChatMsgRespDto {
+    @ApiModelProperty(value = "发送者id")
+    private String sendName;
+
+    @ApiModelProperty(value = "接收者id")
+    private String receiveName;
 
     @ApiModelProperty(value = "发送者id")
     private String sendUserId;
@@ -26,9 +30,10 @@ public class ChatMsgReqDto implements Serializable {
     private String receiveUserId;
 
     @ApiModelProperty(value = "发送时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
 
-    @ApiModelProperty(value = "文字内容")
+    @ApiModelProperty(value = "发送内容")
     private String sendText;
 
     @ApiModelProperty(value = "内容类型(0:图片 1：文字)")

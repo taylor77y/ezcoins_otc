@@ -16,27 +16,14 @@ public class CoinConstants {
 		/** 提币 **/
 		WITHDRAWAL("withdrawal", "提币"),
 
-		/** 发布订单 **/
-		RELEASEORDER("releaseorder", "发布订单"),
-
-		BUY("buy", "购买"),
-
-		SELL("sell", "卖出"),
+		/** 系统空投 **/
+		AIRDROP("airdrop", "空投"),
 
         /** 转入 **/
 		TRANSFERIN("transferin", "转入"),
 
         /** 转出 **/
 		TRANSFEROUT("transferout", "转出"),
-
-        /** 空投 **/
-		AIRDROP("airdrop", "空投"),
-
-        /** 扣除 **/
-		DEDUCTION("deduction", "扣除"),
-
-        /** 使用 **/
-		USE("use", "使用"),
 
         /** 冻结 **/
 		FROZEN("frozen", "冻结"),

@@ -92,4 +92,7 @@ public class EzOtcOrderMatch implements Serializable {
     @ApiModelProperty(value = "支付详情id")
     private String orderPaymentId;
 
+    @ApiModelProperty(value = "是否为接单广告(0:是 1：否)")
+    private String isAdvertising;
+
 }

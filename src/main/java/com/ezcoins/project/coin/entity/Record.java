@@ -36,15 +36,6 @@ public class Record implements Serializable {
     @ApiModelProperty(value = "用户ID")
     private String userId;
 
-    @ApiModelProperty(value = "用户名")
-    private String userName;
-
-    @ApiModelProperty(value = "到达用户ID（内转使用）")
-    private Integer toId;
-
-    @ApiModelProperty(value = "从")
-    private String fromUser;
-
     @ApiModelProperty(value = "币种ID")
     private Integer coinId;
 
@@ -90,6 +81,11 @@ public class Record implements Serializable {
     @TableField(fill = FieldFill.INSERT_UPDATE)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date updateTime;
+
+    @ApiModelProperty(value = "创建者")
+    private String createBy;
+
+
 
 
 }

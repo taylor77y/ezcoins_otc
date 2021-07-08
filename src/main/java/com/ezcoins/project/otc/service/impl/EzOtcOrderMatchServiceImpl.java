@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ezcoins.base.BaseException;
+import com.ezcoins.constant.SystemOrderTips;
 import com.ezcoins.constant.enums.coin.CoinConstants;
 import com.ezcoins.constant.enums.otc.MatchOrderStatus;
 import com.ezcoins.constant.interf.IndexOrderNoKey;
@@ -29,6 +30,7 @@ import com.ezcoins.response.ResponseList;
 import com.ezcoins.utils.BeanUtils;
 import com.ezcoins.utils.DateUtils;
 import com.ezcoins.utils.MessageUtils;
+import com.ezcoins.websocket.WebSocketHandle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -38,6 +40,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -117,6 +120,8 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
     }
 
 
+    @Autowired
+    private EzOtcChatMsgService otcChatMsgService;
     /**
      * @param matchOrderNo
      * @Description: 买家确认 付款
@@ -136,8 +141,39 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
         orderMatch.setPaymentTime(DateUtils.getNowDate());
         orderMatch.setStatus(MatchOrderStatus.PAID.getCode());
         //发送标记到页面
+        //TODO:存入消息
 
 
+        List<EzOtcChatMsg> list=new ArrayList<>();
+        String userId = ContextHandler.getUserId();
+        if ("0".equals(orderMatch.getType())){//买单
+            EzOtcChatMsg ezOtcChatMsg1 = new EzOtcChatMsg();
+            ezOtcChatMsg1.setOrderMatchNo(orderMatch.getOrderMatchNo());
+            ezOtcChatMsg1.setSendText(SystemOrderTips.PAYMENT_SELL);
+            ezOtcChatMsg1.setReceiveUserId(userId);
+            list.add(ezOtcChatMsg1);
+
+            EzOtcChatMsg ezOtcChatMsg2 = new EzOtcChatMsg();
+            ezOtcChatMsg2.setOrderMatchNo(orderMatch.getOrderMatchNo());
+            ezOtcChatMsg2.setSendText(SystemOrderTips.PAYMENT_BUY);
+            ezOtcChatMsg2.setReceiveUserId(orderMatch.getOtcOrderUserId());
+            list.add(ezOtcChatMsg2);
+            WebSocketHandle.orderStatusChange(userId,MatchOrderStatus.PAID.getCode());
+        }else {
+            EzOtcChatMsg ezOtcChatMsg1 = new EzOtcChatMsg();
+            ezOtcChatMsg1.setSendText(SystemOrderTips.PAYMENT_BUY);
+            ezOtcChatMsg1.setReceiveUserId(userId);
+            ezOtcChatMsg1.setOrderMatchNo(orderMatch.getOrderMatchNo());
+            list.add(ezOtcChatMsg1);
+
+            EzOtcChatMsg ezOtcChatMsg2 = new EzOtcChatMsg();
+            ezOtcChatMsg2.setSendText(SystemOrderTips.PAYMENT_SELL);
+            ezOtcChatMsg2.setOrderMatchNo(orderMatch.getOrderMatchNo());
+            ezOtcChatMsg2.setReceiveUserId(orderMatch.getOtcOrderUserId());
+            list.add(ezOtcChatMsg2);
+            WebSocketHandle.orderStatusChange(orderMatch.getOtcOrderUserId(),MatchOrderStatus.PAID.getCode());
+        }
+        otcChatMsgService.saveBatch(list);
         baseMapper.updateById(orderMatch);
         return BaseResponse.success();
     }
@@ -162,7 +198,6 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
         //匹配订单分为 买单 和 卖单  //查询到otc 订单
         EzOtcOrder ezOtcOrder = otcOrderService.getById(orderMatch.getOrderNo());
         List<BalanceChange> cList = new ArrayList<>();
-
         //减少冻结的币
         BigDecimal frozeAmount = ezOtcOrder.getFrozeAmount();
         BigDecimal amount = orderMatch.getAmount();
@@ -173,7 +208,6 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
         b1.setIncomeType(CoinConstants.IncomeType.PAYOUT.getType());
         b1.setMainType(CoinConstants.MainType.TRANSFEROUT.getType());
         b1.setFee(BigDecimal.ZERO);
-
         BalanceChange b2 = new BalanceChange();
         b2.setCoinName(orderMatch.getCoinName());
         b2.setAvailable(amount);
@@ -186,8 +220,11 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
         String buyUserId=null;
         Date payTime=orderMatch.getPaymentTime();
 
+        EzOtcChatMsg ezOtcChatMsg = new EzOtcChatMsg();
+        ezOtcChatMsg.setSendText(SystemOrderTips.RELEASE);
+        ezOtcChatMsg.setOrderMatchNo(orderMatch.getOrderMatchNo());
 
-
+        String receiveUserId=null;
         if ("0".equals(ezOtcOrder.getType())) {//买单
             b1.setUserId(orderMatch.getUserId());
             cList.add(b1);
@@ -196,6 +233,8 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
             sellUserId=orderMatch.getUserId();
             buyUserId=ezOtcOrder.getUserId();
             cList.add(b2);
+
+            receiveUserId=orderMatch.getOtcOrderUserId();
         } else if ("1".equals(ezOtcOrder.getType())) {  //卖单 需要广告商户进行放币
             b1.setUserId(ezOtcOrder.getUserId());
             cList.add(b1);
@@ -208,7 +247,11 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
             buyUserId=orderMatch.getUserId();
             cList.add(b2);
             otcOrderService.updateById(ezOtcOrder);
+            receiveUserId=orderMatch.getUserId();
         }
+        ezOtcChatMsg.setReceiveUserId(receiveUserId);
+        WebSocketHandle.orderStatusChange(receiveUserId,MatchOrderStatus.COMPLETED.getCode());
+        otcChatMsgService.save(ezOtcChatMsg);
 
         Date nowDate = DateUtils.getNowDate();
         //改变订单状态
@@ -314,7 +357,7 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
         Page<EzOtcOrderMatch> page = new Page<EzOtcOrderMatch>(orderRecordQueryReqDto.getPage(), orderRecordQueryReqDto.getLimit());
         LambdaQueryWrapper<EzOtcOrderMatch> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(EzOtcOrderMatch::getUserId, ContextHandler.getUserId());
-
+        queryWrapper.orderByDesc(EzOtcOrderMatch::getCreateTime);
         String status = orderRecordQueryReqDto.getStatus();
         CheckException.checkNotEmpty(status, () -> {
             queryWrapper.eq(EzOtcOrderMatch::getStatus, orderRecordQueryReqDto.getStatus());
@@ -332,9 +375,6 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
         ezOtcOrderMatchPage.getRecords().forEach(e -> {
             OrderRecordRespDto orderRecordRespDto = new OrderRecordRespDto();
             BeanUtils.copyBeanProp(orderRecordRespDto, e);
-            LambdaQueryWrapper<EzOtcOrderPayment> lambdaQueryWrapper=new LambdaQueryWrapper();
-            lambdaQueryWrapper.eq(EzOtcOrderPayment::getOrderMatchNo,e.getOrderMatchNo());
-            orderRecordRespDto.setEzOtcOrderPayments(orderPaymentService.list(lambdaQueryWrapper));
             orderRecordRespDtos.add(orderRecordRespDto);
         });
         return ResponseList.success(orderRecordRespDtos);

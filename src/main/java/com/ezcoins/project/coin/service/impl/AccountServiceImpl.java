@@ -2,6 +2,7 @@ package com.ezcoins.project.coin.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.ezcoins.constant.enums.coin.CoinConstants;
 import com.ezcoins.constant.enums.coin.CoinStatus;
 import com.ezcoins.context.ContextHandler;
@@ -86,15 +87,17 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
                 boolean isLock = cacheUtils.getLock(lockName, CacheUtils.LOCK_WAITTIME_SECONDS);//获得锁
                 try {
                     if (isLock) { //获取锁成功
-                        DataSourceTransactionManager transactionManager = (DataSourceTransactionManager) SpringUtils
+                        DataSourceTransactionManager transactionManager =  SpringUtils
                                 .getBean("transactionManager");
                         DefaultTransactionDefinition def = new DefaultTransactionDefinition();
                         def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
                         TransactionStatus status = transactionManager.getTransaction(def);
                         try {
-                            for (Type coin : coinList) {  //遍历启用的币种
-                                accountQueryWrapper.eq(Account::getCoinId, coin.getId());
-                                Account account = baseMapper.selectOne(accountQueryWrapper);//通过用户id和币种id查询账户
+                            for (Type coin : coinList) {
+                                LambdaQueryWrapper<Account> queryWrapper = new LambdaQueryWrapper<>();//
+                                queryWrapper.eq(Account::getUserId, userId);// 遍历启用的币种
+                                queryWrapper.eq(Account::getCoinName, coin.getCoinName());
+                                Account account = baseMapper.selectOne(queryWrapper);//通过用户id和币种id查询账户
                                 if (account == null && CoinStatus.ENABLE.getCode().equals(coin.getStatus())) {/** 币种状态（0启用 1禁用 ） */
                                     Date d = DateUtils.getNowDate();
                                     account = new Account();

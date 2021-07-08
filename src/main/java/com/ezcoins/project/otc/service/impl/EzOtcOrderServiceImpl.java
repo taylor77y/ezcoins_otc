@@ -40,6 +40,7 @@ import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponseList;
 import com.ezcoins.response.ResponsePageList;
 import com.ezcoins.utils.*;
+import com.ezcoins.websocket.WebSocketHandle;
 import io.swagger.models.auth.In;
 import org.apache.catalina.User;
 import org.springframework.amqp.core.AmqpTemplate;
@@ -175,7 +176,6 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
                     eq(EzPaymentInfo::getPaymentMethodId, paymentMethod3);
             List<EzPaymentInfo> list = paymentInfoService.list(queryWrapper1);
 
-
             List<EzOtcOrderPayment> list1 = new ArrayList<EzOtcOrderPayment>();
             list.forEach(e -> {
                 EzOtcOrderPayment ezOtcOrderPayment = new EzOtcOrderPayment();
@@ -194,6 +194,9 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         BeanUtils.copyBeanProp(ezOtcOrder, otcOrderReqDto);
         //存入新的订单
         baseMapper.insert(ezOtcOrder);
+
+        //给用户一个新订单信号
+        WebSocketHandle.nowOrder();
         return BaseResponse.success();
     }
 
@@ -250,7 +253,7 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
             details.setCoinName(orderMatch.getCoinName());
             details.setOrderMatchNo(orderMatch.getOrderMatchNo());
             details.setDueTime(orderMatch.getDueTime());
-            details.setIsAdvertising(ezOtcOrder.getIsAdvertising());
+            details.setIsAdvertising(orderMatch.getIsAdvertising());
             details.setTotalPrice(orderMatch.getTotalPrice());
             details.setAdvertisingName(orderMatch.getAdvertisingName());
             details.setPrice(orderMatch.getPrice());
@@ -307,6 +310,7 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         match.setTotalPrice(totalPrice);
         match.setCoinName(ezOtcOrder.getCoinName());
         match.setAdvertisingName(advertisingBusiness.getAdvertisingName());
+        match.setIsAdvertising(ezOtcOrder.getIsAdvertising());
 
         details.setAmount(placeOrderReqDto.getAmount());
         details.setIsAdvertising(ezOtcOrder.getIsAdvertising());
@@ -315,6 +319,7 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         details.setTotalPrice(totalPrice);
         details.setAdvertisingName(advertisingBusiness.getAdvertisingName());
         details.setPrice(ezOtcOrder.getPrice());
+        details.setType(ezOtcOrder.getType());
 
         //根据支付方式查询
         Integer paymentMethod1 = ezOtcOrder.getPaymentMethod1();
@@ -374,7 +379,8 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
             details.setEzOtcOrderPayments(ezOtcOrderPayments);
         }
 
-        EzOtcChatMsg ezOtcChatMsg = new EzOtcChatMsg();
+        ChatMsgReqDto msgReqDto= new ChatMsgReqDto();
+        ChatMsgReqDto msgReqDto2= new ChatMsgReqDto();
         //查看订单是否为接单广告
         String isAdvertising = ezOtcOrder.getIsAdvertising();
         Integer prompt=null;
@@ -384,15 +390,23 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
             details.setStatus(MatchOrderStatus.WAITFORPAYMENT.getCode());
             prompt = ezOtcOrder.getPrompt();
             if("1".equals(isAdvertising) && "1".equals(ezOtcOrder.getType())){
-                ezOtcChatMsg.setSendText(SystemOrderTips.PLACE_ORDER_SUCCESS);
+                msgReqDto.setSendText(SystemOrderTips.PLACE_ORDER_SUCCESS);
+                msgReqDto2.setSendText(SystemOrderTips.ORDER_SUCCESS);
             }
             if("1".equals(isAdvertising) && "0".equals(ezOtcOrder.getType())){
-                ezOtcChatMsg.setSendText(SystemOrderTips.PLACE_ORDER_SUCCESS_SELL);
+                msgReqDto.setSendText(SystemOrderTips.PLACE_ORDER_SUCCESS_SELL);
+                msgReqDto2.setSendText(SystemOrderTips.ORDER_SUCCESS_SELL);
             }
+            msgReqDto.setReceiveUserId(match.getUserId());
+            msgReqDto2.setReceiveUserId(match.getOtcOrderUserId());
             //增加商家匹配数量
             ezOtcOrder.setQuotaAmount(quotaAmount.add(placeOrderReqDto.getAmount()));
         } else {
-            ezOtcChatMsg.setSendText(SystemOrderTips.ORDERS_TIPS);
+            msgReqDto.setSendText(SystemOrderTips.ORDERS_TIPS);
+            msgReqDto2.setSendText(SystemOrderTips.ORDERS_TIPS_2);
+            msgReqDto.setReceiveUserId(match.getOtcOrderUserId());
+            msgReqDto2.setReceiveUserId(match.getUserId());
+
             match.setStatus(MatchOrderStatus.PENDINGORDER.getCode());
             details.setStatus(MatchOrderStatus.PENDINGORDER.getCode());
             prompt = otcConfig.getOrderTime();
@@ -405,8 +419,12 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         //TODO:将订单存入rabbitmq进行死信通信  时间到了就取消订单 根据卖家用户设置而定
         convertAndSend.convert(orderMatchNo,match.getStatus(),prompt);
         //TODO:存入消息
-        ezOtcChatMsg.setOrderMatchNo(match.getOrderMatchNo());
-        otcChatMsgService.save(ezOtcChatMsg);
+        msgReqDto.setOrderMatchNo(match.getOrderMatchNo());
+        msgReqDto2.setOrderMatchNo(match.getOrderMatchNo());
+        msgReqDto.setType("1");
+        msgReqDto2.setType("1");
+        otcChatMsgService.sendChat(msgReqDto,null);
+        otcChatMsgService.sendChat(msgReqDto2,null);
         //返回订单
         return Response.success("下单成功", details);//将订单返回
     }
@@ -464,6 +482,8 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
 
 
 
+
+
     /**
      * @Description: 商户 接单(订单广告)
      * @Param: [matchOrderNo]
@@ -485,6 +505,14 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
             //拒绝接受订单
             orderMatch.setStatus(MatchOrderStatus.REFUSE.getCode());
             orderMatchService.updateById(orderMatch);
+
+            //TODO:存入消息
+            EzOtcChatMsg ezOtcChatMsg = new EzOtcChatMsg();
+            ezOtcChatMsg.setSendText(SystemOrderTips.REFUSE_ORDER);
+            ezOtcChatMsg.setReceiveUserId(orderMatch.getUserId());
+            ezOtcChatMsg.setOrderMatchNo(orderMatch.getOrderMatchNo());
+            otcChatMsgService.save(ezOtcChatMsg);
+            WebSocketHandle.orderStatusChange(orderMatch.getUserId(),MatchOrderStatus.REFUSE.getCode());
             return BaseResponse.success();
         }
         //查询匹配到的订单
@@ -512,10 +540,12 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
 
         //TODO:存入消息
         EzOtcChatMsg ezOtcChatMsg = new EzOtcChatMsg();
-        ezOtcChatMsg.setSendText(SystemOrderTips.ORDERS_TIPS);
+        ezOtcChatMsg.setSendText(SystemOrderTips.ORDERS);
+        ezOtcChatMsg.setReceiveUserId(orderMatch.getUserId());
         ezOtcChatMsg.setOrderMatchNo(orderMatch.getOrderMatchNo());
         otcChatMsgService.save(ezOtcChatMsg);
 
+        WebSocketHandle.orderStatusChange(orderMatch.getUserId(),MatchOrderStatus.WAITFORPAYMENT.getCode());
         return BaseResponse.success();
     }
 
@@ -572,7 +602,6 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         List<EzOtcOrder> records = iPage.getRecords();
         //查询所有支付方式
         List<EzPaymentMethod> methods = paymentMethodService.list();
-
         List<OtcOrderRespDto> otcOrderRespDtos = new ArrayList<>();
         String userId = ContextHandler.getUserId();
         records.forEach(e -> {
@@ -610,7 +639,7 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
                 BigDecimal totalAmount = e.getTotalAmount();
                 BigDecimal quotaAmount = e.getQuotaAmount();
                 //未匹配数量
-                BigDecimal noQuotaAmount=quotaAmount.subtract(totalAmount);
+                BigDecimal noQuotaAmount=totalAmount.subtract(quotaAmount);
                 if (noQuotaAmount.compareTo(otcOrderRespDto.getMinimumLimit())>0){
                     otcOrderRespDtos.add(otcOrderRespDto);
                 }
