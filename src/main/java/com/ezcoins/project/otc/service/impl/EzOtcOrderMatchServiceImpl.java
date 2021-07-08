@@ -16,6 +16,7 @@ import com.ezcoins.project.coin.entity.Record;
 import com.ezcoins.project.coin.entity.vo.BalanceChange;
 import com.ezcoins.project.coin.service.AccountService;
 import com.ezcoins.project.otc.entity.*;
+import com.ezcoins.project.otc.entity.req.AdMatchOrderQueryReqDto;
 import com.ezcoins.project.otc.entity.req.OrderRecordQueryReqDto;
 import com.ezcoins.project.otc.entity.req.SellOneKeyReqDto;
 import com.ezcoins.project.otc.entity.resp.OrderRecordRespDto;
@@ -30,6 +31,7 @@ import com.ezcoins.response.ResponseList;
 import com.ezcoins.utils.BeanUtils;
 import com.ezcoins.utils.DateUtils;
 import com.ezcoins.utils.MessageUtils;
+import com.ezcoins.utils.StringUtils;
 import com.ezcoins.websocket.WebSocketHandle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -376,6 +378,53 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
             OrderRecordRespDto orderRecordRespDto = new OrderRecordRespDto();
             BeanUtils.copyBeanProp(orderRecordRespDto, e);
             orderRecordRespDtos.add(orderRecordRespDto);
+        });
+        return ResponseList.success(orderRecordRespDtos);
+    }
+
+    /***
+     * @Description: 广告订单匹配订单
+     * @Param: [matchOrderQueryReqDto]
+     * @return: com.ezcoins.response.ResponseList<com.ezcoins.project.otc.entity.resp.OrderRecordRespDto>
+     * @Author: Wanglei
+     * @Date: 2021/7/8
+     * @param matchOrderQueryReqDto
+     */
+    @Override
+    public ResponseList<OrderRecordRespDto> adMatchOrder(AdMatchOrderQueryReqDto matchOrderQueryReqDto) {
+        Page<EzOtcOrderMatch> page = new Page<>(matchOrderQueryReqDto.getPage(), matchOrderQueryReqDto.getLimit());
+        LambdaQueryWrapper<EzOtcOrderMatch> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(EzOtcOrderMatch::getOtcOrderUserId, ContextHandler.getUserId());
+
+        String orderNo = matchOrderQueryReqDto.getOrderNo();
+        if (StringUtils.isNotEmpty(orderNo)) {
+            queryWrapper.eq(EzOtcOrderMatch::getOrderNo, orderNo);
+        }
+        String status = matchOrderQueryReqDto.getStatus();
+        if ("1".equals(status)) {//已处理订单
+            queryWrapper
+                    .eq(EzOtcOrderMatch::getStatus, MatchOrderStatus.COMPLETED.getCode()).or()
+                    .eq(EzOtcOrderMatch::getStatus, MatchOrderStatus.ORDERBEENCANCELLED).or()
+                    .eq(EzOtcOrderMatch::getStatus, MatchOrderStatus.COMPLETED.getCode()).or()
+                    .eq(EzOtcOrderMatch::getStatus, MatchOrderStatus.REFUSE.getCode());
+        }
+        if ("2".equals(status)) {//未处理
+            queryWrapper
+                    .eq(EzOtcOrderMatch::getStatus, MatchOrderStatus.PENDINGORDER.getCode()).or()
+                    .eq(EzOtcOrderMatch::getStatus, MatchOrderStatus.PAID.getCode()).or()
+                    .eq(EzOtcOrderMatch::getStatus, MatchOrderStatus.WAITFORPAYMENT.getCode());
+        }
+        Page<EzOtcOrderMatch> matchPage = baseMapper.selectPage(page, queryWrapper);
+        List<EzOtcOrderMatch> records = matchPage.getRecords();
+
+        List<OrderRecordRespDto> orderRecordRespDtos = new ArrayList<>();
+        records.forEach(e -> {
+            OrderRecordRespDto orderRespDto = new OrderRecordRespDto();
+            BeanUtils.copyBeanProp(orderRespDto, e);
+            LambdaQueryWrapper<EzOtcOrderPayment> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+            lambdaQueryWrapper.eq(EzOtcOrderPayment::getOrderMatchNo, e.getOrderMatchNo());
+            orderRespDto.setEzOtcOrderPayments(orderPaymentService.list(lambdaQueryWrapper));
+            orderRecordRespDtos.add(orderRespDto);
         });
         return ResponseList.success(orderRecordRespDtos);
     }

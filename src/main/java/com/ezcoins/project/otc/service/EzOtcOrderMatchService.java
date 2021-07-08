@@ -2,6 +2,7 @@ package com.ezcoins.project.otc.service;
 
 import com.ezcoins.project.otc.entity.EzOtcOrderMatch;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.ezcoins.project.otc.entity.req.AdMatchOrderQueryReqDto;
 import com.ezcoins.project.otc.entity.req.OrderRecordQueryReqDto;
 import com.ezcoins.project.otc.entity.req.SellOneKeyReqDto;
 import com.ezcoins.project.otc.entity.resp.OrderRecordRespDto;
@@ -74,4 +75,14 @@ public interface EzOtcOrderMatchService extends IService<EzOtcOrderMatch> {
      * @return
      */
     ResponseList<OrderRecordRespDto> orderRecord(OrderRecordQueryReqDto orderRecordQueryReqDto);
+
+
+    /***
+    * @Description: 广告订单匹配订单
+    * @Param: [matchOrderQueryReqDto]
+    * @return: com.ezcoins.response.ResponseList<com.ezcoins.project.otc.entity.resp.OrderRecordRespDto>
+    * @Author: Wanglei
+    * @Date: 2021/7/8
+    */
+    ResponseList<OrderRecordRespDto> adMatchOrder(AdMatchOrderQueryReqDto matchOrderQueryReqDto);
 }
