@@ -2,6 +2,7 @@ package com.ezcoins.project.coin.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.ezcoins.constant.enums.coin.CoinConstants;
+import com.ezcoins.context.ContextHandler;
 import com.ezcoins.exception.coin.AccountOperationBusyException;
 import com.ezcoins.project.coin.entity.RechargeConfig;
 import com.ezcoins.project.coin.entity.Record;
@@ -68,14 +69,16 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
             rechargeAddr=collect.get(0).getAddress();
         }else {
             Address coinAddress = biPayService.createCoinAddress(mainCoinType, userId.toString(), "");
-            if (StringUtils.isNotNull(coinAddress)){
-                Wallet wallet = new Wallet();
-                wallet.setAddress(coinAddress.getAddress());
+            Wallet wallet = new Wallet();
+            if (StringUtils.isNotNull(coinAddress) || true){
+//                wallet.setAddress(coinAddress.getAddress());
+                wallet.setAddress(mainCoinType+"/"+ContextHandler.getUserId());
                 wallet.setMainCoinType(mainCoinType);
                 wallet.setUserId(userId);
                 wallet.setWalletType("thirdparty");
                 baseMapper.insert(wallet);
             }
+            rechargeAddr=wallet.getAddress();
         }
         return BaseResponse.success().data("rechargeAddr",rechargeAddr);
     }

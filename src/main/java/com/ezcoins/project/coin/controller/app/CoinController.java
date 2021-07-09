@@ -123,7 +123,7 @@ public class CoinController extends BaseController {
         lambdaQueryWrapper.eq(WithdrawConfig::getCoinName,coinName);
         return Response.success(withdrawConfigService.getOne(lambdaQueryWrapper));
     }
-    @ApiOperation(value = "充值 地址二维码")
+    @ApiOperation(value = "充值地址二维码")
     @AuthToken
     @GetMapping("rechargeAddress/{id}")
     public BaseResponse rechargeAddress(@PathVariable String id) {

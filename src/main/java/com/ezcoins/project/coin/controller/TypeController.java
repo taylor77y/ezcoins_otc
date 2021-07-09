@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @Api(tags = "Admin-资产账户模块")
-@RequestMapping("/coin/type")
+@RequestMapping("/admin/coin/type")
 public class TypeController {
 
     @Autowired
