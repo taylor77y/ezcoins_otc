@@ -109,11 +109,9 @@ public class WithdrawOrderServiceImpl extends ServiceImpl<WithdrawOrderMapper, W
                 // 插入记录
                 cr.setIncomeType(CoinConstants.IncomeType.PAYOUT.getType());
                 cr.setMainType(CoinConstants.MainType.WITHDRAWAL.getType());
-
                 cr.setSonType("withdrawal");
                 cr.setStatus(CoinConstants.RecordStatus.PASS.getStatus());
                 cr.setCoinName(withdrawOrder.getCoinName());
-                cr.setCoinId(one.getId());
                 cr.setMainType(CoinConstants.MainType.WITHDRAWAL.getType());
                 cr.setAmount(total);
                 cr.setFee(withdrawOrder.getFee());

@@ -61,8 +61,12 @@ public class OtcController {
     private EzOtcChatMsgService otcChatMsgService;
     @Autowired
     private EzUserService userService;
+
     @Autowired
     private EzOtcOrderPaymentService orderPaymentService;
+
+    @Autowired
+    private EzOtcOrderAppealService appealService;
 
     @NoRepeatSubmit
     @AuthToken
@@ -167,18 +171,14 @@ public class OtcController {
         return BaseResponse.success();
     }
 
-
-
-
-
-
-    //    -----------------------------------------------------------------------------------------------------------
+   //    -----------------------------------------------------------------------------------------------------------
     @NoRepeatSubmit
     @ApiOperation(value = "发布广告订单")
     @PostMapping("releaseAdvertisingOrder")
     @AuthToken(advertisingStatus = true)
     @Log(title = "发布广告订单", businessType = BusinessType.INSERT, operatorType = OperatorType.MOBILE)
     public BaseResponse releaseAdvertisingOrder(@RequestBody OtcOrderReqDto otcOrderReqDto) {
+        otcOrderReqDto.setUserId(ContextHandler.getUserId());
         return otcOrderService.releaseAdvertisingOrder(otcOrderReqDto);
     }
 
@@ -339,16 +339,35 @@ public class OtcController {
         return orderMatchService.sellOneKey(sellOneKeyReqDto);
     }
 
+
     @NoRepeatSubmit
     @ApiOperation(value = "订单申诉")
     @PutMapping("appeal")
     @AuthToken
     @Log(title = "订单申诉", businessType = BusinessType.UPDATE, operatorType = OperatorType.MOBILE)
-    public BaseResponse appeal() {
-//        return otcOrderService.appeal(orderOperateReqDto);
-        return BaseResponse.success();
+    public BaseResponse appeal(@RequestBody AppealReqDto appealReqDto) {
+       return appealService.appeal(appealReqDto);
     }
 
+    @NoRepeatSubmit
+    @ApiOperation(value = "取消申诉")
+    @PutMapping("cancelAppeal/{orderMatchNo}")
+    @AuthToken
+    @Log(title = "取消申诉", businessType = BusinessType.UPDATE, operatorType = OperatorType.MOBILE)
+    public BaseResponse cancelAppeal(@PathVariable String orderMatchNo) {
+        return appealService.cancelAppeal(orderMatchNo);
+    }
+
+    @ApiOperation(value = "根据订单号查询申诉详情")
+    @AuthToken
+    @Log(title = "根据订单号查询申诉详情", businessType = BusinessType.UPDATE, operatorType = OperatorType.MOBILE)
+    @GetMapping("appealInfo/{orderMatchNo}")
+    public Response<EzOtcOrderAppeal> appealInfo(@PathVariable String orderMatchNo){
+        LambdaQueryWrapper<EzOtcOrderAppeal> queryWrapper=new LambdaQueryWrapper<>();
+        queryWrapper.eq(EzOtcOrderAppeal::getUserId,ContextHandler.getUserId());
+        queryWrapper.eq(EzOtcOrderAppeal::getOrderMatchNo,orderMatchNo);
+        return Response.success(appealService.getOne(queryWrapper));
+    }
 
     //    --------------------------------------------------支付详情
     @ApiOperation(value = "根据上架订单号查询支付详情")

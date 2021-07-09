@@ -118,9 +118,7 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
             if (! accountService.balanceChangeSYNC(cList)) {// 资产变更异常
                 throw new AccountOperationBusyException();
             }
-
         }
-
         // [审核拒绝]判断是否审核中 解冻返回余额 返回Txid
         if (trade.getStatus() == 2 && CoinConstants.RecordStatus.PASS.getStatus().equals(cr.getStatus())) {
             cr.setStatus(CoinConstants.RecordStatus.REFUSE.getStatus());

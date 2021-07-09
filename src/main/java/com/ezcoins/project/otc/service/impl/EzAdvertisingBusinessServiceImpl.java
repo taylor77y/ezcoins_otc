@@ -14,7 +14,9 @@ import com.ezcoins.utils.StringUtils;
 import lombok.var;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * <p>
@@ -73,6 +75,8 @@ public class EzAdvertisingBusinessServiceImpl extends ServiceImpl<EzAdvertisingB
      */
     @Override
     public void updateCount(String sellUserId, String buyUserId, Date payTime, Date finishTime) {
+        List<EzAdvertisingBusiness> businesses = new ArrayList<>();
+
         //根据用户查询到OTC详情
         LambdaQueryWrapper<EzAdvertisingBusiness> sell = new LambdaQueryWrapper<>();
         sell.eq(EzAdvertisingBusiness::getUserId, sellUserId);
@@ -87,7 +91,10 @@ public class EzAdvertisingBusinessServiceImpl extends ServiceImpl<EzAdvertisingB
 
         Long releaseTime = finishTime.getTime() - payTime.getTime();//放行时间
         var time = Math.floor(releaseTime / 60 % 60);
-        buyInfo.setMouthAveragePass((time + sellInfo.getMouthAveragePass() * sellInfo.getSellCount()) / (sellInfo.getSellCount() + 1));//平均放行时间
+        buyInfo.setAveragePass((time + sellInfo.getAveragePass() * sellInfo.getSellCount()) / (sellInfo.getSellCount() + 1));//平均放行时间
+        businesses.add(sellInfo);
+        businesses.add(buyInfo);
+        this.updateBatchById(businesses);
     }
 
     /**
@@ -101,6 +108,20 @@ public class EzAdvertisingBusinessServiceImpl extends ServiceImpl<EzAdvertisingB
         businessLambdaQueryWrapper.eq(EzAdvertisingBusiness::getAdvertisingName, userId);
         businessLambdaQueryWrapper.eq(EzAdvertisingBusiness::getUserId, userId);
         if (baseMapper.selectCount(businessLambdaQueryWrapper) == 1) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 查看是否修改过OTC 交易信息
+     *
+     * @param id
+     */
+    @Override
+    public boolean isUpdateBy(String id) {
+        EzAdvertisingBusiness advertisingBusiness = baseMapper.selectById(id);
+        if (advertisingBusiness.getUserId().equals(advertisingBusiness.getAdvertisingName())) {
             return false;
         }
         return true;

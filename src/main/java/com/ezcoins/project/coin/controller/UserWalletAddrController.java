@@ -2,11 +2,10 @@ package com.ezcoins.project.coin.controller;
 
 
 import com.ezcoins.aspectj.lang.annotation.AuthToken;
-import com.ezcoins.context.ContextHandler;
 import com.ezcoins.project.coin.entity.Record;
+import com.ezcoins.project.coin.entity.UserWalletAddr;
 import com.ezcoins.project.coin.service.RecordService;
-import com.ezcoins.project.common.service.mapper.Field;
-import com.ezcoins.project.common.service.mapper.QueryMethod;
+import com.ezcoins.project.coin.service.UserWalletAddrService;
 import com.ezcoins.project.common.service.mapper.SearchModel;
 import com.ezcoins.response.ResponsePageList;
 import io.swagger.annotations.ApiOperation;
@@ -19,24 +18,26 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * <p>
- * 资产记录表 前端控制器
+ *  前端控制器
  * </p>
  *
  * @author wanglei
- * @since 2021-06-28
+ * @since 2021-07-08
  */
 @RestController
-@RequestMapping("/admin/coin/record")
-public class RecordController {
-    @Autowired
-    private RecordService recordService;
+@RequestMapping("/admin/coin/userWalletAddr")
+public class UserWalletAddrController {
 
-    @ApiOperation(value = "资产流水")
+    @Autowired
+    private UserWalletAddrService walletAddrService;
+
+    @ApiOperation(value = "用户提现地址")
     @AuthToken
-    @PostMapping("assetTurnover")
-    public ResponsePageList<Record> assetTurnover(@RequestBody SearchModel<Record> searchModel) {
-        return ResponsePageList.success(recordService.page(searchModel.getPage(), searchModel.getQueryModel()));
+    @PostMapping("withdrawalAddressList")
+    public ResponsePageList<UserWalletAddr> withdrawalAddressList(@RequestBody SearchModel<UserWalletAddr> searchModel) {
+        return ResponsePageList.success(walletAddrService.page(searchModel.getPage(), searchModel.getQueryModel()));
     }
+
 
 }
 

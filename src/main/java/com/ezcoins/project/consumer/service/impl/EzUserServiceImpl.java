@@ -260,15 +260,14 @@ public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> impleme
         ezUser.setInviteCode(inviteCode);
         ezUser.setPassword(EncoderUtil.encode(password));
         baseMapper.insert(ezUser);
-
         //初始化OTC信息
         EzAdvertisingBusiness advertisingBusiness = new EzAdvertisingBusiness();
         advertisingBusiness.setAdvertisingName(ezUser.getUserId());
         advertisingBusiness.setUserId(ezUser.getUserId());
+        advertisingBusiness.setCreateBy(ezUser.getUserName());
         businessService.save(advertisingBusiness);
-
         //初始化账户信息
-        accountService.processCoinAccount(ezUser.getUserId());
+        accountService.processCoinAccount(ezUser.getUserId(),ezUser.getUserName());
     }
     /**
      * 用户登录
@@ -301,11 +300,9 @@ public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> impleme
         baseMapper.updateById(ezUser);
 
         loginProducer.sendMsgLoginFollowUp(ezUser.getUserName(), userId, ezUser.getNickName(), LoginType.APP.getType());
-
         Map<String,String> map=new HashMap<>(2);
         map.put("token",token);
         map.put("userId",userId);
-
         return map;
     }
 

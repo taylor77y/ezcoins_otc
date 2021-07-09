@@ -1,7 +1,5 @@
 package com.ezcoins.project.coin.entity;
 
-import java.math.BigDecimal;
-
 import com.baomidou.mybatisplus.annotation.*;
 
 import java.util.Date;
@@ -15,64 +13,52 @@ import lombok.EqualsAndHashCode;
 
 /**
  * <p>
- * 资产余额表
+ * 
  * </p>
  *
  * @author wanglei
- * @since 2021-06-17
+ * @since 2021-07-08
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@TableName("coin_account")
-@ApiModel(value="Account对象", description="资产余额表")
-public class Account implements Serializable {
-
+@TableName("coin_user_wallet_addr")
+@ApiModel(value="UserWalletAddr对象", description="")
+public class UserWalletAddr implements Serializable {
     private static final long serialVersionUID = 1L;
-
-    @ApiModelProperty(value = "ID")
+    @ApiModelProperty(value = "主键id")
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
 
-    @ApiModelProperty(value = "用户ID")
+    @ApiModelProperty(value = "用户id")
     private String userId;
 
-    @ApiModelProperty(value = "币种ID")
-    private Integer coinId;
+    @ApiModelProperty(value = "提现配置id")
+    private String withdrawalConfigId;
 
-    @ApiModelProperty(value = "币种名")
-    private String coinName;
+    @ApiModelProperty(value = "提币地址")
+    private String addr;
 
-    @ApiModelProperty(value = "余额")
-    private BigDecimal available;
+    @ApiModelProperty(value = "逻辑删除 1（true）已删除，0（false）未删除")
+    @TableLogic(value = "0",delval = "1")
+    private String isDeleted;
 
-    @ApiModelProperty(value = "冻结")
-    private BigDecimal frozen;
-
-    @ApiModelProperty(value = "锁仓")
-    private BigDecimal lockup;
-
-    @ApiModelProperty(value = "版本号")
-    @Version
-    private Integer version;
+    @ApiModelProperty(value = "创建者")
+    private String createBy;
 
     @ApiModelProperty(value = "创建时间")
     @TableField(fill = FieldFill.INSERT)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
 
-
     @ApiModelProperty(value = "更新时间")
     @TableField(fill = FieldFill.INSERT_UPDATE)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date updateTime;
 
-
-    @ApiModelProperty(value = "创建者")
-    private String createBy;
-
-
     @ApiModelProperty(value = "更新者")
     private String updateBy;
 
+    @ApiModelProperty(value = "备注")
+    private String remark;
 
 }

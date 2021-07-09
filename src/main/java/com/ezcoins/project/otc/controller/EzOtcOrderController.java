@@ -9,11 +9,13 @@ import com.ezcoins.constant.enums.OperatorType;
 import com.ezcoins.project.common.service.mapper.SearchModel;
 import com.ezcoins.project.otc.entity.EzAdvertisingBusiness;
 import com.ezcoins.project.otc.entity.EzOtcOrder;
+import com.ezcoins.project.otc.entity.req.OtcOrderReqDto;
 import com.ezcoins.project.otc.entity.req.PaymentQrcodeTypeReqDto;
 import com.ezcoins.project.otc.service.EzOtcOrderMatchService;
 import com.ezcoins.project.otc.service.EzOtcOrderService;
 import com.ezcoins.response.BaseResponse;
 import com.ezcoins.response.ResponsePageList;
+import com.ezcoins.utils.StringUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +46,16 @@ public class EzOtcOrderController {
     @PostMapping("otcOrderList")
     public ResponsePageList<EzOtcOrder> otcOrderList(@RequestBody SearchModel<EzOtcOrder> searchModel){
         return ResponsePageList.success(otcOrderService.page(searchModel.getPage(), searchModel.getQueryModel()));
+    }
+
+    @AuthToken
+    @ApiOperation(value = "后台根据用户id发布订单")
+    @PostMapping("releaseOrder")
+    public BaseResponse releaseOrder(@RequestBody OtcOrderReqDto otcOrderReqDto){
+        if (StringUtils.isEmpty(otcOrderReqDto.getUserId())){
+            return BaseResponse.error("用户id不能为空");
+        }
+        return otcOrderService.releaseAdvertisingOrder(otcOrderReqDto);
     }
 
 

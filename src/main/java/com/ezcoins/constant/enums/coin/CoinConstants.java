@@ -11,10 +11,8 @@ public class CoinConstants {
 	public static enum MainType  {
 		/** 充币 **/
 		RECHARGE("recharge", "充币"),
-		
 		/** 提币 **/
 		WITHDRAWAL("withdrawal", "提币"),
-
 		/** 系统空投 **/
 		AIRDROP("airdrop", "空投"),
 
@@ -99,7 +97,6 @@ public class CoinConstants {
      *  资产流水记录 状态
      */
     public static enum RecordStatus  {
-
         /** 成功 **/
         OK("1", "成功"),
         

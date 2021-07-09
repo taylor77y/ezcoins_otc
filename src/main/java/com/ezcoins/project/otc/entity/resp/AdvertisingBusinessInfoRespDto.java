@@ -26,7 +26,10 @@ public class AdvertisingBusinessInfoRespDto {
     private Integer buyCount;
 
     @ApiModelProperty(value = "平均放行时间 分钟")
-    private Double mouthAveragePass;
+    private Double averagePass;
+
+    @ApiModelProperty(value = "总完成率")
+    private Double finishRate;
 
     @ApiModelProperty(value = "30 日成单")
     private Integer mouthCount;

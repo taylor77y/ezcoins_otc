@@ -116,7 +116,7 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
     public BaseResponse releaseAdvertisingOrder(OtcOrderReqDto otcOrderReqDto) {
         String coinName = otcOrderReqDto.getCoinName();
         //查看otc信息是否有过修改
-        String userId = ContextHandler.getUserId();
+        String userId = otcOrderReqDto.getUserId();
         if (!advertisingBusinessService.isUpdate(userId)) {
             return BaseResponse.error(MessageUtils.message("请先完善otc交易信息")).code(700);
         }
@@ -541,7 +541,7 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
             EzAdvertisingBusiness one = advertisingBusinessService.getOne(businessLambdaQueryWrapper);
             otcOrderRespDto.setAdvertisingName(one.getAdvertisingName());
             otcOrderRespDto.setTotalCount(one.getSellCount() + one.getBuyCount());
-            otcOrderRespDto.setMouthFinishRate(one.getMouthFinishRate());
+            otcOrderRespDto.setFinishRate(one.getFinishRate());
 
             List<Integer> paymentMethods = new ArrayList<>();
             paymentMethods.add(e.getPaymentMethod1());

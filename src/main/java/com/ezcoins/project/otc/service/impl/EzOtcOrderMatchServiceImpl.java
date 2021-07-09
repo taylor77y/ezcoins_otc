@@ -212,6 +212,11 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
         if (!orderMatch.getStatus().equals(MatchOrderStatus.WAITFORPAYMENT.getCode())) {
             throw new BaseException(MessageUtils.message("订单状态已发生变化"));
         }
+
+        if ("0".equals(orderMatch.getIsAppeal())){
+           return BaseResponse.error(MessageUtils.message("订单已被申诉，不能放款"));
+        }
+
         //匹配订单分为 买单 和 卖单  //查询到otc 订单
         EzOtcOrder ezOtcOrder = otcOrderService.getById(orderMatch.getOrderNo());
         List<BalanceChange> cList = new ArrayList<>();

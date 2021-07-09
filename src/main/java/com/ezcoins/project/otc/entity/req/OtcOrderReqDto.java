@@ -19,6 +19,10 @@ import java.util.Date;
  */
 @Data
 public class OtcOrderReqDto {
+
+    @ApiModelProperty(value = "用户id 后台发布订单时加上")
+    private String userId;
+
     @ApiModelProperty(value = "单价",required = true)
     @NotNull(message = "{价格不能为空}")
     private BigDecimal price;

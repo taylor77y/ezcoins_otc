@@ -36,11 +36,15 @@ public interface EzAdvertisingBusinessService extends IService<EzAdvertisingBusi
     */
     void updateCount(String sellUserId, String buyUserId, Date payTime, Date finishTime);
 
-
     /**
      * 查看是否修改过OTC 交易信息
      */
     boolean isUpdate(String userId);
+
+    /**
+     * 查看是否修改过OTC 交易信息
+     */
+    boolean isUpdateBy(String id);
 
 
 

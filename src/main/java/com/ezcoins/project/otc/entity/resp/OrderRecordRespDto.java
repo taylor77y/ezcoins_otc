@@ -65,4 +65,7 @@ public class OrderRecordRespDto {
 
     @ApiModelProperty(value = "是否为接单广告(0:是 1：否)")
     private String isAdvertising;
+
+    @ApiModelProperty(value = "是否有申诉 (0:有 1：无)")
+    private String isAppeal;
 }

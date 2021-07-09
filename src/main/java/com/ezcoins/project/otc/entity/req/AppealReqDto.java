@@ -17,6 +17,10 @@ public class AppealReqDto {
 
     @ApiModelProperty(value = "匹配订单号")
     private String orderMatchNo;
+
+    @ApiModelProperty(value = " 1:对方未付款 2：对方未放行 3:其他")
+    private String type;
+
 //
 //    @ApiModelProperty(value = "匹配订单号")
 //    private String reason;

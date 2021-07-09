@@ -69,7 +69,6 @@ public class OrderFailureListener {
         String otcOrderMatchNo = splitContent[0];
         String status = splitContent[1];
 
-        LambdaUpdateWrapper<EzOtcOrderMatch> matchLambdaQueryWrapper = new LambdaUpdateWrapper<>();
         //取消订单
         if (status.equals(MatchOrderStatus.WAITFORPAYMENT.getCode())) {
             EzOtcOrderMatch match = matchService.getById(otcOrderMatchNo);

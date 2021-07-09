@@ -32,7 +32,7 @@ public class OtcOrderRespDto {
     private Integer totalCount;
 
     @ApiModelProperty(value = "总完成率")
-    private Double mouthFinishRate;
+    private Double finishRate;
 
     @ApiModelProperty(value = "支付方式")
     private List<Integer> paymentMethods;

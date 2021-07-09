@@ -2,6 +2,7 @@ package com.ezcoins.project.coin.service;
 
 import com.ezcoins.project.coin.entity.RechargeConfig;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.ezcoins.project.coin.entity.req.RechargeConfigReqDto;
 
 /**
  * <p>
@@ -13,4 +14,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface RechargeConfigService extends IService<RechargeConfig> {
 
+
+    void addOrUpdate(RechargeConfigReqDto rechargeConfigReqDto);
 }

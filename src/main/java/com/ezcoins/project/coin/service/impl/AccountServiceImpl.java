@@ -71,7 +71,7 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
      * 创建用户 【资金账户】
      */
     @Override
-    public List<Account> processCoinAccount(String userId) throws AccountOperationBusyException {
+    public List<Account> processCoinAccount(String userId,String userName) throws AccountOperationBusyException {
         LambdaQueryWrapper<Type> typeQueryWrapper = new LambdaQueryWrapper<>();
         typeQueryWrapper.eq(Type::getStatus, CoinStatus.ENABLE.getCode());
         List<Type> coinList = typeService.list(typeQueryWrapper);//查询到所有启用的币种
@@ -109,6 +109,7 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
                                     account.setCoinName(coin.getCoinName());
                                     account.setCreateTime(d);
                                     account.setUpdateTime(d);
+                                    account.setCreateBy(userName);
                                     baseMapper.insert(account);//添加账户数据
                                     accountList.add(account);//将创建好的账户放入集合
                                 }
@@ -139,7 +140,7 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
 
     @Override
     public List<AccountRespDto> coinAccountListByUserId(String userId) {
-        List<Account> accounts = processCoinAccount(userId);
+        List<Account> accounts = processCoinAccount(userId,ContextHandler.getUserName());
         return BeanUtils.copyListProperties(accounts, AccountRespDto::new);
     }
 
@@ -152,7 +153,7 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
         Account account = baseMapper.selectOne(lambdaQueryWrapper);
         if (account == null) {
             //没有查到就去创建
-            List<Account> accountList = processCoinAccount(userId);
+            List<Account> accountList = processCoinAccount(userId,ContextHandler.getUserName());
             if (StringUtils.isNotEmpty(accountList)) {
                 for (Account a : accountList) {
                     if (a.getCoinName().equals(coinName)) {

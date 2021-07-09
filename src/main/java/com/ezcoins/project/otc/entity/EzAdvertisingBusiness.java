@@ -51,30 +51,30 @@ public class EzAdvertisingBusiness implements Serializable {
     @ApiModelProperty(value = "是否加V/广告权限 （0:已加V  1:未加V）")
     private String plusV;
 
-    @ApiModelProperty(value = "30天成交单数")
-    private Integer monthCount;
+    @ApiModelProperty(value = "总完成率")
+    private Double finishRate;
 
-    @ApiModelProperty(value = "30天总完成率")
-    private Double mouthFinishRate;
+    @ApiModelProperty(value = "买总完成率")
+    private Double finishBuyRate;
 
-    @ApiModelProperty(value = "30天买总完成率")
-    private Double mouthFinishBuyRate;
-
-    @ApiModelProperty(value = "30日平均取消时间")
-    private Integer mouthAverageCancel;
-
-    @ApiModelProperty(value = "30日平均放行时间 分钟")
-    private Double mouthAveragePass;
+    @ApiModelProperty(value = "平均放行时间 分钟")
+    private Double averagePass;
 
     @ApiModelProperty(value = "创建时间")
     @TableField(fill = FieldFill.INSERT)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
 
+    @ApiModelProperty(value = "创建z")
+    private String createBy;
+
     @ApiModelProperty(value = "更新时间")
     @TableField(fill = FieldFill.INSERT_UPDATE)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date updateTime;
+
+    @ApiModelProperty(value = "更新z")
+    private String updateBy;
 
     @ApiModelProperty(value = "乐观锁 请忽略它的存在")
     @Version

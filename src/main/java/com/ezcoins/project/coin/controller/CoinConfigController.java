@@ -1,6 +1,8 @@
 package com.ezcoins.project.coin.controller;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.ezcoins.aspectj.lang.annotation.AuthToken;
 import com.ezcoins.aspectj.lang.annotation.Log;
 import com.ezcoins.aspectj.lang.annotation.NoRepeatSubmit;
@@ -8,6 +10,8 @@ import com.ezcoins.constant.enums.BusinessType;
 import com.ezcoins.constant.enums.OperatorType;
 import com.ezcoins.project.coin.entity.RechargeConfig;
 import com.ezcoins.project.coin.entity.WithdrawConfig;
+import com.ezcoins.project.coin.entity.req.RechargeConfigReqDto;
+import com.ezcoins.project.coin.entity.req.RwStatusReqDto;
 import com.ezcoins.project.coin.entity.req.WithdrewConfigReqDto;
 import com.ezcoins.project.coin.service.RechargeConfigService;
 import com.ezcoins.project.coin.service.WithdrawConfigService;
@@ -21,6 +25,7 @@ import com.ezcoins.response.ResponsePageList;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -40,7 +45,6 @@ public class CoinConfigController {
 
     @Autowired
     private RechargeConfigService rechargeConfigService;
-
 
     @ApiOperation(value = "提币配置列表")
     @PostMapping("/withdrawConfigList")
@@ -66,7 +70,43 @@ public class CoinConfigController {
         return BaseResponse.success();
     }
 
+    @NoRepeatSubmit
+    @ApiOperation(value = "更改提币状态")
+    @PutMapping("withdrewSwitch")
+    @AuthToken
+    @Log(title = "更改提币状态", businessType = BusinessType.UPDATE, operatorType = OperatorType.MANAGE)
+    public BaseResponse withdrewSwitch(@RequestBody @Validated RwStatusReqDto rwStatusReqDto) {
+        LambdaUpdateWrapper<WithdrawConfig> queryWrapper=new LambdaUpdateWrapper<>();
+        queryWrapper.eq(WithdrawConfig::getId,rwStatusReqDto.getId());
+        queryWrapper.set(WithdrawConfig::getStatus,rwStatusReqDto.getOperate());
+        withdrawConfigService.update(queryWrapper);
+        return BaseResponse.success();
+    }
 
+
+    @NoRepeatSubmit
+    @ApiOperation(value = "更改冲币状态")
+    @PutMapping("rechargeSwitch")
+    @AuthToken
+    @Log(title = "更改冲币状态", businessType = BusinessType.UPDATE, operatorType = OperatorType.MANAGE)
+    public BaseResponse rechargeSwitch(@RequestBody @Validated RwStatusReqDto rwStatusReqDto) {
+        LambdaUpdateWrapper<RechargeConfig> queryWrapper=new LambdaUpdateWrapper<>();
+        queryWrapper.eq(RechargeConfig::getId,rwStatusReqDto.getId());
+        queryWrapper.set(RechargeConfig::getStatus,rwStatusReqDto.getOperate());
+        rechargeConfigService.update(queryWrapper);
+        return BaseResponse.success();
+    }
+
+
+    @NoRepeatSubmit
+    @ApiOperation(value = "添加/修改 冲币配置")
+    @PostMapping("addOrUpdateRecharge")
+    @AuthToken
+    @Log(title = "添加/修改  冲币配置", businessType = BusinessType.INSERT, operatorType = OperatorType.MANAGE)
+    public BaseResponse addOrUpdateRecharge(@RequestBody RechargeConfigReqDto rechargeConfigReqDto) {
+        rechargeConfigService.addOrUpdate(rechargeConfigReqDto);
+        return BaseResponse.success();
+    }
 
 
 

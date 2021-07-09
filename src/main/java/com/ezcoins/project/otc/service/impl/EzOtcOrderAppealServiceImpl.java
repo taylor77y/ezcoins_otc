@@ -1,0 +1,118 @@
+package com.ezcoins.project.otc.service.impl;
+
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.ezcoins.base.BaseException;
+import com.ezcoins.constant.enums.otc.MatchOrderStatus;
+import com.ezcoins.context.ContextHandler;
+import com.ezcoins.project.otc.entity.EzOtcOrderAppeal;
+import com.ezcoins.project.otc.entity.EzOtcOrderMatch;
+import com.ezcoins.project.otc.entity.req.AppealReqDto;
+import com.ezcoins.project.otc.entity.req.DoAppealReqDto;
+import com.ezcoins.project.otc.mapper.EzOtcOrderAppealMapper;
+import com.ezcoins.project.otc.service.EzOtcOrderAppealService;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.ezcoins.project.otc.service.EzOtcOrderMatchService;
+import com.ezcoins.response.BaseResponse;
+import com.ezcoins.utils.BeanUtils;
+import com.ezcoins.utils.MessageUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+/**
+ * <p>
+ * 订单申诉 服务实现类
+ * </p>
+ *
+ * @author wanglei
+ * @since 2021-07-08
+ */
+@Service
+public class EzOtcOrderAppealServiceImpl extends ServiceImpl<EzOtcOrderAppealMapper, EzOtcOrderAppeal> implements EzOtcOrderAppealService {
+    @Autowired
+    private EzOtcOrderMatchService matchService;
+
+    /**
+     * 订单申诉
+     *
+     * @param appealReqDto
+     * @return
+     */
+    @Override
+    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public BaseResponse appeal(AppealReqDto appealReqDto) {
+        //通过订单号查询到订单
+        EzOtcOrderMatch orderMatch = matchService.getById(appealReqDto.getOrderMatchNo());
+        //判断订单状态
+        if (!orderMatch.getStatus().equals(MatchOrderStatus.PAID.getCode())){
+            return BaseResponse.error("订单状态已发生变化");
+        }
+        EzOtcOrderAppeal ezOtcOrderAppeal = new EzOtcOrderAppeal();
+        BeanUtils.copyBeanProp(ezOtcOrderAppeal,appealReqDto);
+        ezOtcOrderAppeal.setCreateBy(ContextHandler.getUserName());
+        ezOtcOrderAppeal.setUserId(ContextHandler.getUserId());
+        baseMapper.insert(ezOtcOrderAppeal);
+
+        //修改订单申诉状态
+        if ("1".equals(orderMatch.getIsAppeal())){
+            orderMatch.setIsAppeal("0");
+            matchService.updateById(orderMatch);
+        }
+        //给于对方和自己信号
+
+        return BaseResponse.success();
+    }
+
+    /**
+     * 取消申诉
+     * @param orderMatchNo
+     * @return
+     */
+    @Override
+    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public BaseResponse cancelAppeal(String orderMatchNo) {
+        //通过订单号查询到订单
+        EzOtcOrderMatch orderMatch = matchService.getById(orderMatchNo);
+        LambdaQueryWrapper<EzOtcOrderAppeal> queryWrapper=new LambdaQueryWrapper<>();
+        queryWrapper.eq(EzOtcOrderAppeal::getOrderMatchNo,orderMatchNo);
+        List<EzOtcOrderAppeal> ezOtcOrderAppeals = baseMapper.selectList(queryWrapper);
+        ezOtcOrderAppeals.forEach(e->{
+            if (e.getUserId().equals(ContextHandler.getUserId())){
+                if (!"1".equals(e.getStatus())){//不是未处理状态了
+                    throw new BaseException(MessageUtils.message("申诉状态已改变"));
+                }else {
+                    e.setStatus("2");
+                    baseMapper.updateById(e);
+                }
+            }else {
+                if ("2".equals(e.getStatus())){
+                 orderMatch.setIsAppeal("1");
+                 matchService.updateById(orderMatch);
+                }
+            }
+        });
+        return BaseResponse.success();
+    }
+    /**
+     * 处理投诉
+     * @param doAppealReqDto
+     * @return
+     */
+    @Override
+    public BaseResponse doAppeal(DoAppealReqDto doAppealReqDto) {
+        //判断申诉状态
+        EzOtcOrderAppeal ezOtcOrderAppeal = baseMapper.selectById(doAppealReqDto.getId());
+        if (!"1".equals(ezOtcOrderAppeal.getStatus())){
+            return BaseResponse.error("申诉状态已发生变化");
+        }
+        ezOtcOrderAppeal.setStatus(doAppealReqDto.getStatus());
+        ezOtcOrderAppeal.setExamineBy(ContextHandler.getUserName());
+        ezOtcOrderAppeal.setMemo(doAppealReqDto.getMemo());
+        baseMapper.updateById(ezOtcOrderAppeal);
+        return BaseResponse.success();
+    }
+}

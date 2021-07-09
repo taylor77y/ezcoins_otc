@@ -164,6 +164,9 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils
         return start;
     }
 
+
+
+
     /**
      *   设置当天结束时间
      */
@@ -311,11 +314,9 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils
 
 
     public static void main(String[] args) {
-        Date date = new Date();
-        DateFormatUtils.format(date, "yyyy-MM");
 
-        System.out.println(date);
-        System.out.println(getCertainMonthEndTime(date));
+     System.out.println(DateUtils.getYesterdayStart());
+
     }
 
     
