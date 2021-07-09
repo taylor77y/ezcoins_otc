@@ -147,11 +147,15 @@ public class WebSocketFactory implements ApplicationRunner, Ordered {
         Session session = userSessionMap.get(getKey(userId));
         if (session != null) {
             if (session.isOpen()) {
-                session.getAsyncRemote().sendText(message);
+                try {
+                    session.getBasicRemote().sendText(message);
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+
             }
         }
     }
-
     public static void sendMessageAll(String message) {
         for (Session session : userSessionMap.values()) {
             if (session != null) {

@@ -33,7 +33,6 @@ public class EzUser implements Serializable {
     @ApiModelProperty(value = "父级编号")
     private String parentId;
 
-
     @ApiModelProperty(value = "用户名")
     private String userName;
 

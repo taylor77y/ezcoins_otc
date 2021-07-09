@@ -128,7 +128,6 @@ public class OrderFailureListener {
             list.add(ezOtcChatMsg1);
             list.add(ezOtcChatMsg2);
             otcChatMsgService.sendSysChat(list, MatchOrderStatus.ORDERBEENCANCELLED.getCode());
-
         }
         System.out.println("执行结束....");
     }

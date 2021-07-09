@@ -3,8 +3,11 @@ package com.ezcoins.project.consumer.controller.app;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.ezcoins.aspectj.lang.annotation.AuthToken;
+import com.ezcoins.aspectj.lang.annotation.Log;
 import com.ezcoins.aspectj.lang.annotation.NoRepeatSubmit;
 import com.ezcoins.base.BaseController;
+import com.ezcoins.constant.enums.BusinessType;
+import com.ezcoins.constant.enums.OperatorType;
 import com.ezcoins.constant.enums.user.KycStatus;
 import com.ezcoins.constant.enums.user.UserKycStatus;
 import com.ezcoins.context.ContextHandler;
@@ -13,19 +16,22 @@ import com.ezcoins.project.config.service.EzCountryConfigService;
 import com.ezcoins.project.consumer.entity.EzAdvertisingApprove;
 import com.ezcoins.project.consumer.entity.EzUser;
 import com.ezcoins.project.consumer.entity.EzUserKyc;
-import com.ezcoins.project.consumer.entity.req.AdvertisingReqDto;
-import com.ezcoins.project.consumer.entity.req.VerificationCodeReqDto;
+import com.ezcoins.project.consumer.entity.body.UpdateUserBody;
+import com.ezcoins.project.consumer.entity.req.*;
+import com.ezcoins.project.consumer.entity.resp.SidebarInfoRespDto;
 import com.ezcoins.project.consumer.entity.resp.VerifiedInfoRespDto;
 import com.ezcoins.project.consumer.service.EzAdvertisingApproveService;
+import com.ezcoins.project.otc.entity.EzAdvertisingBusiness;
+import com.ezcoins.project.otc.service.EzAdvertisingBusinessService;
 import com.ezcoins.redis.RedisCache;
 import com.ezcoins.project.acl.entity.req.JwtAuthenticationRequest;
-import com.ezcoins.project.consumer.entity.req.EzUserReqDto;
-import com.ezcoins.project.consumer.entity.req.UserKycReqDto;
 import com.ezcoins.project.consumer.service.EzUserKycService;
 import com.ezcoins.project.consumer.service.EzUserService;
 import com.ezcoins.response.BaseResponse;
 import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponseList;
+import com.ezcoins.utils.EncoderUtil;
+import com.ezcoins.utils.MessageUtils;
 import com.ezcoins.utils.StringUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -57,9 +63,11 @@ public class ConsumerController extends BaseController {
     @Autowired
     private EzCountryConfigService countryConfigService;
 
-
     @Autowired
     private EzAdvertisingApproveService approveService;
+
+    @Autowired
+    private EzAdvertisingBusinessService businessService;
 
 
     @ApiOperation(value = "发送短信/邮箱验证码")
@@ -85,13 +93,13 @@ public class ConsumerController extends BaseController {
         return BaseResponse.success().message("登录成功").data("token", ezUserService.login(jwtAuthenticationRequest));
     }
 
-//    @ApiOperation(value = "用户修改密码/安全密码")
-//    @PostMapping("updateUser")
-//    public BaseResponse updateUser(@RequestBody UpdateUserBody updateUserBody) {
-//        updateUserBody.setUserId(getUserId());
-//        EzUserService.updateUser(updateUserBody);
-//        return BaseResponse.success();
-//}
+
+    @ApiOperation(value = "国家列表")
+    @GetMapping("countryList")
+    public ResponseList<EzCountryConfig> countryList() {
+        return ResponseList.success(countryConfigService.list());
+    }
+
 
     /**
      * 用户信息包括（用户名 用户id 用户邀请码）
@@ -135,6 +143,7 @@ public class ConsumerController extends BaseController {
         approveService.verified(advertisingReqDto);
         return BaseResponse.success();
     }
+
 
     @ApiOperation(value = "认证详情")
     @PostMapping("verifiedInfo")
@@ -197,9 +206,46 @@ public class ConsumerController extends BaseController {
         }
         return Response.success(verifiedInfoRespDto);
     }
-    @ApiOperation(value = "国家列表")
-    @GetMapping("countryList")
-    public ResponseList<EzCountryConfig> countryList() {
-        return ResponseList.success(countryConfigService.list());
+
+
+    @ApiOperation(value = "侧边栏信息")
+    @GetMapping("sidebarInfo")
+    @AuthToken
+    public Response<SidebarInfoRespDto> sidebarInfo() {
+        String userId = ContextHandler.getUserId();
+        EzUser ezUser = ezUserService.getById(userId);
+        LambdaQueryWrapper<EzUserKyc> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(EzUserKyc::getUserId, userId);
+        EzUserKyc one = kycService.getOne(queryWrapper);
+        SidebarInfoRespDto infoRespDto = new SidebarInfoRespDto();
+        infoRespDto.setEmail(ezUser.getEmail());
+        infoRespDto.setPhone(ezUser.getPhone());
+        infoRespDto.setUserId(ezUser.getUserId());
+        infoRespDto.setRealName(one.getRealName());
+        return Response.success(infoRespDto);
     }
+
+
+    @NoRepeatSubmit
+    @ApiOperation(value = "修改安全密码")
+    @PostMapping("updateSecurityPassword")
+    @Log(title = "修改安全密码", businessType = BusinessType.UPDATE, operatorType = OperatorType.MOBILE)
+    public BaseResponse updateSecurityPassword(@RequestBody PasswordUpdateReqDto passwordUpdateReqDto) {
+        LambdaQueryWrapper<EzAdvertisingBusiness> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(EzAdvertisingBusiness::getUserId, ContextHandler.getUserId());
+        EzAdvertisingBusiness one = businessService.getOne(queryWrapper);
+
+        boolean matches = EncoderUtil.matches(passwordUpdateReqDto.getPassword(), one.getSecurityPassword());
+        if (matches) {
+            if (EncoderUtil.matches(passwordUpdateReqDto.getNewPassword(), one.getSecurityPassword())) {
+                return BaseResponse.error(MessageUtils.message("旧密码与新密码相同"));
+            }
+            one.setSecurityPassword(EncoderUtil.encode(passwordUpdateReqDto.getPassword()));
+            businessService.updateById(one);
+        } else {
+            return BaseResponse.error(MessageUtils.message("旧密码输入错误"));
+        }
+        return BaseResponse.success();
+    }
+
 }
