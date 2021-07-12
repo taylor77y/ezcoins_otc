@@ -34,7 +34,7 @@ public interface EzAdvertisingBusinessService extends IService<EzAdvertisingBusi
     * @Author: Wanglei
     * @Date: 2021/6/19
     */
-    void updateCount(String sellUserId, String buyUserId, Date payTime, Date finishTime);
+    void updateCount(String sellUserId, String buyUserId, Date payTime, Date finishTime,boolean isAdmin,String status);
 
     /**
      * 查看是否修改过OTC 交易信息

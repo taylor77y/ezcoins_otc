@@ -251,7 +251,7 @@ public class OtcController {
     @AuthToken
     @Log(title = "卖家放款", businessType = BusinessType.UPDATE, operatorType = OperatorType.MOBILE)
     public BaseResponse sellerPut(@PathVariable String matchOrderNo) {
-        return orderMatchService.sellerPut(matchOrderNo);
+        return orderMatchService.sellerPut(matchOrderNo,false);
     }
 
 

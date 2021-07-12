@@ -11,6 +11,7 @@ import com.ezcoins.project.otc.entity.EzAdvertisingBusiness;
 import com.ezcoins.project.otc.entity.EzOtcChatMsg;
 import com.ezcoins.project.otc.entity.EzOtcOrderAppeal;
 import com.ezcoins.project.otc.entity.req.DoAppealReqDto;
+import com.ezcoins.project.otc.entity.req.DoOrderReqDto;
 import com.ezcoins.project.otc.service.EzOtcOrderAppealService;
 import com.ezcoins.response.BaseResponse;
 import com.ezcoins.response.ResponseList;
@@ -60,6 +61,17 @@ public class EzOtcOrderAppealController {
     public BaseResponse doAppeal(@RequestBody @Validated DoAppealReqDto doAppealReqDto) {
         return appealService.doAppeal(doAppealReqDto);
     }
+
+
+    @ApiOperation(value = "处理投诉后修改订单状态")
+    @PutMapping("doOrder")
+    @AuthToken
+    @Log(title = "处理投诉后修改订单状态", businessType = BusinessType.UPDATE, operatorType = OperatorType.MANAGE)
+    public BaseResponse doOrder(@RequestBody @Validated DoOrderReqDto orderReqDto) {
+        return appealService.doOrder(orderReqDto);
+    }
+
+
 
 
 

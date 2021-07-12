@@ -37,7 +37,7 @@ public class EzSysLog implements Serializable {
     @ApiModelProperty(value = "用户Id")
     private String userId;
 
-    @ApiModelProperty(value = "用户类型(1:普通用户 2：付费用户)")
+    @ApiModelProperty(value = "用户类型(1:平台用户 2：管理员用户)")
     private String userType;
 
     @ApiModelProperty(value = "模块标题")

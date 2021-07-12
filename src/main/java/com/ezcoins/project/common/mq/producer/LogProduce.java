@@ -61,7 +61,6 @@ public class LogProduce{
 
     /**
      * 拦截异常操作
-     *
      * @param joinPoint 切点
      * @param e 异常
      */
@@ -80,7 +79,7 @@ public class LogProduce{
             // 获取当前的用户
             IJWTInfo info = SpringUtils.getBean(JWTHelper.class).jwtInfo(ServletUtils.getRequest());
 
-            // *========数据库日志=========*//
+            // *========数据库日志=========* //
             EzSysLog operLog = new EzSysLog();
             operLog.setStatus(String.valueOf(BusinessStatus.SUCCESS.ordinal()));
             // 请求的地址
@@ -126,14 +125,13 @@ public class LogProduce{
      * @param operLog 操作日志
      * @throws Exception
      */
-    public void getControllerMethodDescription(JoinPoint joinPoint, Log log, EzSysLog operLog) throws Exception
-    {
+    public void getControllerMethodDescription(JoinPoint joinPoint, Log log, EzSysLog operLog) throws Exception{
         // 设置action动作
         operLog.setBusinessType(String.valueOf(log.businessType().ordinal()));
         // 设置标题
         operLog.setTitle(log.title());
         // 设置操作人类别
-//        operLog.setOperatorType(log.operatorType().ordinal());
+        operLog.setUserType(String.valueOf(log.operatorType().ordinal()));
         // 是否需要保存request，参数和值
         if (log.isSaveRequestData()) {
             // 获取参数的信息，传入到数据库中。

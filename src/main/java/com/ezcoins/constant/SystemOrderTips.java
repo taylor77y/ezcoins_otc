@@ -26,6 +26,10 @@ public interface SystemOrderTips {
     String CANCEL_2="对方已取消订单";
     String ORDERS_CANCEL="您已取消订单";
 
+    String APPEAL_CANCEL="审核结果为取消订单";
+    String APPEAL_PUT="审核结果为放行";
+
+
     String PAYMENT_BUY="您已将订单标记为“已付款”的状态，请等待对方确认收款和放行";
     String PAYMENT_SELL="对方已将订单标记为“已付款”的状态，请确认收款和放行";
 

@@ -40,17 +40,23 @@ public interface EzOtcOrderMatchService extends IService<EzOtcOrderMatch> {
     BaseResponse confirmPayment(String matchOrderNo);
 
 
-    /***
+    /**
      * @Description: 卖家放款
      * @Param: [matchOrderNo]
      * @return: com.ezcoins.response.BaseResponse
      * @Author: Wanglei
      * @Date: 2021/6/19
      */
-    BaseResponse sellerPut(String matchOrderNo);
+    BaseResponse sellerPut(String matchOrderNo,boolean isAdmin);
 
-    
-    
+
+    /**
+     * 付款失败  后台修改订单为取消
+     */
+    void paymentFail(String matchOrderNo);
+
+
+
     /*** 
     * @Description:
     * @Param: [userId]

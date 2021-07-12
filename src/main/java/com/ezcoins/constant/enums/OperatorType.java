@@ -2,15 +2,12 @@ package com.ezcoins.constant.enums;
 
 /**
  * 操作人类别
- * 
- * 
  */
-public enum OperatorType
-{
+public enum OperatorType {
     /**
-     * 其它
+     * 手机端用户
      */
-    OTHER,
+    MOBILE,
 
     /**
      * 后台用户
@@ -18,7 +15,7 @@ public enum OperatorType
     MANAGE,
 
     /**
-     * 手机端用户
+     * 其它
      */
-    MOBILE
+    OTHER
 }

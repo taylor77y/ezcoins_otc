@@ -4,6 +4,7 @@ import com.ezcoins.project.otc.entity.EzOtcOrderAppeal;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ezcoins.project.otc.entity.req.AppealReqDto;
 import com.ezcoins.project.otc.entity.req.DoAppealReqDto;
+import com.ezcoins.project.otc.entity.req.DoOrderReqDto;
 import com.ezcoins.response.BaseResponse;
 
 /**
@@ -35,4 +36,12 @@ public interface EzOtcOrderAppealService extends IService<EzOtcOrderAppeal> {
      * @return
      */
     BaseResponse doAppeal(DoAppealReqDto doAppealReqDto);
+
+
+    /**
+     * 处理投诉订单
+     * @param orderReqDto
+     * @return
+     */
+    BaseResponse doOrder(DoOrderReqDto orderReqDto);
 }

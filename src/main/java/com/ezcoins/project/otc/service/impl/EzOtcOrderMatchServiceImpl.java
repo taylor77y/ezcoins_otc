@@ -103,7 +103,6 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
         EzOtcChatMsg ezOtcChatMsg1 = new EzOtcChatMsg();
         ezOtcChatMsg.setOrderMatchNo(orderMatch.getOrderMatchNo());
         ezOtcChatMsg1.setOrderMatchNo(orderMatch.getOrderMatchNo());
-
         ezOtcChatMsg.setReceiveUserId(orderMatch.getOtcOrderUserId());
         ezOtcChatMsg1.setReceiveUserId(orderMatch.getUserId());
 
@@ -115,7 +114,6 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
             list.add(ezOtcChatMsg);
             list.add(ezOtcChatMsg1);
             otcChatMsgService.sendSysChat(list, MatchOrderStatus.ORDERBEENCANCELLED.getCode());
-
             orderMatch.setStatus(MatchOrderStatus.ORDERBEENCANCELLED.getCode());
         } else if (orderMatch.getStatus().equals(MatchOrderStatus.WAITFORPAYMENT.getCode())) {
             orderMatch.setStatus(MatchOrderStatus.CANCELLED.getCode());
@@ -206,14 +204,13 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
      */
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public BaseResponse sellerPut(String matchOrderNo) {
+    public BaseResponse sellerPut(String matchOrderNo,boolean isAdmin) {
         EzOtcOrderMatch orderMatch = baseMapper.selectById(matchOrderNo);
         //判断订单状态
-        if (!orderMatch.getStatus().equals(MatchOrderStatus.WAITFORPAYMENT.getCode())) {
+        if (!orderMatch.getStatus().equals(MatchOrderStatus.PAID.getCode())) {
             throw new BaseException(MessageUtils.message("订单状态已发生变化"));
         }
-
-        if ("0".equals(orderMatch.getIsAppeal())){
+        if ("0".equals(orderMatch.getIsAppeal()) && !isAdmin){
            return BaseResponse.error(MessageUtils.message("订单已被申诉，不能放款"));
         }
 
@@ -283,6 +280,10 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
             buyUserId=orderMatch.getUserId();
             otcOrderService.updateById(ezOtcOrder);
         }
+        if (isAdmin){
+            ezOtcChatMsg1.setSendText(SystemOrderTips.APPEAL_PUT);
+            ezOtcChatMsg2.setSendText(SystemOrderTips.APPEAL_PUT);
+        }
         otcChatMsgService.sendSysChat(list, MatchOrderStatus.COMPLETED.getCode());
         Date nowDate = DateUtils.getNowDate();
         //改变订单状态
@@ -293,9 +294,53 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
         if (!accountService.balanceChangeSYNC(cList)) {// 资产变更异常
             throw new AccountOperationBusyException();
         }
-        businessService.updateCount(sellUserId,buyUserId,payTime,nowDate);
+        businessService.updateCount(sellUserId,buyUserId,payTime,nowDate,isAdmin,"0");
         return BaseResponse.success();
     }
+
+    /**
+     * 付款失败  后台修改订单为取消
+     *
+     * @param matchOrderNo
+     */
+    @Override
+    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public void paymentFail(String matchOrderNo) {
+        EzOtcOrderMatch orderMatch = baseMapper.selectById(matchOrderNo);
+        //判断订单状态
+        if (!orderMatch.getStatus().equals(MatchOrderStatus.PAID.getCode())) {
+            throw new BaseException("订单状态已发生变化");
+        }
+        //匹配订单分为 买单 和 卖单  //查询到otc 订单
+        EzOtcOrder ezOtcOrder = otcOrderService.getById(orderMatch.getOrderNo());
+        List<EzOtcChatMsg> list = new ArrayList<>();
+        EzOtcChatMsg ezOtcChatMsg = new EzOtcChatMsg();
+        EzOtcChatMsg ezOtcChatMsg1 = new EzOtcChatMsg();
+        ezOtcChatMsg1.setOrderMatchNo(orderMatch.getOrderMatchNo());
+        ezOtcChatMsg.setOrderMatchNo(orderMatch.getOrderMatchNo());
+        ezOtcChatMsg.setReceiveUserId(orderMatch.getOtcOrderUserId());
+        ezOtcChatMsg1.setReceiveUserId(orderMatch.getUserId());
+        ezOtcChatMsg.setSendText(SystemOrderTips.APPEAL_CANCEL);
+        ezOtcChatMsg1.setSendText(SystemOrderTips.APPEAL_CANCEL);
+        orderMatch.setStatus(MatchOrderStatus.CANCELLED.getCode());
+        orderMatch.setStatus(MatchOrderStatus.ORDERBEENCANCELLED.getCode());
+        ezOtcOrder.setQuotaAmount(ezOtcOrder.getQuotaAmount().subtract(orderMatch.getAmount()));
+        otcOrderService.updateById(ezOtcOrder);
+
+        list.add(ezOtcChatMsg);
+        list.add(ezOtcChatMsg1);
+        otcChatMsgService.sendSysChat(list, MatchOrderStatus.CANCELLED.getCode());
+    }
+
+
+
+
+
+
+
+
+
+
 
     /**
      * @param userId

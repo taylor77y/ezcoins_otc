@@ -8,7 +8,9 @@ import com.ezcoins.project.otc.entity.EzOtcOrderAppeal;
 import com.ezcoins.project.otc.entity.EzOtcOrderMatch;
 import com.ezcoins.project.otc.entity.req.AppealReqDto;
 import com.ezcoins.project.otc.entity.req.DoAppealReqDto;
+import com.ezcoins.project.otc.entity.req.DoOrderReqDto;
 import com.ezcoins.project.otc.mapper.EzOtcOrderAppealMapper;
+import com.ezcoins.project.otc.service.EzAdvertisingBusinessService;
 import com.ezcoins.project.otc.service.EzOtcOrderAppealService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ezcoins.project.otc.service.EzOtcOrderMatchService;
@@ -21,6 +23,7 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -35,6 +38,9 @@ import java.util.List;
 public class EzOtcOrderAppealServiceImpl extends ServiceImpl<EzOtcOrderAppealMapper, EzOtcOrderAppeal> implements EzOtcOrderAppealService {
     @Autowired
     private EzOtcOrderMatchService matchService;
+
+    @Autowired
+    private EzAdvertisingBusinessService businessService;
 
     /**
      * 订单申诉
@@ -113,6 +119,45 @@ public class EzOtcOrderAppealServiceImpl extends ServiceImpl<EzOtcOrderAppealMap
         ezOtcOrderAppeal.setExamineBy(ContextHandler.getUserName());
         ezOtcOrderAppeal.setMemo(doAppealReqDto.getMemo());
         baseMapper.updateById(ezOtcOrderAppeal);
+        return BaseResponse.success();
+    }
+
+    /**
+     * 处理投诉订单
+     * @param orderReqDto
+     * @return
+     */
+    @Override
+    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public BaseResponse doOrder(DoOrderReqDto orderReqDto) {
+        //根据订单号查询是否还有未处理完的投诉
+        String orderMatchNo = orderReqDto.getOrderMatchNo();
+        LambdaQueryWrapper<EzOtcOrderAppeal> queryWrapper=new LambdaQueryWrapper<>();
+        queryWrapper.eq(EzOtcOrderAppeal::getOrderMatchNo,orderMatchNo);
+        queryWrapper.eq(EzOtcOrderAppeal::getStatus,"1");
+        Integer integer = baseMapper.selectCount(queryWrapper);
+        if (integer>0){
+            return BaseResponse.error("请先处理完当前订单的申诉");
+        }
+        if ("0".equals(orderReqDto.getStatus())){//放行
+            matchService.sellerPut(orderMatchNo,true);
+            //修改完成率
+        }else {//订单取消
+            matchService.paymentFail(orderMatchNo);
+            EzOtcOrderMatch orderMatch = matchService.getById(orderMatchNo);
+            String buyUserId;
+            String sellUserId;
+            //交易类型(0:买  1：卖)
+            if (orderMatch.getType().equals("0")){
+                buyUserId=orderMatch.getOtcOrderUserId();
+                sellUserId=orderMatch.getUserId();
+            }else {
+                buyUserId=orderMatch.getUserId();
+                sellUserId=orderMatch.getOtcOrderUserId();
+            }
+            //降低买单完成率
+            businessService.updateCount(sellUserId,buyUserId,null,null,true,"1");
+        }
         return BaseResponse.success();
     }
 }
