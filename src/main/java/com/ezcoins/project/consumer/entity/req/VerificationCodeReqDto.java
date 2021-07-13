@@ -66,7 +66,10 @@ public class VerificationCodeReqDto {
         REGISTER("1"),
 
         /** 找回密码 **/
-        RETRIEVE_PASSWORD("2");
+        RETRIEVE_PASSWORD("2"),
+
+        /** 绑定信息 **/
+        BIND_INFO("3");
 
         private final String type;
 

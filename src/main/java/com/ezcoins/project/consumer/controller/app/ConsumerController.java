@@ -6,11 +6,14 @@ import com.ezcoins.aspectj.lang.annotation.AuthToken;
 import com.ezcoins.aspectj.lang.annotation.Log;
 import com.ezcoins.aspectj.lang.annotation.NoRepeatSubmit;
 import com.ezcoins.base.BaseController;
+import com.ezcoins.constant.Constants;
 import com.ezcoins.constant.enums.BusinessType;
 import com.ezcoins.constant.enums.OperatorType;
 import com.ezcoins.constant.enums.user.KycStatus;
 import com.ezcoins.constant.enums.user.UserKycStatus;
+import com.ezcoins.constant.interf.RedisConstants;
 import com.ezcoins.context.ContextHandler;
+import com.ezcoins.exception.CheckException;
 import com.ezcoins.project.config.entity.EzCountryConfig;
 import com.ezcoins.project.config.service.EzCountryConfigService;
 import com.ezcoins.project.consumer.entity.EzAdvertisingApprove;
@@ -69,6 +72,9 @@ public class ConsumerController extends BaseController {
     @Autowired
     private EzAdvertisingBusinessService businessService;
 
+    @Autowired
+    private RedisCache redisCache;
+
 
     @ApiOperation(value = "发送短信/邮箱验证码")
     @PostMapping("sendMsm")
@@ -110,19 +116,32 @@ public class ConsumerController extends BaseController {
         ezUserService.getById(getUserId());
         return BaseResponse.success();
     }
-//
-//    @ApiOperation(value = "找回密码")
-//    @PostMapping("retrievePassword")
-//    public BaseResponse retrievePassword(@RequestBody UpdateUserBody updateUserBody) {
-//        CheckException.checkEmpty(updateUserBody.getCode(),"验证码不能为空");
-//        //判断验证码是否正确
-//        String code = redisCache.getCacheObject(Constants.RETRIEVE_PASSWORD_PHONE_CAPTCHA_KEY + updateUserBody.getPhone());
-//        if (!code.equals(updateUserBody.getCode())){
-//            return BaseResponse.error().message("验证码错误");
-//        }
-//        EzUserService.updateUser(updateUserBody);
-//        return BaseResponse.success();
-//    }
+
+    @NoRepeatSubmit
+    @ApiOperation(value = "找回密码")
+    @PostMapping("retrievePassword")
+    public BaseResponse retrievePassword(@RequestBody @Validated RetrievePwReqDto retrievePwReqDto) {
+        String phoneOrEmail = retrievePwReqDto.getPhoneOrEmail();
+        LambdaQueryWrapper<EzUser> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(EzUser::getPhone, phoneOrEmail);
+        EzUser ezUser = ezUserService.getOne(lambdaQueryWrapper);
+        String codeRedis = redisCache.getCacheObject(RedisConstants.PHONE_RETRIEVE_PASSWORD_SMS_KEY + phoneOrEmail);//判断验证码是否正确
+        if (ezUser == null) {
+            LambdaQueryWrapper<EzUser> lambdaQueryWrapper2 = new LambdaQueryWrapper<>();
+            lambdaQueryWrapper2.eq(EzUser::getEmail, phoneOrEmail);
+            ezUser = ezUserService.getOne(lambdaQueryWrapper2);
+            codeRedis = redisCache.getCacheObject(RedisConstants.EMAIL_RETRIEVE_PASSWORD_SMS_KEY + phoneOrEmail);
+        }
+        if (ezUser == null) {
+            return BaseResponse.error(MessageUtils.message("用户不存在"));
+        }
+        if (!codeRedis.equals(retrievePwReqDto.getCode())) {
+            return BaseResponse.error(MessageUtils.message("验证码错误"));
+        }
+        ezUser.setPassword(EncoderUtil.encode(retrievePwReqDto.getNewPassword()));
+        ezUserService.updateById(ezUser);
+        return BaseResponse.success();
+    }
 
     @NoRepeatSubmit
     @ApiOperation(value = "用户实名认证")
@@ -222,6 +241,7 @@ public class ConsumerController extends BaseController {
         infoRespDto.setPhone(ezUser.getPhone());
         infoRespDto.setUserId(ezUser.getUserId());
         infoRespDto.setRealName(one.getRealName());
+        infoRespDto.setPhoneArea(ezUser.getPhoneArea());
         return Response.success(infoRespDto);
     }
 
@@ -247,5 +267,62 @@ public class ConsumerController extends BaseController {
         }
         return BaseResponse.success();
     }
+
+    @NoRepeatSubmit
+    @ApiOperation(value = "绑定安全信息")
+    @PostMapping("bindSecurityInfo")
+    @AuthToken
+    @Log(title = "绑定安全信息", businessType = BusinessType.UPDATE, operatorType = OperatorType.MOBILE)
+    public BaseResponse bindSecurityInfo(@RequestBody BingSecurityReqDto bingSecurityReqDto) {
+        String type = bingSecurityReqDto.getType();
+        String phoneOrEmail = bingSecurityReqDto.getPhoneOrEmail();
+        String code = bingSecurityReqDto.getCode();
+        String phoneArea = bingSecurityReqDto.getPhoneArea();
+
+        String key = RedisConstants.PHONE_BIND_INFO_SMS_KEY;
+        String key2 = RedisConstants.EMAIL_BIND_INFO_SMS_KEY;
+        String redisCode;
+        LambdaQueryWrapper<EzUser> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(EzUser::getUserId, ContextHandler.getUserId());
+        EzUser ezUser = ezUserService.getOne(lambdaQueryWrapper);
+
+        LambdaQueryWrapper<EzUser> lambdaQueryWrapper2 = new LambdaQueryWrapper<>();
+        if ("1".equals(type)) {
+            if (StringUtils.isNotEmpty(ezUser.getPhone())) {
+                return BaseResponse.error("用户已绑定手机号");
+            }
+            lambdaQueryWrapper2.eq(EzUser::getPhone, phoneOrEmail);
+            lambdaQueryWrapper2.eq(EzUser::getPhoneArea, phoneArea);
+            EzUser one = ezUserService.getOne(lambdaQueryWrapper2);
+            if (null != one) {
+                return BaseResponse.error("手机号已被绑定");
+            }
+            redisCode = redisCache.getCacheObject(key + phoneArea + phoneOrEmail);
+            ezUser.setPhone(phoneOrEmail);
+            ezUser.setPhoneArea(phoneArea);
+        } else {
+            if (StringUtils.isNotEmpty(ezUser.getEmail())) {
+                return BaseResponse.error("用户已绑定邮箱");
+            }
+            lambdaQueryWrapper2.eq(EzUser::getEmail, phoneOrEmail);
+            EzUser one = ezUserService.getOne(lambdaQueryWrapper2);
+            if (null != one) {
+                return BaseResponse.error("邮箱已被绑定");
+            }
+            redisCode = redisCache.getCacheObject(key2 + phoneOrEmail);
+            ezUser.setEmail(phoneOrEmail);
+        }
+        if (StringUtils.isEmpty(redisCode)) {
+            return BaseResponse.error(MessageUtils.message("验证码已过期"));
+        }
+
+        if (!code.equals(redisCode)) {
+            return BaseResponse.error(MessageUtils.message("验证码错误"));
+        }
+
+        ezUserService.updateById(ezUser);
+        return BaseResponse.success();
+    }
+
 
 }

@@ -25,4 +25,7 @@ public class SidebarInfoRespDto {
     @ApiModelProperty(value = "邮箱")
     private String email;
 
+    @ApiModelProperty(value = "区号")
+    private String phoneArea;
+
 }

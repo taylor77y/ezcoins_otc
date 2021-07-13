@@ -12,13 +12,11 @@ import lombok.Data;
  */
 @Data
 public class UpdateUserBody {
-
     /**
      * 用户id
      */
     @ApiModelProperty(value = "用户id")
     private String userId;
-
     /**
      * 手机号
      */

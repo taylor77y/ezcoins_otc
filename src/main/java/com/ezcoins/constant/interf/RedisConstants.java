@@ -45,6 +45,9 @@ public interface RedisConstants {
     public static final String PHONE_RETRIEVE_PASSWORD_SMS_KEY = "phone_retrieve_password_sms_key:";//找回发送手机验证
     public static final String EMAIL_RETRIEVE_PASSWORD_SMS_KEY = "email_retrieve_password_sms_key:";//找回发送邮箱验证
 
+    public static final String PHONE_BIND_INFO_SMS_KEY = "phone_bind_info_sms_key:";//绑定手机
+    public static final String EMAIL_BIND_INFO_SMS_KEY = "email_bind_info_sms_key:";//绑定邮箱
+
 
 
 

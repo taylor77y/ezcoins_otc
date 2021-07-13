@@ -53,7 +53,6 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
         if (!(handler instanceof HandlerMethod)) {
             return true;
         }
-
         if (!flag) {
             return false;
         }

@@ -136,7 +136,6 @@ public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> impleme
         String captchaType = codeReqDto.getCaptchaType();
         String phoneArea = codeReqDto.getPhoneArea();
 
-
         String key = null;
         String code =null;
         //手机验证码
@@ -156,6 +155,11 @@ public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> impleme
                     throw new BaseException(MessageUtils.message("手机号尚未绑定"));
                 }
                 key = RedisConstants.PHONE_RETRIEVE_PASSWORD_SMS_KEY;
+            }else if (VerificationCodeReqDto.captchaType.BIND_INFO.getType().equals(captchaType)){
+                if (!flag) {
+                    throw new BaseException(MessageUtils.message("手机号已被注册"));
+                }
+                key = RedisConstants.PHONE_BIND_INFO_SMS_KEY;
             }
             code=redisCache.getCacheObject(key + phoneArea+verificationNumber);
 
@@ -172,11 +176,15 @@ public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> impleme
                     throw new BaseException(MessageUtils.message("邮箱尚未绑定"));
                 }
                 key = RedisConstants.EMAIL_RETRIEVE_PASSWORD_SMS_KEY;
+            }else if (VerificationCodeReqDto.captchaType.BIND_INFO.getType().equals(captchaType)) {
+                if (!flag) {
+                    throw new BaseException(MessageUtils.message("邮箱已被注册"));
+                }
+                key = RedisConstants.EMAIL_BIND_INFO_SMS_KEY;
             }
             code=redisCache.getCacheObject(key + verificationNumber);
         }
         //1 从redis获取验证码，如果获取到直接返回
-
         if (StringUtils.isNotEmpty(code)) {
         } else {
             //随机产生6位数字

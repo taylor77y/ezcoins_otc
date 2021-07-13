@@ -1,11 +1,13 @@
 package com.ezcoins;
 
 import com.ezcoins.handler.AuthenticationInterceptor;
+import com.ezcoins.project.common.service.EmailService;
 import com.ezcoins.project.otc.task.ScheduledTasks;
 import com.ezcoins.utils.MoneyChangeUtils;
 import com.ezcoins.websocket.WebSocketHandle;
 import lombok.SneakyThrows;
 import net.bytebuddy.implementation.bytecode.Throw;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -25,6 +27,9 @@ import java.util.concurrent.Executors;
 @Order(1)
 @Component
 public class Statr implements CommandLineRunner {
+
+    @Autowired
+    EmailService emailService;
 
     @Override
     public void run(String... args) throws Exception {
