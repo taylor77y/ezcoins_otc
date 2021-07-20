@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.*;
  * @since 2021-06-17
  */
 @RestController
-@Api(tags = "Admin-资产账户模块")
+@Api(tags = "Admin-提币申诉模块")
 @RequestMapping("/admin/coin/withdrawOrder")
 public class WithdrawOrderController {
 
@@ -43,34 +43,13 @@ public class WithdrawOrderController {
     }
 
     @NoRepeatSubmit
-    @ApiOperation(value = "审核提币 订单")
+    @ApiOperation(value = "审核提币订单")
     @PutMapping("reviewWithdrawOrder")
     @AuthToken
-    @Log(title = "审核提币 订单", businessType = BusinessType.INSERT, operatorType = OperatorType.MANAGE)
+    @Log(title = "审核提币订单", businessType = BusinessType.INSERT, operatorType = OperatorType.MANAGE)
     public BaseResponse reviewWithdrawOrder(@RequestBody CheckWithdrewOrderReqDto checkWithdrewOrderReqDto) {
         withdrawOrderService.reviewWithdrawOrder(checkWithdrewOrderReqDto);
         return BaseResponse.success();
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
 

@@ -58,9 +58,9 @@ public class EzPaymentInfoServiceImpl extends ServiceImpl<EzPaymentInfoMapper, E
         if (null == one) {
             throw new BaseException(MessageUtils.message("用户实名认证尚未通过"));
         }
-        if (!one.getRealName().equals(realName)) {
-            throw new BaseException(MessageUtils.message("请输入认证的真实姓名"));
-        }
+//        if (!one.getFirstName().equals(firstName) ||!one.getLastName().equals(lastName)) {
+//            throw new BaseException(MessageUtils.message("请输入认证的真实姓名"));
+//        }
         String id = qrcodeTypeReqDto.getId();
         EzPaymentInfo paymentInfo = new EzPaymentInfo();
         BeanUtils.copyBeanProp(paymentInfo, qrcodeTypeReqDto);

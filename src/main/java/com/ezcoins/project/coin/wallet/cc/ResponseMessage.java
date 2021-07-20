@@ -1,4 +1,4 @@
-package com.ezcoins.project.coin.udun;
+package com.ezcoins.project.coin.wallet.cc;
 
 import lombok.Data;
 
@@ -12,17 +12,17 @@ public class ResponseMessage<T> {
 
     private int code;
 
-    private String msg;
+    private String message;
 
     private T data ;
 
     public ResponseMessage(int status, String message){
         this.code = status ;
-        this.msg = message;
+        this.message = message;
     }
 
     public ResponseMessage(String message){
-        this.msg = message;
+        this.message = message;
     }
 
     public static <T> ResponseMessage<T> success(int status,String message){

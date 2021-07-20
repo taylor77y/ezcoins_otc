@@ -16,7 +16,7 @@ import java.math.BigDecimal;
  */
 @Data
 public class SellConfigReqDto {
-    @ApiModelProperty(value = "配置Id")
+    @ApiModelProperty(value = "配置Id 增加：null  修改：加上ID")
     private Integer id;
 
     @ApiModelProperty(value = "手续费【固定】")
@@ -36,7 +36,6 @@ public class SellConfigReqDto {
 
     @ApiModelProperty(value = "币种")
     private String coinName;
-
 
     @ApiModelProperty(value = "0:关闭  1：开启")
     private String status;

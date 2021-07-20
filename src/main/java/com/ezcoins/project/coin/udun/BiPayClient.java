@@ -96,7 +96,7 @@ public class BiPayClient implements Client<String> {
         log.debug("createCoinAddress-body[{}]",body.toJSONString());
         Map<String, String> map = HttpUtil.wrapperParams(this.merchantKey, body.toJSONString());//通过工具了类获得 所需要的某些参数
         ResponseMessage<String> response = post(API.CREATE_ADDRESS, map);
-        ResponseMessage<Address> result = new ResponseMessage<>(response.getCode(), response.getMessage());
+        ResponseMessage<Address> result = new ResponseMessage<>(response.getCode(), response.getMsg());
         if (result.getCode() == ResponseMessage.SUCCESS_CODE) {
             result.setData(Address.parse(response.getData()));
         }
@@ -122,7 +122,7 @@ public class BiPayClient implements Client<String> {
         body.add(item);
         Map<String, String> map = HttpUtil.wrapperParams(this.merchantKey, body.toJSONString());
         ResponseMessage<String> response = post(API.CREATE_BATCH_ADDRESS, map);
-        ResponseMessage<List<Address>> result = new ResponseMessage<>(response.getCode(), response.getMessage());
+        ResponseMessage<List<Address>> result = new ResponseMessage<>(response.getCode(), response.getMsg());
         if (result.getCode() == ResponseMessage.SUCCESS_CODE) {
             result.setData(JSONArray.parseArray(response.getData(), Address.class));
         }
@@ -131,7 +131,6 @@ public class BiPayClient implements Client<String> {
 
     /**
      * 转账
-     *
      * @param orderId
      * @param amount 提币数量
      * @param mainCoinType 主币种编号
@@ -165,7 +164,7 @@ public class BiPayClient implements Client<String> {
         }
         return response;
     }
-    
+
 //    public static void main(String[] args) {
 //        Transfer transfer = new Transfer();
 //        transfer.setAddress("TX4hBYay4SwpqVaMGof2hKUqcGi3YbrCec");

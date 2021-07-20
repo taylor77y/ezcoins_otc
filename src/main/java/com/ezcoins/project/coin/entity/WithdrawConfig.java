@@ -60,7 +60,7 @@ public class WithdrawConfig implements Serializable {
     @ApiModelProperty(value = "单日限额 0就不限制")
     private BigDecimal singleDayLimit;
 
-    @ApiModelProperty(value = "提币状态0开放 1 关闭")
+    @ApiModelProperty(value = "提币状态 0开放 1 关闭")
     private String status;
 
     @ApiModelProperty(value = "创建时间")

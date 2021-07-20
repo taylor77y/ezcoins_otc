@@ -364,15 +364,16 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
      */
     @Override
     public BaseResponse sellOneKey(SellOneKeyReqDto sellOneKeyReqDto) {
+        String userId = ContextHandler.getUserId();
         //查看是否有未完成的的订单
         LambdaQueryWrapper<EzOtcOrderMatch> matchLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        matchLambdaQueryWrapper.eq(EzOtcOrderMatch::getUserId, ContextHandler.getUserId());
-        matchLambdaQueryWrapper.eq(EzOtcOrderMatch::getStatus, MatchOrderStatus.PENDINGORDER.getCode()).or()
+        matchLambdaQueryWrapper.eq(EzOtcOrderMatch::getUserId, userId);
+        matchLambdaQueryWrapper.eq(EzOtcOrderMatch::getStatus, MatchOrderStatus.PENDINGORDER.getCode())
+                .or()
                 .eq(EzOtcOrderMatch::getStatus, MatchOrderStatus.WAITFORPAYMENT.getCode());
         EzOtcOrderMatch orderMatch = baseMapper.selectOne(matchLambdaQueryWrapper);
-
         if (orderMatch != null) {
-            return BaseResponse.error("请先完成当前未完成的订单")
+            return BaseResponse.error(MessageUtils.message("请先完成当前未完成的订单"))
                     .data("orderMatchNo", orderMatch.getOrderMatchNo());
         }
         LambdaQueryWrapper<EzOneSellConfig> queryWrapper = new LambdaQueryWrapper<>();
@@ -381,11 +382,9 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
         if ("1".equals(ezSellConfig.getStatus())) {
             return BaseResponse.error(MessageUtils.message("当前币种一键卖币已关闭"));
         }
-
         BigDecimal amount = sellOneKeyReqDto.getAmount();
         BigDecimal maxAmount = ezSellConfig.getMaxAmount();
         BigDecimal minAmount = ezSellConfig.getMinAmount();
-
         if (amount.compareTo(maxAmount) > 0 || amount.compareTo(minAmount) < 0) {
             return BaseResponse.error(MessageUtils.message("输入数量错误"));
         }
@@ -395,15 +394,14 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
         //冻结用户卖出 数量
         List<BalanceChange> cList = new ArrayList<>();
         BalanceChange b = new BalanceChange();
-        String userId = ContextHandler.getUserId();
         BigDecimal total = amount.add(fee);
-        b.setAvailable(total);
+        b.setAvailable(total.negate());
         b.setCoinName(sellOneKeyReqDto.getCoinName());
         b.setUserId(userId);
         b.setIncomeType(CoinConstants.IncomeType.PAYOUT.getType());
+        b.setMainType(CoinConstants.MainType.FROZEN.getType());
         b.setFrozen(total);
         b.setFee(fee);
-        b.setMainType(CoinConstants.MainType.FROZEN.getType());
         if (!accountService.balanceChangeSYNC(cList)) {// 资产变更异常
             throw new AccountOperationBusyException();
         }

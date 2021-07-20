@@ -49,10 +49,10 @@ public class SearchModel<T> {
                 if (StringUtils.isNotEmpty(e.getValue())){
                     switch (e.getQueryMethod()) {
                         case eq:
-                            queryWrapper.eq(e.getName(), e.getValue());
+                            queryWrapper.eq(true, e.getName(), e.getValue());
                             break;
                         case like:
-                            queryWrapper.like(e.getName(), e.getValue());
+                            queryWrapper.like(true, e.getName(), e.getValue());
                     }
                 }
             });

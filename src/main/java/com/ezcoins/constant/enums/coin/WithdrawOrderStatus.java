@@ -10,9 +10,10 @@ package com.ezcoins.constant.enums.coin;
 public enum WithdrawOrderStatus {
 
     PENDINGREVIEW("1", "待审核"),
-    BY("2", "审核通过"),
+    BYADMIN("2", "后台审核通过"),
     REFUSE("3", "提币拒绝"),
-    FAIL("4","提币失败");
+    FAIL("4","提币失败"),
+    BYWALLET("5","对接已审核");
 
     private final String code;
     private final String info;

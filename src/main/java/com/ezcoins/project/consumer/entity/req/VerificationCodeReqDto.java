@@ -17,7 +17,7 @@ public class VerificationCodeReqDto {
     private String type;
 
 
-    @NotBlank(message ="{手机号/邮箱 不能为空}")
+    @NotBlank(message ="{号码不能为空}")
     @ApiModelProperty(value = "手机号/邮箱" ,required = true)
     private String verificationNumber;
 

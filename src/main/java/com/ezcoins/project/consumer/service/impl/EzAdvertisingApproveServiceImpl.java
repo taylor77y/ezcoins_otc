@@ -159,7 +159,7 @@ public class EzAdvertisingApproveServiceImpl extends ServiceImpl<EzAdvertisingAp
             baseMapper.insert(advertisingApprove);
         }else {
             if (advertisingApprove.getStatus().equals(KycStatus.BY.getCode())){
-                throw new BaseException("用户认证已通过");
+                throw new BaseException(MessageUtils.message("用户认证已通过"));
             }
             advertisingApprove.setMargin(advertisingReqDto.getMargin());
             advertisingApprove.setMemo(null);

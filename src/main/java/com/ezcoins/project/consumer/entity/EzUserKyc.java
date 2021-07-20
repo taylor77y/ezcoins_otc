@@ -33,8 +33,29 @@ public class EzUserKyc implements Serializable {
     @ApiModelProperty(value = "用户id")
     private String userId;
 
-    @ApiModelProperty(value = "真实姓名")
-    private String realName;
+    @ApiModelProperty(value = "名字")
+    private String firstName;
+
+    @ApiModelProperty(value = "姓氏")
+    private String lastName;
+
+    @ApiModelProperty(value = "当前居住国家")
+    private String addrCountry;
+
+    @ApiModelProperty(value = "当前居住城市")
+    private String addrCity;
+
+    @ApiModelProperty(value = "邮政编码")
+    private String postalCode;
+
+    @ApiModelProperty(value = "联系号码")
+    private String contactNumber;
+
+    @ApiModelProperty(value = "国家编号")
+    private String countryCode;
+
+    @ApiModelProperty(value = "国家电话区号")
+    private String countryTelCode;
 
     @ApiModelProperty(value = "身份证/护照号码")
     private String identityCard;
@@ -74,6 +95,4 @@ public class EzUserKyc implements Serializable {
     @ApiModelProperty(value = "审核时间")
     private Date examineTime;
 
-    @ApiModelProperty(value = "紧急联系人电话")
-    private String urgentPhone;
 }

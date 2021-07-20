@@ -18,5 +18,4 @@ public class OrderOperateReqDto {
     @ApiModelProperty(value = "操作  （1：拒接  2：接受）",required = true)
     private String operate;
 
-
 }

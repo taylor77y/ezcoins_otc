@@ -45,7 +45,7 @@ public class Record implements Serializable {
     @ApiModelProperty(value = "主类型")
     private String mainType;
 
-    @ApiModelProperty(value = "子类型")
+    @ApiModelProperty(value = "子类型  1")
     private String sonType;
 
     @ApiModelProperty(value = "数量")
@@ -66,7 +66,7 @@ public class Record implements Serializable {
     @ApiModelProperty(value = "手续费")
     private BigDecimal fee;
 
-    @ApiModelProperty(value = "状态（1成功）")
+    @ApiModelProperty(value = "状态（1成功） 2 待审核  3审核通过 4审核拒绝")
     private String status;
 
     @ApiModelProperty(value = "创建时间")

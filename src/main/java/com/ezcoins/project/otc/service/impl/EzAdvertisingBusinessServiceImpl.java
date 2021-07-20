@@ -110,22 +110,22 @@ public class EzAdvertisingBusinessServiceImpl extends ServiceImpl<EzAdvertisingB
 
         if (isAdmin) {//修改完成率
             if ("0".equals(status)) {
-                sellInfo.setFinishRate(finishSell / totalSell + 1);//卖家降低完成率
-                buyInfo.setFinishRate(finishBuy + 1 / totalBuy + 1);//买家提升完成率
-                buyInfo.setFinishBuyRate(finishBuyRete + 1 / buyCount + 1);
+                sellInfo.setFinishRate(finishSell / (totalSell + 1));//卖家降低完成率
+                buyInfo.setFinishRate((finishBuy + 1) / (totalBuy + 1));//买家提升完成率
+                buyInfo.setFinishBuyRate((finishBuyRete + 1) / (buyCount + 1));
             } else {
-                sellInfo.setFinishRate(finishSell + 1/ totalSell + 1);//增加降低完成率
-                buyInfo.setFinishRate(finishBuy/ totalBuy + 1);//买家提升完成率
-                buyInfo.setFinishBuyRate(finishBuyRete/ buyCount + 1);
+                sellInfo.setFinishRate((finishSell + 1)/( totalSell + 1));//增加降低完成率
+                buyInfo.setFinishRate(finishBuy/ (totalBuy + 1));//买家提升完成率
+                buyInfo.setFinishBuyRate((finishBuyRete/ buyCount)+ 1);
             }
         } else {
             Long releaseTime = finishTime.getTime() - payTime.getTime();//放行时间
             var time = Math.floor(releaseTime / 60 % 60);
             buyInfo.setAveragePass((time + sellInfo.getAveragePass() * sellInfo.getSellCount()) / (sellInfo.getSellCount() + 1));//平均放行时间
 
-            sellInfo.setFinishRate(finishSell + 1/ totalSell + 1);//增加降低完成率
-            buyInfo.setFinishRate(finishBuy+ 1/ totalBuy + 1);//买家提升完成率
-            buyInfo.setFinishBuyRate(finishBuyRete+ 1/ buyCount + 1);
+            sellInfo.setFinishRate((finishSell + 1)/ (totalSell + 1));//增加降低完成率
+            buyInfo.setFinishRate((finishBuy+ 1)/ (totalBuy + 1));//买家提升完成率
+            buyInfo.setFinishBuyRate((finishBuyRete+ 1)/ (buyCount + 1));
         }
         businesses.add(sellInfo);
         businesses.add(buyInfo);

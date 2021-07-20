@@ -117,15 +117,14 @@ public class BiPayService {
 //    /**
 //     * 充值到账回调
 //     *
-//     * @param Trade 交易实体
+//     * @param trade 交易实体
 //     * @return
 //     * @throws Exception
 //     */
 //    public boolean rechargeCallback(Trade trade) throws Exception {
-//
 //        //金额为最小单位，需要转换,包括amount和fee字段
-//        BigDecimal amount = trade.getAmount().divide(BigDecimal.TEN.pow(trade.getDecimals()), 8, RoundingMode.DOWN);
-//        BigDecimal fee = trade.getFee().divide(BigDecimal.TEN.pow(trade.getDecimals()), 8, RoundingMode.DOWN);
+//        BigDecimal amount = trade.getAmount();
+//        BigDecimal fee = trade.getFee();
 //        trade.setAmount(amount);
 //        trade.setFee(fee);
 //        boolean rs = false;
@@ -144,7 +143,7 @@ public class BiPayService {
 //        }
 //        return rs;
 //    }
-//
+
 @Autowired
 private WalletService walletService;
     /**
@@ -155,13 +154,11 @@ private WalletService walletService;
      * @throws Exception
      */
     public boolean withdrawCallback(Trade trade) throws Exception {
-
         //金额为最小单位，需要转换,包括amount和fee字段
-        BigDecimal amount = trade.getAmount().divide(BigDecimal.TEN.pow(trade.getDecimals()), 8, RoundingMode.DOWN);
-        BigDecimal fee = trade.getFee().divide(BigDecimal.TEN.pow(trade.getDecimals()), 8, RoundingMode.DOWN);
+        BigDecimal amount = trade.getAmount();
+        BigDecimal fee = trade.getFee();
         trade.setAmount(amount);
         trade.setFee(fee);
-
         boolean rs = walletService.handleThirdpartyWithdrawal(trade);
         return rs;
     }

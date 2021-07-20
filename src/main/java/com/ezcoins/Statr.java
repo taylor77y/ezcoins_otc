@@ -1,11 +1,13 @@
 package com.ezcoins;
 
+import com.ezcoins.aspectj.lang.annotation.Log;
 import com.ezcoins.handler.AuthenticationInterceptor;
 import com.ezcoins.project.common.service.EmailService;
 import com.ezcoins.project.otc.task.ScheduledTasks;
 import com.ezcoins.utils.MoneyChangeUtils;
 import com.ezcoins.websocket.WebSocketHandle;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import net.bytebuddy.implementation.bytecode.Throw;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -26,6 +28,7 @@ import java.util.concurrent.Executors;
  */
 @Order(1)
 @Component
+@Slf4j
 public class Statr implements CommandLineRunner {
 
     @Autowired
@@ -35,10 +38,14 @@ public class Statr implements CommandLineRunner {
     public void run(String... args) throws Exception {
         AuthenticationInterceptor.flag = false;
         sync();
-        AuthenticationInterceptor.flag = true;
+
     }
     private void sync() throws Exception {
-        ScheduledTasks.rmbPrice = new BigDecimal(MoneyChangeUtils.getRequest3());
+        ScheduledTasks.rmbPrice = MoneyChangeUtils.getUSDToCNY();
+        if (ScheduledTasks.rmbPrice!=null){
+            AuthenticationInterceptor.flag = true;
+            log.info("启动成功");
+        }
         Executors.newSingleThreadExecutor().submit(new Runnable() {
             @Override
             public void run() {

@@ -1,8 +1,8 @@
 package com.ezcoins.constant;
 
 public interface RecordSonType {
-    public static final String ORDINARY_WITHDRAWAL= "1";//普通冲币
-    public static final String ORDINARY_RECHARGE = "2";//普通提币
+    public static final String ORDINARY_WITHDRAWAL= "1";//普通提币
+    public static final String ORDINARY_RECHARGE = "2";//普通冲币
 
     public static final String SYS_AIRPORT = "3";//系统空投
     public static final String SYS_DEDUCTION = "4";//系统扣除

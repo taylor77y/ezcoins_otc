@@ -3,7 +3,7 @@ package com.ezcoins.constant.enums.coin;
 public class CoinConstants {
     
     
-    public static final String BUSINESSID = "htudun_";
+    public static final String BUSINESSID = "ezcoins_";
 	
 	/**
 	 *  资产流水记录主类型

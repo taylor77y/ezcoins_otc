@@ -1,6 +1,7 @@
 package com.ezcoins.project.coin.udun;
 
 import com.alibaba.fastjson.JSONObject;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -19,17 +20,14 @@ public class Trade {
     private String coinType;
     //交易金额
     private BigDecimal amount ;
-    //区块高度
-    private String blockHigh;
     //交易类型  1-充值 2-提款(转账)
     private int tradeType ;
     //交易状态 0-待审核 1-成功 2-失败,充值无审核
     private int status ;
     //旷工费
     private BigDecimal fee ;
-    private int decimals;
     //提币申请单号
-    private String businessId ;
+    private String request_id ;
     //备注
     private String memo;
 
@@ -77,12 +75,10 @@ public class Trade {
     	t.setMainCoinType("195");
     	t.setCoinType("TH6MBGKfQRjnXBbEihXBSDZeLoyqUN7WYJ");
     	t.setAmount(new BigDecimal("70000"));
-    	t.setBlockHigh("24493570");
     	t.setTradeType(1);
     	t.setStatus(3);
     	t.setFee(BigDecimal.ZERO);
-    	t.setDecimals(18);
-    	
+
     	String s = JSONObject.toJSONString(t);
     	System.out.println(s);
     	

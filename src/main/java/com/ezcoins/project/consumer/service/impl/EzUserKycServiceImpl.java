@@ -46,12 +46,10 @@ public class EzUserKycServiceImpl extends ServiceImpl<EzUserKycMapper, EzUserKyc
      */
     @Override
     public void verified(UserKycReqDto userKycReqDto) {
-        EzUserKyc ezcoinsKyc =null;
          //查看用户的实名认证
         LambdaQueryWrapper<EzUserKyc> lambdaQueryWrapper=new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(EzUserKyc::getUserId,userKycReqDto.getUserId());
-        ezcoinsKyc= baseMapper.selectOne(lambdaQueryWrapper);
-
+        EzUserKyc ezcoinsKyc = baseMapper.selectOne(lambdaQueryWrapper);
         if (null==ezcoinsKyc){
             ezcoinsKyc=new EzUserKyc();
             BeanUtils.copyBeanProp(ezcoinsKyc,userKycReqDto);
@@ -73,7 +71,6 @@ public class EzUserKycServiceImpl extends ServiceImpl<EzUserKycMapper, EzUserKyc
         }
         //给用户一个信号
         WebSocketHandle.realNameAuthentication(userKycReqDto.getUserId(),KycStatus.PENDINGREVIEW.getCode());
-
     }
 
     /**

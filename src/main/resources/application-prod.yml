@@ -17,6 +17,14 @@ bipay:
   host: http://Hotelmillionaire.com
   supported-coins: BTC,ETH,TRX
 
+wallet:
+  cc:
+    #公钥
+    publicKey: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA07L/9eSyDhmPpUg2jBw1SmgNaGHnWglzj25rgLI4vsmoULjLYk81QBrvP1STDnrgRgR0wK8AmfnzA7BU2+73jduU0xpkZzlY05sjL4dFBX0UIvNoCKFP0DE+weG4Aqk1wFV2/vx1Q8yctb/kWxNS/NUKi+Ab9hpSEm8x9CQ2Q+VgLc9cWRQ9bQliGp4db9O8pfPdTHHi+UgYXavPtOrADREzunbaRdClyTb9774v0kYuKOFEsvYHbOpFa2L+WoyJ+I1yTEJ+1FyIJu1tcsaaW7AIo8N1h2CybYr7RRJwV9BAjFexXyr6b+0sBiM2ZTcXC4L5qya3JW2iN5R0l5GO8QIDAQAB
+    #第三方网关
+    gateway: https://wallet.ezcoins.cc
+
+
 logging:
   level:
     com.ezcoins: debug
@@ -79,24 +87,24 @@ spring:
             multi-statement-allow: true
   mail:
     #服务器
-    host: 123.58.177.181
+    host: smtpout.secureserver.net
     #邮箱发件人
-    username: hotel.happy@vip.163.com
+    username: support@ezcoins.cc
     #授权码
-    password: hotel123456
+    password: P@ssw0rdEzcoins
     properties:
       mail:
+        debug: true
         smtp:
+          ssl:
+            enable: false
           socketFactory:
             port: 587
             class: javax.net.ssl.SSLSocketFactory
-            fallback: false
           # 必须进行授权认证，它的目的就是阻止他人任意乱发邮件
-          auth: true
-          starttls:
-            enable: true
-            required: true
-    port: 587
+    protocol: smtp
+    default-encoding: utf-8
+
 
 token:
   header: Authorization

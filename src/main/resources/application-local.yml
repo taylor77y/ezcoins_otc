@@ -4,6 +4,13 @@ ezcoins:
   addressEnabled: false
   captchaType: math
 
+wallet:
+   cc:
+    #公钥
+    publicKey: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA07L/9eSyDhmPpUg2jBw1SmgNaGHnWglzj25rgLI4vsmoULjLYk81QBrvP1STDnrgRgR0wK8AmfnzA7BU2+73jduU0xpkZzlY05sjL4dFBX0UIvNoCKFP0DE+weG4Aqk1wFV2/vx1Q8yctb/kWxNS/NUKi+Ab9hpSEm8x9CQ2Q+VgLc9cWRQ9bQliGp4db9O8pfPdTHHi+UgYXavPtOrADREzunbaRdClyTb9774v0kYuKOFEsvYHbOpFa2L+WoyJ+I1yTEJ+1FyIJu1tcsaaW7AIo8N1h2CybYr7RRJwV9BAjFexXyr6b+0sBiM2ZTcXC4L5qya3JW2iN5R0l5GO8QIDAQAB
+    #第三方网关
+    gateway: https://wallet.ezcoins.cc
+
 # 优盾支付配置
 #线上环境 02763
 bipay:

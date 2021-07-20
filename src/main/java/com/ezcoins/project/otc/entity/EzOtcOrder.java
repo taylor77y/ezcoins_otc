@@ -72,10 +72,10 @@ public class EzOtcOrder implements Serializable {
 
     @ApiModelProperty(value = "支付方式3ID")
     private Integer paymentMethod3;
-//
-//    @ApiModelProperty(value = "卖家昵称")
-//    private String advertisingName;
-//
+
+    @ApiModelProperty(value = "上架昵称")
+    private String advertisingName;
+
 //    @ApiModelProperty(value = "真实姓名")
 //    private String realName;
 

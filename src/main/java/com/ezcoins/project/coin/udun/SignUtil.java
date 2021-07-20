@@ -13,12 +13,19 @@ public class SignUtil {
     }
 
     public static String sign(String key,String timestamp,String nonce,String body) throws Exception {
-        String raw = body + key + nonce + timestamp;
+        String raw = body + key + timestamp;
         String sign = DigestUtils.md5Hex(raw).toLowerCase();
         return sign;
     }
 
     public static String sign(String key,String timestamp,String nonce) throws Exception {
         return DigestUtils.md5Hex(key + nonce + timestamp ).toLowerCase();
+    }
+
+
+    public static void main(String[] args) {
+
+
+
     }
 }

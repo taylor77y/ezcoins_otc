@@ -1,6 +1,8 @@
 package com.ezcoins.project.coin.controller.app;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ezcoins.aspectj.lang.annotation.AuthToken;
 import com.ezcoins.aspectj.lang.annotation.Log;
 import com.ezcoins.base.BaseController;
@@ -8,6 +10,7 @@ import com.ezcoins.constant.enums.BusinessType;
 import com.ezcoins.constant.enums.OperatorType;
 import com.ezcoins.context.ContextHandler;
 import com.ezcoins.project.coin.entity.*;
+import com.ezcoins.project.coin.entity.query.RecordQuery;
 import com.ezcoins.project.coin.entity.req.UserAddrReqDto;
 import com.ezcoins.project.coin.entity.req.WithdrawReqDto;
 import com.ezcoins.project.coin.entity.resp.AccountRespDto;
@@ -19,12 +22,14 @@ import com.ezcoins.response.BaseResponse;
 import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponseList;
 import com.ezcoins.response.ResponsePageList;
+import com.ezcoins.utils.StringUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -145,6 +150,31 @@ public class CoinController extends BaseController {
     @Log(title = "发起提现", businessType = BusinessType.INSERT, operatorType = OperatorType.MOBILE)
     public BaseResponse withdraw(@RequestBody WithdrawReqDto withdrawReqDto) {
         return withdrawOrderService.withdraw(withdrawReqDto);
+    }
+
+    @ApiOperation(value = "提现/充值 记录")
+    @AuthToken
+    @PostMapping("withdrawOrRechargeRecord")
+    public ResponsePageList<Record> withdrawOrRechargeRecord(@RequestBody RecordQuery record) {
+        Page<Record> page=new Page<>(record.getPage(),record.getLimit());
+        LambdaQueryWrapper<Record> lambdaQueryWrapper=new LambdaQueryWrapper<>();
+        Date statTime = record.getStatTime();
+        Date endTime = record.getEndTime();
+        String coinName = record.getCoinName();
+        String type = record.getType();
+        if (StringUtils.isNotNull(statTime)){
+            lambdaQueryWrapper.ge(Record::getCreateTime,statTime);
+        }
+        if (StringUtils.isNotNull(endTime)){
+            lambdaQueryWrapper.le(Record::getCreateTime,endTime);
+        }
+        if (StringUtils.isNotEmpty(coinName)){
+            lambdaQueryWrapper.eq(Record::getCoinName,coinName);
+        }
+        lambdaQueryWrapper.eq(Record::getSonType,type);
+        lambdaQueryWrapper.eq(Record::getUserId,ContextHandler.getUserId());
+        Page<Record> p = recordService.page(page, lambdaQueryWrapper);
+        return ResponsePageList.success(p);
     }
 
     @ApiOperation(value = "账户记录")

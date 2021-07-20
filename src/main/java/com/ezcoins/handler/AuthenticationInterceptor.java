@@ -42,9 +42,6 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
     private EzUserService userService;
 
 
-    @Resource
-    private AclUserService aclUserService;
-
     public static boolean flag = false;
 
     @Override
@@ -91,7 +88,7 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
                 if (authToken.advertisingStatus()) {
                     user = userService.getById(fromToken.getUserId());
                     CheckException.checkToken(user == null, () -> {
-                        log.error("token失效，请重新登录");
+                        log.error("登录已失效，请重新登录");
                     });
                     CheckException.check("1".equals(user.getLevel()), "请先进行高级认证", () -> {
                         log.error("请先进行高级认证");
@@ -101,7 +98,7 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
                     if (user == null) {
                         user = userService.getById(fromToken.getUserId());
                         CheckException.checkToken(user == null, () -> {
-                            log.error("token失效，请重新登录");
+                            log.error("登录已失效，请重新登录");
                         });
                     }
                     CheckException.check("1".equals(user.getKycStatus()), "实名认证未通过");
@@ -111,7 +108,7 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
                     if (user == null) {
                         user = userService.getById(fromToken.getUserId());
                         CheckException.checkToken(user == null, () -> {
-                            log.error("token失效，请重新登录");
+                            log.error("登录已失效，请重新登录");
                         });
                     }
                     CheckException.check("1".equals(user.getStatus()), "用户被禁止");

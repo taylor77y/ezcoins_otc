@@ -25,8 +25,11 @@ public class VerifiedInfoRespDto {
     @ApiModelProperty(value = "高级认证状态 状态：0:已认证 1:待审核 2：审核失败 3：未认证 ")
     private String advertisingStatus;
 
-    @ApiModelProperty(value = "真实姓名")
-    private String realName;
+    @ApiModelProperty(value = "名字")
+    private String firstName;
+
+    @ApiModelProperty(value = "姓氏")
+    private String lastName;
 
     @ApiModelProperty(value = "身份证/护照号码")
     private String identityCard;
@@ -36,7 +39,6 @@ public class VerifiedInfoRespDto {
 
     @ApiModelProperty(value = "UID")
     private String userId;
-
 
     @ApiModelProperty(value = "保证金")
     private BigDecimal margin;

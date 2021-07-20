@@ -37,11 +37,14 @@ public class ScheduledTasks {
     /**每隔半小时**/
     @Scheduled(cron = "${scheduled.cron.rmbPrice}")
     public void upHotelStar(){
-        rmbPrice=new BigDecimal(MoneyChangeUtils.getRequest3());
-        log.info("获取rmb - u 价格成功 ！！！--->{}",rmbPrice);
+        BigDecimal usdToCNY = MoneyChangeUtils.getUSDToCNY();
+        if (null!=usdToCNY){
+            rmbPrice=usdToCNY;
+            log.info("获取rmb - u 价格成功 ！！！--->{}",rmbPrice);
+        }else {
+            log.info("获取rmb - u 失败 ！！！--->{}",rmbPrice);
+        }
     }
-
-
     public static HashMap<String,BigDecimal> getPrice(){
         btcusdt= EthUsdtBtcUtils.getEthOrBtcUsdt("btcusdt");
         ethusdt= EthUsdtBtcUtils.getEthOrBtcUsdt("ethusdt");

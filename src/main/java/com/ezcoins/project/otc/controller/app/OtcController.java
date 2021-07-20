@@ -68,6 +68,9 @@ public class OtcController {
     @Autowired
     private EzOtcOrderAppealService appealService;
 
+    @Autowired
+    private EzSellConfigService ezSellConfigService;
+
     @NoRepeatSubmit
     @AuthToken
     @ApiOperation(value = "完善otc交易信息")
@@ -160,12 +163,10 @@ public class OtcController {
     @PostMapping("checkSecurityPassword")
     public BaseResponse checkSecurityPassword(@RequestBody HashMap<String, String> map) {
         String securityPassword = map.get("securityPassword");
-        String encode = EncoderUtil.encode(securityPassword);
         LambdaQueryWrapper<EzAdvertisingBusiness> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(EzAdvertisingBusiness::getUserId, ContextHandler.getUserId());
-        queryWrapper.eq(EzAdvertisingBusiness::getSecurityPassword, encode);
-        int count = advertisingBusinessService.count(queryWrapper);
-        if (count != 0) {
+        EzAdvertisingBusiness businessServiceOne = advertisingBusinessService.getOne(queryWrapper);
+        if (!EncoderUtil.matches(securityPassword,businessServiceOne.getSecurityPassword())) {
             throw new SecurityPasswordNotMatchException();
         }
         return BaseResponse.success();
@@ -175,7 +176,7 @@ public class OtcController {
     @NoRepeatSubmit
     @ApiOperation(value = "发布广告订单")
     @PostMapping("releaseAdvertisingOrder")
-    @AuthToken(advertisingStatus = true)
+    @AuthToken(kyc = true)
     @Log(title = "发布广告订单", businessType = BusinessType.INSERT, operatorType = OperatorType.MOBILE)
     public BaseResponse releaseAdvertisingOrder(@RequestBody OtcOrderReqDto otcOrderReqDto) {
         otcOrderReqDto.setUserId(ContextHandler.getUserId());
@@ -284,9 +285,7 @@ public class OtcController {
         }
         queryWrapper.eq(EzOtcOrder::getStatus, 0);
         List<EzOtcOrder> list = otcOrderService.list(queryWrapper);
-
         List<ReleaseOrderRespDto> releaseOrderRespDtos = new ArrayList<>();
-
         ReleaseOrderRespDto releaseOrderRespDto = new ReleaseOrderRespDto();
         List<EzPaymentMethod> methods = methodService.list();
         list.forEach(e -> {
@@ -333,10 +332,16 @@ public class OtcController {
 
     @ApiOperation(value = "一键卖币(只支持人民币)")
     @PostMapping("sellOneKey")
-    @AuthToken
+    @AuthToken(kyc = true)
     @Log(title = "一键卖币", businessType = BusinessType.INSERT, operatorType = OperatorType.MOBILE)
     public BaseResponse sellOneKey(@RequestBody SellOneKeyReqDto sellOneKeyReqDto) {
         return orderMatchService.sellOneKey(sellOneKeyReqDto);
+    }
+
+    @ApiOperation(value = "一键卖币配置")
+    @GetMapping("oneKeyConfig")
+    public ResponseList<EzOneSellConfig> oneKeyConfig() {
+        return ResponseList.success(ezSellConfigService.list());
     }
 
 

@@ -26,7 +26,6 @@ import lombok.EqualsAndHashCode;
 @TableName("coin_withdraw_order")
 @ApiModel(value="WithdrawOrder对象", description="")
 public class WithdrawOrder implements Serializable {
-
     private static final long serialVersionUID = 1L;
 
     @ApiModelProperty(value = "提币订单id")
@@ -35,6 +34,9 @@ public class WithdrawOrder implements Serializable {
 
     @ApiModelProperty(value = "用户id")
     private String userId;
+
+    @ApiModelProperty(value = "流水记录ID")
+    private String coinRecordId;
 
     @ApiModelProperty(value = "提币地址")
     private String address;
@@ -54,7 +56,7 @@ public class WithdrawOrder implements Serializable {
     @ApiModelProperty(value = "手续费")
     private BigDecimal fee;
 
-    @ApiModelProperty(value = "状态 1待审核 2审核通过 3提币拒绝 4提币失败")
+    @ApiModelProperty(value = "状态 1待审核 2后台审核通过 3提币拒绝 4提币失败 5 对接已审核")
     private String status;
 
     @ApiModelProperty(value = "失败原因")

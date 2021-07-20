@@ -23,7 +23,6 @@ import lombok.EqualsAndHashCode;
 @TableName("ez_country_config")
 @ApiModel(value="EzCountryConfig对象", description="国家电话区号配置 表")
 public class EzCountryConfig implements Serializable {
-
     private static final long serialVersionUID = 1L;
 
     @ApiModelProperty(value = "id")
@@ -44,6 +43,9 @@ public class EzCountryConfig implements Serializable {
 
     @ApiModelProperty(value = "国家电话区号")
     private String countryTelCode;
+
+    @ApiModelProperty(value = "国旗地址")
+    private String nationalFlagAddr;
 
     @ApiModelProperty(value = "逻辑删除 1（true）已删除，0（false）未删除")
     @TableLogic(value = "0",delval = "1")

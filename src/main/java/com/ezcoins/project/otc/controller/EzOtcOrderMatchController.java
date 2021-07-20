@@ -2,6 +2,9 @@ package com.ezcoins.project.otc.controller;
 
 
 import com.ezcoins.aspectj.lang.annotation.AuthToken;
+import com.ezcoins.aspectj.lang.annotation.Log;
+import com.ezcoins.constant.enums.BusinessType;
+import com.ezcoins.constant.enums.OperatorType;
 import com.ezcoins.project.common.service.mapper.SearchModel;
 import com.ezcoins.project.otc.entity.EzOtcOrder;
 import com.ezcoins.project.otc.entity.EzOtcOrderMatch;
@@ -10,11 +13,7 @@ import com.ezcoins.response.ResponsePageList;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * <p>
@@ -26,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @Api(tags = "Admin-OTC匹配订单模块")
-@RequestMapping("/otc/ezOtcOrderMatch")
+@RequestMapping("/admin/otc/ezOtcOrderMatch")
 public class EzOtcOrderMatchController {
 
     @Autowired
@@ -39,8 +38,13 @@ public class EzOtcOrderMatchController {
         return ResponsePageList.success(orderMatchService.page(searchModel.getPage(), searchModel.getQueryModel()));
     }
 
-
-
+//    @AuthToken
+//    @ApiOperation(value = "后台 一键卖币确认付款")
+//    @PostMapping("confirmPayment/{matchOrderNo}")
+//    @Log(title = "一键卖币确认付款", businessType = BusinessType.UPDATE, operatorType = OperatorType.MOBILE)
+//    public ResponsePageList<EzOtcOrderMatch> confirmPayment(@PathVariable String matchOrderNo){
+//
+//    }
 
 
 }

@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ezcoins.base.BaseException;
 import com.ezcoins.constant.CoinConstant;
-import com.ezcoins.constant.RecordSonType;
 import com.ezcoins.constant.SystemOrderTips;
 import com.ezcoins.constant.enums.coin.CoinConstants;
 import com.ezcoins.constant.enums.otc.MatchOrderStatus;
@@ -14,9 +13,7 @@ import com.ezcoins.constant.interf.RedisConstants;
 import com.ezcoins.context.ContextHandler;
 import com.ezcoins.exception.CheckException;
 import com.ezcoins.exception.coin.AccountOperationBusyException;
-import com.ezcoins.mq.RabbitMQConfiguration;
 import com.ezcoins.project.coin.entity.Type;
-import com.ezcoins.project.coin.entity.resp.AccountRespDto;
 import com.ezcoins.project.coin.entity.vo.BalanceChange;
 import com.ezcoins.project.coin.service.AccountService;
 import com.ezcoins.project.coin.service.TypeService;
@@ -27,7 +24,7 @@ import com.ezcoins.project.consumer.entity.EzUser;
 import com.ezcoins.project.consumer.service.EzUserService;
 import com.ezcoins.project.otc.entity.*;
 import com.ezcoins.project.otc.entity.req.*;
-import com.ezcoins.project.otc.entity.resp.NewOrderRespDto;
+import com.ezcoins.project.otc.entity.req.NewOrderRespDto;
 import com.ezcoins.project.otc.entity.resp.OrderInfo;
 import com.ezcoins.project.otc.entity.resp.OtcOrderRespDto;
 import com.ezcoins.project.otc.entity.resp.PaymentDetails;
@@ -38,23 +35,16 @@ import com.ezcoins.redis.RedisCache;
 import com.ezcoins.response.BaseResponse;
 import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponseList;
-import com.ezcoins.response.ResponsePageList;
 import com.ezcoins.utils.*;
 import com.ezcoins.websocket.WebSocketHandle;
-import io.swagger.models.auth.In;
-import org.apache.catalina.User;
-import org.springframework.amqp.core.AmqpTemplate;
-import org.springframework.amqp.core.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Currency;
 import java.util.Date;
 import java.util.List;
 
@@ -117,9 +107,13 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         String coinName = otcOrderReqDto.getCoinName();
         //查看otc信息是否有过修改
         String userId = otcOrderReqDto.getUserId();
-        if (!advertisingBusinessService.isUpdate(userId)) {
+        LambdaQueryWrapper<EzAdvertisingBusiness> businessLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        businessLambdaQueryWrapper.eq(EzAdvertisingBusiness::getUserId, userId);
+        EzAdvertisingBusiness one = advertisingBusinessService.getOne(businessLambdaQueryWrapper);
+        if (one.getAdvertisingName().equals(userId) || StringUtils.isEmpty(one.getSecurityPassword())) {
             return BaseResponse.error(MessageUtils.message("请先完善otc交易信息")).code(700);
         }
+
         LambdaQueryWrapper<Type> queryWrapper = new LambdaQueryWrapper<Type>();
         queryWrapper.eq(Type::getCoinName, coinName);
         Type coinType = typeService.getOne(queryWrapper);//查询到币种
@@ -179,6 +173,7 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         ezOtcOrder.setFrozeAmount(amount);
         ezOtcOrder.setUserId(userId);
         BeanUtils.copyBeanProp(ezOtcOrder, otcOrderReqDto);
+        ezOtcOrder.setAdvertisingName(one.getAdvertisingName());
         //存入新的订单
         baseMapper.insert(ezOtcOrder);
         //给用户一个新订单信号
@@ -583,6 +578,7 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         LambdaQueryWrapper<EzOtcOrder> otcOrderLambdaQueryWrapper = new LambdaQueryWrapper<>();
         otcOrderLambdaQueryWrapper.eq(EzOtcOrder::getStatus, "0");//订单状态（0：正常 1：已下架）
         otcOrderLambdaQueryWrapper.orderByDesc(EzOtcOrder::getCoinName);
+
         baseMapper.selectPage(page, otcOrderLambdaQueryWrapper).getRecords().forEach(e -> {
             if (!e.getUserId().equals(userId) || StringUtils.isEmpty(userId)) {
                 NewOrderRespDto newOrderRespDto = new NewOrderRespDto();
@@ -599,7 +595,7 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
      * @param otcOrderNo
      * @Description: 购买查询订单详情
      * @Param: [otcOrderNo]
-     * @return: com.ezcoins.response.Response<com.ezcoins.project.otc.entity.resp.NewOrderRespDto>
+     * @return: com.ezcoins.response.Response<com.ezcoins.project.otc.entity.req.NewOrderRespDto>
      * @Author: Wanglei
      * @Date: 2021/6/22
      */
@@ -624,6 +620,7 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         paymentMethods.add(ezOtcOrder.getPaymentMethod3());
         orderInfo.setLastAmount(ezOtcOrder.getTotalAmount().subtract(ezOtcOrder.getQuotaAmount()));
         orderInfo.setPaymentMethods(paymentMethods);
+        orderInfo.setAdvertisingName(one.getAdvertisingName());
         return Response.success(orderInfo);
     }
 

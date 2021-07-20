@@ -12,12 +12,14 @@ import lombok.Data;
  */
 @Data
 public class SidebarInfoRespDto {
-
     @ApiModelProperty(value = "UID")
     private String userId;
 
-    @ApiModelProperty(value = "真实姓名")
-    private String realName;
+    @ApiModelProperty(value = "名字")
+    private String firstName;
+
+    @ApiModelProperty(value = "姓氏")
+    private String lastName;
 
     @ApiModelProperty(value = "手机号")
     private String phone;
@@ -27,5 +29,28 @@ public class SidebarInfoRespDto {
 
     @ApiModelProperty(value = "区号")
     private String phoneArea;
+
+    @ApiModelProperty(value = "安全密码状态 0：已设置 1：未设置")
+    private String isSetting;
+
+    @ApiModelProperty(value = "分享地址")
+    private String shareAddr;
+
+    @ApiModelProperty(value = "国家中文名")
+    private String countryName;
+
+    @ApiModelProperty(value = "国旗地址")
+    private String nationalFlagAddr;
+
+    @ApiModelProperty(value = "国家编号")
+    private String countryCode;
+
+    @ApiModelProperty(value = "国家电话区号")
+    private String countryTelCode;
+
+
+    @ApiModelProperty(value = "0:待审核 1：通过  2：未通过 3：未认证")
+    private String kycStatus;
+
 
 }

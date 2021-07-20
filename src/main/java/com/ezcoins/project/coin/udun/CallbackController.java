@@ -1,57 +1,56 @@
-package com.ezcoins.project.coin.udun;
-
-import com.alibaba.fastjson.JSONObject;
-import com.ezcoins.utils.ServletUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import javax.servlet.http.HttpServletResponse;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-
-@RestController
-public class CallbackController {
-    @Autowired
-    BiPayClient biPayClient;
-    private Logger logger = LoggerFactory.getLogger(CallbackController.class);
-    @Autowired
-    private BiPayService biPayService;
-
-    /**
-     * 处理币付网关回调信息，包括充币
-     * @param timestamp
-     * @param nonce
-     * @param body
-     * @param sign
-     * @return
-     * @throws Exception
-     */
+//package com.ezcoins.project.coin.udun;
+//
+//import com.alibaba.fastjson.JSONObject;
+//import com.ezcoins.utils.ServletUtils;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
+//import org.springframework.beans.factory.annotation.Autowired;
+//import org.springframework.web.bind.annotation.RequestMapping;
+//import org.springframework.web.bind.annotation.RequestParam;
+//import org.springframework.web.bind.annotation.RestController;
+//
+//import javax.servlet.http.HttpServletResponse;
+//import java.math.BigDecimal;
+//import java.math.RoundingMode;
+//
+//@RestController
+//public class CallbackController {
+//    @Autowired
+//    BiPayClient biPayClient;
+//    private Logger logger = LoggerFactory.getLogger(CallbackController.class);
+//    @Autowired
+//    private BiPayService biPayService;
+//
+//    /**
+//     * 处理币付网关回调信息，包括充币
+//     * @param timestamp
+//     * @param body
+//     * @param sign
+//     * @return
+//     * @throws Exception
+//     */
 //    @RequestMapping("/bipay/notify")
 //    public void tradeCallback(@RequestParam("timestamp")String timestamp,
-//                                @RequestParam("nonce")String nonce,
 //                                @RequestParam("body")String body,
 //                                @RequestParam("sign")String sign,
+//                                @RequestParam("key")String key,
 //                                HttpServletResponse response) throws Exception {
-//        logger.info("timestamp:{},nonce:{},sign:{},body:{}",timestamp,nonce,sign,body);
-//        if(!HttpUtil.checkSign(biPayClient.getMerchantKey(),timestamp,nonce,body,sign)){
+//        logger.info("timestamp:{},nonce:{},sign:{},body:{}",timestamp,null,sign,body);
+//
+//        if(!HttpUtil.checkSign(key,timestamp,null,body,sign)){
 //			ServletUtils.renderErrorString(response,"fail");
 //        }
+//
 //        Trade trade = JSONObject.parseObject(body,Trade.class);
 //        logger.info("trade:{}",trade);
 //        //金额为最小单位，需要转换,包括amount和fee字段
-//        BigDecimal amount = trade.getAmount().divide(BigDecimal.TEN.pow(trade.getDecimals()),8, RoundingMode.DOWN);
-//        BigDecimal fee = trade.getFee().divide(BigDecimal.TEN.pow(trade.getDecimals()),8, RoundingMode.DOWN);
+//        BigDecimal amount = trade.getAmount();
+//        BigDecimal fee = trade.getFee();
 //        logger.info("amount={},fee={}",amount.toPlainString(),fee.toPlainString());
-//
 //        //TODO 业务处理
 //        if(trade.getTradeType() == 1){
 //            logger.info("=====收到充币通知======");
 //            logger.info("address:{},amount:{},mainCoinType:{},fee:{}",trade.getAddress(),trade.getAmount(),trade.getMainCoinType(),trade.getFee());
-//
 //            boolean rs = false;
 //            try {
 //                rs = biPayService.rechargeCallback(trade);
@@ -97,4 +96,4 @@ public class CallbackController {
 //        response.setStatus(200);
 //		ServletUtils.renderString(response,"success");
 //    }
-}
+//}

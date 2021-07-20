@@ -11,8 +11,7 @@ public class SecurityPasswordNotMatchException extends UserException{
 
     private static final long serialVersionUID = 1L;
 
-    public SecurityPasswordNotMatchException()
-    {
+    public SecurityPasswordNotMatchException(){
         super("安全密码错误", null);
     }
 }

@@ -12,6 +12,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -31,7 +32,6 @@ public class configController {
 
     @ApiOperation(value = "国家货币列表")
     @GetMapping("currencyCodeList")
-    @AuthToken
     public ResponseList<String> currencyCodeList(){
         LambdaQueryWrapper<EzCountryConfig> lambdaQueryWrapper=new LambdaQueryWrapper<>();
         lambdaQueryWrapper.select(EzCountryConfig::getCurrencyCode);

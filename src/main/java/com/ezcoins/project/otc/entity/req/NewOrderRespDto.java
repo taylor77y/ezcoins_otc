@@ -1,4 +1,4 @@
-package com.ezcoins.project.otc.entity.resp;
+package com.ezcoins.project.otc.entity.req;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -28,4 +28,7 @@ public class NewOrderRespDto {
 
     @ApiModelProperty(value = "广告类型(0:买  1：卖)")
     private String type;
+
+    @ApiModelProperty(value = "卖家昵称")
+    private String advertisingName;
 }

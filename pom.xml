@@ -43,6 +43,11 @@
         <cn.hutool.version>5.6.0</cn.hutool.version>
     </properties>
     <dependencies>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <version>1.56</version>
+        </dependency>
 
         <!--   spring boot 依赖-->
         <dependency>

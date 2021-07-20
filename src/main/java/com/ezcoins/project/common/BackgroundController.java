@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
  * @Version:1.0
  */
 @RestController
-@Api(tags = "Admin-用户模块")
+@Api(tags = "Admin-后台数据")
 @RequestMapping("/admin/background")
 public class BackgroundController {
     @Autowired

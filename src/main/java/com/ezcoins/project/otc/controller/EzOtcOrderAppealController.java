@@ -62,7 +62,6 @@ public class EzOtcOrderAppealController {
         return appealService.doAppeal(doAppealReqDto);
     }
 
-
     @ApiOperation(value = "处理投诉后修改订单状态")
     @PutMapping("doOrder")
     @AuthToken
@@ -70,13 +69,5 @@ public class EzOtcOrderAppealController {
     public BaseResponse doOrder(@RequestBody @Validated DoOrderReqDto orderReqDto) {
         return appealService.doOrder(orderReqDto);
     }
-
-
-
-
-
-
-
-
 }
 

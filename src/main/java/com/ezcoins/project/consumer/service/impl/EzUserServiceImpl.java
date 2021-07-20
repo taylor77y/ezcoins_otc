@@ -222,7 +222,8 @@ public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> impleme
 
         EzUser ezUser = new EzUser();
         //获取redis验证码
-        String redisCode = "666666";
+        String redisCode=null;
+        String rmKey=null;
         if (type.equals(VerificationCodeReqDto.Type.PHONE.getType())){
             if (StringUtils.isEmpty(phone) || StringUtils.isEmpty(phoneArea)){
                 throw new BaseException(MessageUtils.message("手机号不能为空"));
@@ -236,6 +237,8 @@ public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> impleme
             ezUser.setUserName(phone);
             ezUser.setCreateBy(phone);
 //            redisCode=redisCache.getCacheObject(RedisConstants.PHONE_REGISTER_SMS_KEY + phone);
+
+          rmKey=null;
         }else if (type.equals(VerificationCodeReqDto.Type.EMAIL.getType())){
             //判断手机号用户名是否重复，表里面存在相同手机号不进行添加
             if (!checkUserUnique(null, null,null,email, null)) {
@@ -244,7 +247,8 @@ public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> impleme
             ezUser.setUserName(email);
             ezUser.setEmail(email);
             ezUser.setCreateBy(email);
-//            redisCode=redisCache.getCacheObject(RedisConstants.EMAIL_REGISTER_SMS_KEY + email);
+            redisCode=redisCache.getCacheObject(RedisConstants.EMAIL_REGISTER_SMS_KEY + email);
+            rmKey=RedisConstants.EMAIL_REGISTER_SMS_KEY + email;
         }
         if (StringUtils.isEmpty(redisCode)) {
             throw new BaseException(MessageUtils.message("验证码已过期"));
@@ -276,6 +280,7 @@ public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> impleme
         businessService.save(advertisingBusiness);
         //初始化账户信息
         accountService.processCoinAccount(ezUser.getUserId(),ezUser.getUserName());
+        redisCache.deleteObject(rmKey);
     }
     /**
      * 用户登录
@@ -291,7 +296,7 @@ public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> impleme
         EzUser ezUser = baseMapper.selectOne(lambdaQueryWrapper);
         //用户不存在
         if (ezUser == null || UserStatus.DELETED.getCode().equals(ezUser.getIsDeleted())) {
-            throw new UserException("登录用户已被删除", null);
+            throw new UserException(MessageUtils.message("登录用户已被删除"), null);
         }
         //密码错误
         if (!EncoderUtil.matches(authenticationRequest.getPassword(), ezUser.getPassword())) {

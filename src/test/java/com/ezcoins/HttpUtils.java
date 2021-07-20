@@ -1,6 +1,5 @@
-package com.ezcoins.utils;
+package com.ezcoins;
 
-import com.ezcoins.constant.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,6 +9,7 @@ import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
 
 /**
@@ -29,7 +29,7 @@ public class HttpUtils
      * @return 所代表远程资源的响应结果
      */
     public static String sendGet(String url, String param) {
-        return sendGet(url, param, Constants.UTF8);
+        return sendGet(url, param, "UTF8");
     }
 
     /**
@@ -109,23 +109,25 @@ public class HttpUtils
         StringBuilder result = new StringBuilder();
         try
         {
-            String urlNameString = url;
-            log.info("sendPost - {}", urlNameString);
-            URL realUrl = new URL(urlNameString);
+            log.info("sendPost - {}", url);
+            URL realUrl = new URL(url);
             URLConnection conn = realUrl.openConnection();
-            conn.setRequestProperty("accept", "*/*");
-            conn.setRequestProperty("connection", "Keep-Alive");
-            conn.setRequestProperty("user-agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1;SV1)");
-            conn.setRequestProperty("Accept-Charset", "utf-8");
+            conn.setRequestProperty("Connection", "Keep-Alive");
+            conn.setRequestProperty("Charset", "UTF-8");
+            // 设置文件类型:
             conn.setRequestProperty("Content-Type","application/json; charset=UTF-8");
+            // 设置接收类型否则返回415错误
+            //conn.setRequestProperty("accept","*/*")此处为暴力方法设置接受所有类型，以此来防范返回415;
+            conn.setRequestProperty("accept", "*/*");
             conn.setDoOutput(true);
             conn.setDoInput(true);
             out = new PrintWriter(conn.getOutputStream());
             out.print(param);
             out.flush();
-            in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"));
+            in = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
             String line;
-            while ((line = in.readLine()) != null){
+            while ((line = in.readLine()) != null)
+            {
                 result.append(line);
             }
             log.info("recv - {}", result);

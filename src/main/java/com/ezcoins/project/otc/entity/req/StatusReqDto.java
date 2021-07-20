@@ -14,11 +14,10 @@ import javax.validation.constraints.NotBlank;
  * @Version:1.0
  */
 @Data
-public class MatchStatusReqDto {
+public class StatusReqDto {
     @ApiModelProperty(value = "匹配订单号",required = true)
-    private String orderMatchNo;
+    private String id;
 
-    @ApiModelProperty(value = "安全密码",required = true)
-    @NotBlank(message = "{安全密码不能为空}")
-    private String securityPassword;
+    @ApiModelProperty(value = "关闭/打开  1：关闭 0：打开",required = true)
+    private String status;
 }

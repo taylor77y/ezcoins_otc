@@ -47,7 +47,6 @@ public class EzUserKycController {
        return Response.success(kycService.getById(id));
     }
 
-
     @ApiOperation(value = "审核实名认证")
     @PutMapping("checkKyc")
     @AuthToken

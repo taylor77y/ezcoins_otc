@@ -1,6 +1,8 @@
 package com.ezcoins.project.otc.controller;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.ezcoins.aspectj.lang.annotation.AuthToken;
 import com.ezcoins.aspectj.lang.annotation.Log;
 import com.ezcoins.aspectj.lang.annotation.NoRepeatSubmit;
@@ -11,11 +13,13 @@ import com.ezcoins.project.otc.entity.EzOneSellConfig;
 import com.ezcoins.project.otc.entity.EzOtcConfig;
 import com.ezcoins.project.otc.entity.EzOneSellConfig;
 import com.ezcoins.project.otc.entity.req.SellConfigReqDto;
+import com.ezcoins.project.otc.entity.req.StatusReqDto;
 import com.ezcoins.project.otc.service.EzSellConfigService;
 import com.ezcoins.response.BaseResponse;
 import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponseList;
 import com.ezcoins.utils.BeanUtils;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,6 +37,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @since 2021-06-28
  */
 @RestController
+@Api(tags = "Admin-一键卖币配置")
 @RequestMapping("/admin/otc/ezSellConfig")
 public class EzSellConfigController {
 
@@ -47,17 +52,33 @@ public class EzSellConfigController {
         return ResponseList.success(sellConfigService.list());
     }
 
-
     @NoRepeatSubmit
-    @ApiOperation(value = "修改一键卖币配置")
-    @PostMapping("updateSellConfig")
+    @ApiOperation(value = "修改/添加 一键卖币配置")
+    @PostMapping("updateOrAddSellConfig")
     @AuthToken
     @Log(title = "修改一键卖币配置", businessType = BusinessType.UPDATE, operatorType = OperatorType.MANAGE)
-    public BaseResponse updateSellConfig(@RequestBody SellConfigReqDto sellConfigReqDto) {
-        EzOneSellConfig ezSellConfig = new EzOneSellConfig();
-        BeanUtils.copyBeanProp(ezSellConfig,sellConfigReqDto);
-        ezSellConfig.setUpdateBy(ContextHandler.getUserName());
-        sellConfigService.updateById(ezSellConfig);
+    public BaseResponse updateOrAddSellConfig(@RequestBody SellConfigReqDto sellConfigReqDto) {
+        return sellConfigService.updateOrAddSellConfig(sellConfigReqDto);
+    }
+
+    @NoRepeatSubmit
+    @ApiOperation(value = "修改一键卖币配置状态")
+    @PostMapping("updateSellConfigStatus")
+    @AuthToken
+    @Log(title = "修改一键卖币配置状态", businessType = BusinessType.UPDATE, operatorType = OperatorType.MANAGE)
+    public BaseResponse updateSellConfigStatus(@RequestBody StatusReqDto statusReqDto) {
+        LambdaQueryWrapper<EzOneSellConfig> lambdaQueryWrapper=new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(EzOneSellConfig::getId,statusReqDto.getId());
+        EzOneSellConfig one = sellConfigService.getOne(lambdaQueryWrapper);
+        if ("0".equals(statusReqDto.getStatus())){
+            LambdaUpdateWrapper<EzOneSellConfig> q=new LambdaUpdateWrapper<>();
+            q.eq(EzOneSellConfig::getCoinName, one.getCoinName());
+            q.eq(EzOneSellConfig::getStatus, "0");
+            q.set(EzOneSellConfig::getStatus, "1");
+            sellConfigService.update(q);
+        }
+        one.setStatus(statusReqDto.getStatus());
+        sellConfigService.updateById(one);
         return BaseResponse.success();
     }
 

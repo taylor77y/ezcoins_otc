@@ -14,11 +14,11 @@ import com.ezcoins.project.otc.service.EzAdvertisingBusinessService;
 import com.ezcoins.project.otc.service.EzPaymentMethodService;
 import com.ezcoins.response.BaseResponse;
 import com.ezcoins.response.ResponsePageList;
+import com.ezcoins.utils.BeanUtils;
 import com.ezcoins.utils.MessageUtils;
 import com.ezcoins.utils.StringUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -57,7 +57,7 @@ public class EzAdvertisingBusinessController {
             return BaseResponse.error("商户名不能再进行修改了");
         }
         EzAdvertisingBusiness advertisingBusiness = new EzAdvertisingBusiness();
-        BeanUtils.copyProperties(advertisingBusiness,businessReqDto);
+        BeanUtils.copyBeanProp(advertisingBusiness, businessReqDto);
         advertisingBusiness.setUpdateBy(ContextHandler.getUserName());
         advertisingBusinessService.updateById(advertisingBusiness);
         return BaseResponse.success();
