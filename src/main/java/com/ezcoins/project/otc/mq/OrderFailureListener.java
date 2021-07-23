@@ -58,7 +58,6 @@ public class OrderFailureListener {
 
     @RabbitHandler
     public void process(String order, Message message, @Headers Map<String, Object> headers, Channel channel) throws IOException {
-        log.info("【订单号】 - [{}]", order);
         String[] splitContent = new String[2];
         if (StringUtils.isNotEmpty(order)) {
             if (order.contains("_")) {
@@ -68,13 +67,13 @@ public class OrderFailureListener {
         //截取字符串
         String otcOrderMatchNo = splitContent[0];
         String status = splitContent[1];
-
+        EzOtcOrderMatch match = matchService.getById(otcOrderMatchNo);
+        if (match==null){
+            return;
+        }
         //取消订单
-        if (status.equals(MatchOrderStatus.WAITFORPAYMENT.getCode())) {
-            EzOtcOrderMatch match = matchService.getById(otcOrderMatchNo);
-            if (match==null){
-                return;
-            }
+        if (match.getStatus().equals(MatchOrderStatus.WAITFORPAYMENT.getCode())) {
+
             match.setStatus(MatchOrderStatus.CANCELLED.getCode());
             matchService.updateById(match);
             //将订单匹配数量增加回去
@@ -109,11 +108,7 @@ public class OrderFailureListener {
 
         }
         //接单广告取消
-        if (status.equals(MatchOrderStatus.PENDINGORDER.getCode())) {
-            EzOtcOrderMatch match = matchService.getById(otcOrderMatchNo);
-            if (match==null){
-                return;
-            }
+        if (match.getStatus().equals(MatchOrderStatus.PENDINGORDER.getCode())) {
             match.setStatus(MatchOrderStatus.ORDERBEENCANCELLED.getCode());
             matchService.updateById(match);
             List<EzOtcChatMsg> list=new ArrayList<>();
@@ -129,6 +124,5 @@ public class OrderFailureListener {
             list.add(ezOtcChatMsg2);
             otcChatMsgService.sendSysChat(list, MatchOrderStatus.ORDERBEENCANCELLED.getCode());
         }
-        System.out.println("执行结束....");
     }
 }

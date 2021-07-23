@@ -9,7 +9,7 @@ spring:
   application:
     name: ZIP-EZCOINS
   profiles:
-    active: local
+    active: prod
 
   messages:
     basename: i18n/messages
@@ -24,4 +24,4 @@ spring:
 
 scheduled:
   cron:
-    rmbPrice: 0 0/30 * * * ?
+    rmbPrice: 0 0 23 * * ?

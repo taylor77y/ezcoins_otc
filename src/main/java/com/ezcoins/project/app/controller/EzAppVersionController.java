@@ -12,7 +12,7 @@ import com.ezcoins.project.app.entity.req.AppStatusReqDto;
 import com.ezcoins.project.app.entity.req.AppVersionReqDto;
 import com.ezcoins.project.app.service.EzAppVersionService;
 import com.ezcoins.project.common.service.mapper.SearchModel;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponsePageList;
 import com.ezcoins.utils.BeanUtils;
 import com.ezcoins.utils.StringUtils;
@@ -23,6 +23,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.HashMap;
 
 /**
  * <p>
@@ -52,20 +54,20 @@ public class EzAppVersionController {
     @PostMapping("addAppVersion")
     @AuthToken
     @Log(title = "上传app最新版本", businessType = BusinessType.INSERT, operatorType = OperatorType.MANAGE)
-    public BaseResponse addAppVersion(
+    public Response addAppVersion(
             @ApiParam(name = "ezcoinsAppVersion", value = "上传对象", required = true)
             @RequestBody @Validated AppVersionReqDto appVersionReqDto) {
         EzAppVersion ezAppVersion = new EzAppVersion();
         BeanUtils.copyBeanProp(ezAppVersion,appVersionReqDto);
         ezAppVersionService.addAppVersion(ezAppVersion);
-        return BaseResponse.success();
+        return Response.success();
     }
 
 
     @ApiOperation(value = "上传App安装包")
     @PostMapping({"uploadAppInstallPackage/{platform}/{id}","uploadAppInstallPackage/{platform}"})
     @AuthToken
-    public BaseResponse uploadAppInstallPackage(
+    public Response uploadAppInstallPackage(
             @ApiParam(name = "file", value = "上传文件", required = true)
             @RequestParam("file") MultipartFile file,
             @ApiParam(name = "platform", value = "app平台", required = true)
@@ -74,9 +76,11 @@ public class EzAppVersionController {
             @PathVariable(value = "id",required = false) String id) {
         String url = ezAppVersionService.uploadAppInstallPackage(file, platform, id);
         if (null==url){
-            return BaseResponse.success();
+            return Response.success();
         }
-        return BaseResponse.success().data("url",url);
+        HashMap map=new HashMap(1);
+        map.put("url",url);
+        return Response.success(map);
     }
 
 
@@ -84,9 +88,9 @@ public class EzAppVersionController {
     @PostMapping("updateAppStatus")
     @AuthToken
     @Log(title = "修改app状态", businessType = BusinessType.UPDATE, operatorType = OperatorType.MANAGE)
-    public BaseResponse updateAppStatus(@RequestBody @Validated AppStatusReqDto statusReqDto) {
+    public Response updateAppStatus(@RequestBody @Validated AppStatusReqDto statusReqDto) {
         ezAppVersionService.updateAppStatus(statusReqDto);
-        return BaseResponse.success();
+        return Response.success();
     }
 
 
@@ -96,13 +100,13 @@ public class EzAppVersionController {
     @AuthToken
     @NoRepeatSubmit
     @Log(title = "updateStableApp", businessType = BusinessType.INSERT, operatorType = OperatorType.MANAGE)
-    public BaseResponse updateStableApp(
+    public Response updateStableApp(
             @ApiParam(name = "platform", value = "app平台", required = true)
             @PathVariable("platform") String platform,
             @ApiParam(name = "id", value = "id ", required = true)
             @PathVariable(value = "id") String id) {
         ezAppVersionService.updateStableApp(platform,id);
-        return BaseResponse.success();
+        return Response.success();
     }
 
 
@@ -110,14 +114,14 @@ public class EzAppVersionController {
     @PutMapping("updateById")
     @AuthToken
     @Log(title = "修改app版本信息", businessType = BusinessType.UPDATE, operatorType = OperatorType.MANAGE)
-    public BaseResponse updateById(@RequestBody @Validated AppVersionReqDto appVersionReqDto) {
+    public Response updateById(@RequestBody @Validated AppVersionReqDto appVersionReqDto) {
         if (StringUtils.isEmpty(appVersionReqDto.getId())){
-            return BaseResponse.error("版本编号不能为空");
+            return Response.error("版本编号不能为空");
         }
         EzAppVersion ezAppVersion = new EzAppVersion();
         BeanUtils.copyBeanProp(ezAppVersion,appVersionReqDto);
         ezAppVersionService.updateById(ezAppVersion);
-        return BaseResponse.success();
+        return Response.success();
     }
 
 
@@ -126,13 +130,13 @@ public class EzAppVersionController {
     @DeleteMapping("deleteById/{id}")
     @AuthToken
     @Log(title = "删除app版本信息", businessType = BusinessType.DELETE, operatorType = OperatorType.MANAGE)
-    public BaseResponse deleteById(@PathVariable String id) {
+    public Response deleteById(@PathVariable String id) {
         EzAppVersion ezcoinsAppVersion = ezAppVersionService.getById(id);
         if (ezcoinsAppVersion.getIsRacking().equals(AppUpdateType.ONSHELF.getCode()) || "0".equals(ezcoinsAppVersion.getIsDefault())){
-            return BaseResponse.error("请先修改该App版本状态");
+            return Response.error("请先修改该App版本状态");
         }
         ezAppVersionService.removeById(id);
-        return BaseResponse.success();
+        return Response.success();
     }
 
 }

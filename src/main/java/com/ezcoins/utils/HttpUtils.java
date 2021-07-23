@@ -47,7 +47,7 @@ public class HttpUtils
         try
         {
             String urlNameString = url + "?" + param;
-//            log.info("sendGet - {}", urlNameString);
+            log.info("sendGet - {}", urlNameString);
             URL realUrl = new URL(urlNameString);
             URLConnection connection = realUrl.openConnection();
             connection.setRequestProperty("accept", "*/*");
@@ -62,16 +62,13 @@ public class HttpUtils
             }
 //            log.info("recv - {}", result);
         }
-        catch (ConnectException e)
-        {
+        catch (ConnectException e){
             log.error("调用HttpUtils.sendGet ConnectException, url=" + url + ",param=" + param, e);
         }
-        catch (SocketTimeoutException e)
-        {
+        catch (SocketTimeoutException e){
             log.error("调用HttpUtils.sendGet SocketTimeoutException, url=" + url + ",param=" + param, e);
         }
-        catch (IOException e)
-        {
+        catch (IOException e){
             log.error("调用HttpUtils.sendGet IOException, url=" + url + ",param=" + param, e);
         }
         catch (Exception e)

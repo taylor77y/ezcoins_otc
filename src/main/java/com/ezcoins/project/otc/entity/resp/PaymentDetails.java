@@ -32,6 +32,9 @@ public class PaymentDetails {
     @ApiModelProperty(value = "数量")
     private BigDecimal amount;
 
+    @ApiModelProperty(value = "国际货币")
+    private String currencyCode;
+
     @ApiModelProperty(value = "币种类型")
     private String coinName;
 

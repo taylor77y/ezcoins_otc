@@ -1,14 +1,19 @@
 package com.ezcoins.project.otc.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.ezcoins.base.BaseException;
+import com.ezcoins.constant.enums.otc.MatchOrderStatus;
+import com.ezcoins.project.otc.entity.EzOtcOrderMatch;
 import com.ezcoins.project.otc.entity.EzOtcOrderPayment;
 import com.ezcoins.project.otc.entity.EzPaymentInfo;
 import com.ezcoins.project.otc.mapper.EzOtcOrderPaymentMapper;
 import com.ezcoins.project.otc.service.EzOtcOrderPaymentService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ezcoins.project.otc.service.EzPaymentInfoService;
+import com.ezcoins.response.Response;
 import com.ezcoins.utils.BeanUtils;
+import com.ezcoins.utils.MessageUtils;
 import com.ezcoins.utils.StringUtils;
 import com.sun.org.apache.regexp.internal.RE;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,19 +46,22 @@ public class EzOtcOrderPaymentServiceImpl extends ServiceImpl<EzOtcOrderPaymentM
      */
     @Override
     public List<EzOtcOrderPayment> depositPayment(Integer paymentMethod1, Integer paymentMethod2, Integer paymentMethod3,String userId,String orderNo,String orderMatchNo) {
-        LambdaQueryWrapper<EzPaymentInfo> queryWrapper1 = new LambdaQueryWrapper<>();
-        queryWrapper1.eq(EzPaymentInfo::getUserId, userId);
-        queryWrapper1.eq(EzPaymentInfo::getPaymentMethodId, paymentMethod1).or().
-                eq(EzPaymentInfo::getPaymentMethodId, paymentMethod2).or().
-                eq(EzPaymentInfo::getPaymentMethodId, paymentMethod3);
+        LambdaQueryWrapper<EzPaymentInfo> queryWrapper1 = Wrappers.<EzPaymentInfo>lambdaQuery().
+                eq(EzPaymentInfo::getUserId, userId).and(wq->wq.eq(EzPaymentInfo::getPaymentMethodId, paymentMethod1)
+                .or().eq(EzPaymentInfo::getPaymentMethodId, paymentMethod2)
+                .or().eq(EzPaymentInfo::getPaymentMethodId, paymentMethod3));
         List<EzPaymentInfo> list = paymentInfoService.list(queryWrapper1);
         if (list.size()==0){
-            throw new BaseException(null, "801", null, "未匹配到支付方式");
+            throw new BaseException(null, "801","未匹配到支付方式" ,null );
         }
         List<EzOtcOrderPayment> list1 = new ArrayList<EzOtcOrderPayment>();
         list.forEach(e -> {
             EzOtcOrderPayment ezOtcOrderPayment = new EzOtcOrderPayment();
-            BeanUtils.copyBeanProp(ezOtcOrderPayment, e);
+            ezOtcOrderPayment.setPaymentQrCode(e.getPaymentQrCode());
+            ezOtcOrderPayment.setPaymentMethodId(e.getPaymentMethodId());
+            ezOtcOrderPayment.setAccountNumber(e.getAccountNumber());
+            ezOtcOrderPayment.setBankName(e.getBankName());
+            ezOtcOrderPayment.setRealName(e.getRealName());
             if (StringUtils.isNotEmpty(orderNo)){
                 ezOtcOrderPayment.setType("0");
                 ezOtcOrderPayment.setOrderNo(orderNo);
@@ -63,7 +71,6 @@ public class EzOtcOrderPaymentServiceImpl extends ServiceImpl<EzOtcOrderPaymentM
             }
             list1.add(ezOtcOrderPayment);
         });
-
         this.saveBatch(list1);
         if (StringUtils.isNotEmpty(orderMatchNo)){
             return list1;

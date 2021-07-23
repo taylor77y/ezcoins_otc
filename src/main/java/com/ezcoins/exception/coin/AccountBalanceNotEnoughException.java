@@ -14,6 +14,6 @@ public class AccountBalanceNotEnoughException extends CoinException {
 	 * 账户余额不够
 	 */
 	public AccountBalanceNotEnoughException(){
-    	super("余额不足", null);
+    	super("500","余额不足", null);
     }
 }

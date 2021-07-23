@@ -137,63 +137,63 @@ public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> impleme
         String phoneArea = codeReqDto.getPhoneArea();
 
         String key = null;
-        String code =null;
+        String code = null;
         //手机验证码
         if (type.equals(VerificationCodeReqDto.Type.PHONE.getType())) {
             if (StringUtils.isEmpty(phoneArea)) {
-                throw new BaseException(MessageUtils.message("请选择国际区号"));
+                throw new BaseException("请选择国际区号");
             }
             boolean flag = checkUserUnique(null, verificationNumber, phoneArea, null, null);
             //注册验证吗
             if (VerificationCodeReqDto.captchaType.REGISTER.getType().equals(captchaType)) {
                 if (!flag) {
-                    throw new BaseException(MessageUtils.message("手机号已被注册"));
+                    throw new BaseException("手机号已被注册");
                 }
                 key = RedisConstants.PHONE_REGISTER_SMS_KEY;
             } else if (VerificationCodeReqDto.captchaType.RETRIEVE_PASSWORD.getType().equals(captchaType)) {
                 if (flag) {
-                    throw new BaseException(MessageUtils.message("手机号尚未绑定"));
+                    throw new BaseException("手机号尚未绑定");
                 }
                 key = RedisConstants.PHONE_RETRIEVE_PASSWORD_SMS_KEY;
-            }else if (VerificationCodeReqDto.captchaType.BIND_INFO.getType().equals(captchaType)){
+            } else if (VerificationCodeReqDto.captchaType.BIND_INFO.getType().equals(captchaType)) {
                 if (!flag) {
-                    throw new BaseException(MessageUtils.message("手机号已被注册"));
+                    throw new BaseException("手机号已被注册");
                 }
                 key = RedisConstants.PHONE_BIND_INFO_SMS_KEY;
             }
-            code=redisCache.getCacheObject(key + phoneArea+verificationNumber);
+            code = redisCache.getCacheObject(key + phoneArea + verificationNumber);
 
         } else if (type.equals(VerificationCodeReqDto.Type.EMAIL.getType())) {
             boolean flag = checkUserUnique(null, null, null, verificationNumber, null);
             //注册验证吗
             if (VerificationCodeReqDto.captchaType.REGISTER.getType().equals(captchaType)) {
                 if (!flag) {
-                    throw new BaseException(MessageUtils.message("邮箱已被注册"));
+                    throw new BaseException("邮箱已被注册");
                 }
                 key = RedisConstants.EMAIL_REGISTER_SMS_KEY;
             } else if (VerificationCodeReqDto.captchaType.RETRIEVE_PASSWORD.getType().equals(captchaType)) {
                 if (flag) {
-                    throw new BaseException(MessageUtils.message("邮箱尚未绑定"));
+                    throw new BaseException("邮箱尚未绑定");
                 }
                 key = RedisConstants.EMAIL_RETRIEVE_PASSWORD_SMS_KEY;
-            }else if (VerificationCodeReqDto.captchaType.BIND_INFO.getType().equals(captchaType)) {
+            } else if (VerificationCodeReqDto.captchaType.BIND_INFO.getType().equals(captchaType)) {
                 if (!flag) {
-                    throw new BaseException(MessageUtils.message("邮箱已被注册"));
+                    throw new BaseException("邮箱已被注册");
                 }
                 key = RedisConstants.EMAIL_BIND_INFO_SMS_KEY;
             }
-            code=redisCache.getCacheObject(key + verificationNumber);
+            code = redisCache.getCacheObject(key + verificationNumber);
         }
         //1 从redis获取验证码，如果获取到直接返回
         if (StringUtils.isNotEmpty(code)) {
         } else {
             //随机产生6位数字
-            code= RandomUtil.getSixBitRandom();
+            code = RandomUtil.getSixBitRandom();
             if (type.equals(VerificationCodeReqDto.Type.PHONE.getType())) {
-                phoneService.send(key, code,phoneArea+verificationNumber);
-            }else if (type.equals(VerificationCodeReqDto.Type.EMAIL.getType())){
+                phoneService.send(key, code, phoneArea + verificationNumber);
+            } else if (type.equals(VerificationCodeReqDto.Type.EMAIL.getType())) {
                 try {
-                    emailService.sendComplexMail(key,verificationNumber, MessageUtils.message("感谢您使用亿智交易平台"), code);
+                    emailService.sendComplexMail(key, verificationNumber, MessageUtils.message("感谢您使用亿智交易平台"), code);
                     log.info("发送邮件成功，邮箱为：{},邮箱验证码为：{}", verificationNumber, code);
                 } catch (Exception e) {
                     log.info("发送邮件失败-异常", e);
@@ -209,9 +209,9 @@ public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> impleme
      */
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void addUser(EzUserReqDto ezUserDto) {
+    public void addUser(EzUserReqDto ezUserDto, boolean isAdmin) {
         //获取注册的数据
-        String code = ezUserDto.getCode();
+
         String phone = ezUserDto.getPhone();
         String phoneArea = ezUserDto.getPhoneArea();
         String email = ezUserDto.getEmail();
@@ -222,14 +222,14 @@ public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> impleme
 
         EzUser ezUser = new EzUser();
         //获取redis验证码
-        String redisCode=null;
-        String rmKey=null;
-        if (type.equals(VerificationCodeReqDto.Type.PHONE.getType())){
-            if (StringUtils.isEmpty(phone) || StringUtils.isEmpty(phoneArea)){
+        String redisCode = null;
+        String rmKey = null;
+        if (type.equals(VerificationCodeReqDto.Type.PHONE.getType())) {
+            if (StringUtils.isEmpty(phone) || StringUtils.isEmpty(phoneArea)) {
                 throw new BaseException(MessageUtils.message("手机号不能为空"));
             }
             //判断手机号用户名是否重复，表里面存在相同手机号不进行添加
-            if (!checkUserUnique(null, phone,phoneArea,null, null)) {
+            if (!checkUserUnique(null, phone, phoneArea, null, null)) {
                 throw new BaseException(MessageUtils.message("手机号码已被注册"));
             }
             ezUser.setPhone(phone);
@@ -238,27 +238,30 @@ public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> impleme
             ezUser.setCreateBy(phone);
 //            redisCode=redisCache.getCacheObject(RedisConstants.PHONE_REGISTER_SMS_KEY + phone);
 
-          rmKey=null;
-        }else if (type.equals(VerificationCodeReqDto.Type.EMAIL.getType())){
+            rmKey = null;
+        } else if (type.equals(VerificationCodeReqDto.Type.EMAIL.getType())) {
             //判断手机号用户名是否重复，表里面存在相同手机号不进行添加
-            if (!checkUserUnique(null, null,null,email, null)) {
+            if (!checkUserUnique(null, null, null, email, null)) {
                 throw new BaseException(MessageUtils.message("邮箱已被注册"));
             }
             ezUser.setUserName(email);
             ezUser.setEmail(email);
             ezUser.setCreateBy(email);
-            redisCode=redisCache.getCacheObject(RedisConstants.EMAIL_REGISTER_SMS_KEY + email);
-            rmKey=RedisConstants.EMAIL_REGISTER_SMS_KEY + email;
+            redisCode = redisCache.getCacheObject(RedisConstants.EMAIL_REGISTER_SMS_KEY + email);
+            rmKey = RedisConstants.EMAIL_REGISTER_SMS_KEY + email;
         }
-        if (StringUtils.isEmpty(redisCode)) {
-            throw new BaseException(MessageUtils.message("验证码已过期"));
-        }
-        if (!code.equals(redisCode)) {
-            throw new BaseException(MessageUtils.message("验证码错误"));
+        if (!isAdmin) {
+            if (StringUtils.isEmpty(redisCode)) {
+                throw new BaseException(MessageUtils.message("验证码已过期"));
+            }
+            String code = ezUserDto.getCode();
+            if (!code.equals(redisCode)) {
+                throw new BaseException(MessageUtils.message("验证码错误"));
+            }
         }
         String parentId = "0";
         if (StringUtils.isNotEmpty(parentInviteCode)) {
-            EzUser ezUser1 = baseMapper.selectUserBy(null, null, null,null, parentInviteCode);
+            EzUser ezUser1 = baseMapper.selectUserBy(null, null, null, null, parentInviteCode);
             if (ezUser1 == null) {
                 throw new BaseException(MessageUtils.message("邀请码错误"));
             }
@@ -279,9 +282,10 @@ public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> impleme
         advertisingBusiness.setCreateBy(ezUser.getUserName());
         businessService.save(advertisingBusiness);
         //初始化账户信息
-        accountService.processCoinAccount(ezUser.getUserId(),ezUser.getUserName());
+        accountService.processCoinAccount(ezUser.getUserId(), ezUser.getUserName());
         redisCache.deleteObject(rmKey);
     }
+
     /**
      * 用户登录
      *
@@ -289,14 +293,14 @@ public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> impleme
      * @return
      */
     @Override
-    public Map<String,String> login(JwtAuthenticationRequest authenticationRequest) {
+    public Map<String, String> login(JwtAuthenticationRequest authenticationRequest) {
         //登录的时候 如果绑定了邮箱/电话号码 都可以用来登录
-        LambdaQueryWrapper<EzUser> lambdaQueryWrapper=new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(EzUser::getPhone,authenticationRequest.getUsername()).or().eq(EzUser::getEmail,authenticationRequest.getUsername());
+        LambdaQueryWrapper<EzUser> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(EzUser::getPhone, authenticationRequest.getUsername()).or().eq(EzUser::getEmail, authenticationRequest.getUsername());
         EzUser ezUser = baseMapper.selectOne(lambdaQueryWrapper);
         //用户不存在
         if (ezUser == null || UserStatus.DELETED.getCode().equals(ezUser.getIsDeleted())) {
-            throw new UserException(MessageUtils.message("登录用户已被删除"), null);
+            throw new UserException("登录用户不存在", null);
         }
         //密码错误
         if (!EncoderUtil.matches(authenticationRequest.getPassword(), ezUser.getPassword())) {
@@ -313,9 +317,9 @@ public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> impleme
         baseMapper.updateById(ezUser);
 
         loginProducer.sendMsgLoginFollowUp(ezUser.getUserName(), userId, ezUser.getNickName(), LoginType.APP.getType());
-        Map<String,String> map=new HashMap<>(2);
-        map.put("token",token);
-        map.put("userId",userId);
+        Map<String, String> map = new HashMap<>(2);
+        map.put("token", token);
+        map.put("userId", userId);
         return map;
     }
 

@@ -15,7 +15,8 @@ import com.ezcoins.project.otc.service.EzAdvertisingBusinessService;
 import com.ezcoins.project.otc.service.EzOtcChatMsgService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ezcoins.project.otc.service.EzOtcOrderMatchService;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
+import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponseList;
 import com.ezcoins.utils.BeanUtils;
 import com.ezcoins.utils.FileUploadUtils;
@@ -52,7 +53,7 @@ public class EzOtcChatMsgServiceImpl extends ServiceImpl<EzOtcChatMsgMapper, EzO
      * @return
      */
     @Override
-    public BaseResponse sendChat(List<EzOtcChatMsg> chatMsgList,String sendId) {
+    public Response sendChat(List<EzOtcChatMsg> chatMsgList,String sendId) {
         for (EzOtcChatMsg ezOtcChatMsg:chatMsgList){
             if (StringUtils.isNotEmpty(sendId)){
                 ezOtcChatMsg.setSendUserId(sendId);
@@ -61,7 +62,7 @@ public class EzOtcChatMsgServiceImpl extends ServiceImpl<EzOtcChatMsgMapper, EzO
             //给用户一个信号
             WebSocketHandle.toChatWith(ezOtcChatMsg.getReceiveUserId(), ezOtcChatMsg.getOrderMatchNo());
         }
-        return BaseResponse.success();
+        return Response.success();
     }
 
     /**

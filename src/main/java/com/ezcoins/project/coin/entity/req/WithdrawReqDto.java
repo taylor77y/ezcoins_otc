@@ -21,9 +21,11 @@ public class WithdrawReqDto {
     @NotBlank(message = "{提币地址不能为空}")
     private String toAddress;
 
-    @ApiModelProperty(value = "币种名",required = true)
-    private String coinName;
+    @ApiModelProperty(value = "主币种类型")
+    private String mainCoinType;
 
+    @ApiModelProperty(value = "子币种类型")
+    private String coinType;
 
     @ApiModelProperty(value = "数量",required = true)
     private BigDecimal amount;

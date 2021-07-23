@@ -5,7 +5,7 @@ import com.ezcoins.base.BaseException;
 
 import com.ezcoins.constant.interf.HttpStatus;
 import com.ezcoins.exception.CustomException;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 import com.ezcoins.utils.MessageUtils;
 import com.ezcoins.utils.StringUtils;
 import org.slf4j.Logger;
@@ -33,38 +33,38 @@ public class GlobalExceptionHandler
      * 基础异常
      */
     @ExceptionHandler(BaseException.class)
-    public BaseResponse baseException(BaseException e){
-        return BaseResponse.error(e.getMessage());
+    public Response baseException(BaseException e){
+        Integer code=e.getCode()==null?HttpStatus.HTTP_RES_CODE_500: Integer.parseInt(e.getCode());
+        return Response.error(e.getMessage(),code);
     }
-
     /**
      * 业务异常
      */
     @ExceptionHandler(CustomException.class)
-    public BaseResponse businessException(CustomException e){
+    public Response businessException(CustomException e){
         if (StringUtils.isNull(e.getCode()))
         {
-            return BaseResponse.error(e.getMessage());
+            return Response.error(e.getMessage());
         }
-        return BaseResponse.error(e.getCode(), e.getMessage());
+        return Response.error(e.getMessage(),e.getCode());
     }
 
-    @ExceptionHandler(NoHandlerFoundException.class)
-    public BaseResponse handlerNoFoundException(Exception e){
-        log.error(e.getMessage(), e);
-        return BaseResponse.error(HttpStatus.NOT_FOUND, MessageUtils.message("path.not.exist"));//路径不存在，请检查路径是否正确
-    }
-
-    @ExceptionHandler(AccessDeniedException.class)
-    public BaseResponse handleAuthorizationException(AccessDeniedException e){
-        log.error(e.getMessage());
-        return BaseResponse.error(HttpStatus.FORBIDDEN, MessageUtils.message("no.permission"));//没有权限，请联系管理员授权
-    }
+//    @ExceptionHandler(NoHandlerFoundException.class)
+//    public Response handlerNoFoundException(Exception e){
+//        log.error(e.getMessage(), e);
+//        return Response.error(HttpStatus.NOT_FOUND, MessageUtils.message("path.not.exist"));//路径不存在，请检查路径是否正确
+//    }
+//
+//    @ExceptionHandler(AccessDeniedException.class)
+//    public Response handleAuthorizationException(AccessDeniedException e){
+//        log.error(e.getMessage());
+//        return Response.error(HttpStatus.FORBIDDEN, MessageUtils.message("no.permission"));//没有权限，请联系管理员授权
+//    }
 
     @ExceptionHandler(AccountExpiredException.class)
-    public BaseResponse handleAccountExpiredException(AccountExpiredException e){
+    public Response handleAccountExpiredException(AccountExpiredException e){
         log.error(e.getMessage(), e);
-        return BaseResponse.error(e.getMessage());
+        return Response.error(e.getMessage());
     }
 
 //    @ExceptionHandler(UsernameNotFoundException.class)
@@ -74,20 +74,20 @@ public class GlobalExceptionHandler
 //    }
 
     @ExceptionHandler(Exception.class)
-    public BaseResponse handleException(Exception e) {
+    public Response handleException(Exception e) {
         log.error(e.getMessage(), e);
-        return BaseResponse.error(e.getMessage());
+        return Response.error(e.getMessage());
     }
 
     /**
      * 自定义验证异常
      */
     @ExceptionHandler(BindException.class)
-    public BaseResponse validatedBindException(BindException e)
+    public Response validatedBindException(BindException e)
     {
         log.error(e.getMessage());
         String message = e.getAllErrors().get(0).getDefaultMessage();
-        return BaseResponse.error(message);
+        return Response.error(message);
     }
 
     /**
@@ -97,7 +97,7 @@ public class GlobalExceptionHandler
     public Object validExceptionHandler(MethodArgumentNotValidException e){
         log.error(e.getMessage(), e);
         String message = e.getBindingResult().getFieldError().getDefaultMessage();
-        return BaseResponse.error(message);
+        return Response.error(message);
     }
 
 }

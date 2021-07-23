@@ -15,7 +15,7 @@ import com.ezcoins.project.otc.entity.EzOneSellConfig;
 import com.ezcoins.project.otc.entity.req.SellConfigReqDto;
 import com.ezcoins.project.otc.entity.req.StatusReqDto;
 import com.ezcoins.project.otc.service.EzSellConfigService;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponseList;
 import com.ezcoins.utils.BeanUtils;
@@ -57,7 +57,7 @@ public class EzSellConfigController {
     @PostMapping("updateOrAddSellConfig")
     @AuthToken
     @Log(title = "修改一键卖币配置", businessType = BusinessType.UPDATE, operatorType = OperatorType.MANAGE)
-    public BaseResponse updateOrAddSellConfig(@RequestBody SellConfigReqDto sellConfigReqDto) {
+    public Response updateOrAddSellConfig(@RequestBody SellConfigReqDto sellConfigReqDto) {
         return sellConfigService.updateOrAddSellConfig(sellConfigReqDto);
     }
 
@@ -66,7 +66,7 @@ public class EzSellConfigController {
     @PostMapping("updateSellConfigStatus")
     @AuthToken
     @Log(title = "修改一键卖币配置状态", businessType = BusinessType.UPDATE, operatorType = OperatorType.MANAGE)
-    public BaseResponse updateSellConfigStatus(@RequestBody StatusReqDto statusReqDto) {
+    public Response updateSellConfigStatus(@RequestBody StatusReqDto statusReqDto) {
         LambdaQueryWrapper<EzOneSellConfig> lambdaQueryWrapper=new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(EzOneSellConfig::getId,statusReqDto.getId());
         EzOneSellConfig one = sellConfigService.getOne(lambdaQueryWrapper);
@@ -79,7 +79,7 @@ public class EzSellConfigController {
         }
         one.setStatus(statusReqDto.getStatus());
         sellConfigService.updateById(one);
-        return BaseResponse.success();
+        return Response.success();
     }
 
 

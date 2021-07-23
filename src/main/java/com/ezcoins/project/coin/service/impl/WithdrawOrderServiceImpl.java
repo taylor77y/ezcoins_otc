@@ -3,6 +3,7 @@ package com.ezcoins.project.coin.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.ezcoins.base.BaseException;
+import com.ezcoins.constant.RecordSonType;
 import com.ezcoins.constant.enums.coin.CoinConstants;
 import com.ezcoins.constant.enums.coin.WithdrawOrderStatus;
 import com.ezcoins.context.ContextHandler;
@@ -25,7 +26,7 @@ import com.ezcoins.project.coin.udun.ResponseMessage;
 import com.ezcoins.project.coin.wallet.cc.ChainCoinType;
 import com.ezcoins.project.coin.wallet.cc.CoinTypeUtils;
 import com.ezcoins.project.coin.wallet.cc.WalletClientService;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 import com.ezcoins.utils.BeanUtils;
 import com.ezcoins.utils.MessageUtils;
 import com.ezcoins.utils.StringUtils;
@@ -82,19 +83,12 @@ public class WithdrawOrderServiceImpl extends ServiceImpl<WithdrawOrderMapper, W
         } else if (checkWithdrewOrderReqDto.getOperate().equals(WithdrawOrderStatus.BYADMIN.getCode())) {
             //TODO: 去优盾处理
             log.info("后台管理员 {}： 审核通过", userName);
-            try {
-                ChainCoinType chainCoinType = CoinTypeUtils.getChainCoinType(withdrawOrder.getMainCoinType(), withdrawOrder.getCoinType());
-                if (chainCoinType == null) {
-                    throw new BaseException("未获取到coinType");
-                }
-                Integer code = clientService.transfer(chainCoinType.getCoin_type(), chainCoinType.getChain(), withdrawOrder.getId(), withdrawOrder.getAddress(), "test", withdrawOrder.getAmount());
-                if (code != 200) {
-                    throw new SystemBusyException();
-                }
-                withdrawOrder.setStatus(WithdrawOrderStatus.BYADMIN.getCode());
-            } catch (Exception e) {
-                throw new ParameterException();
+            ChainCoinType chainCoinType = CoinTypeUtils.getChainCoinType(withdrawOrder.getMainCoinType(), withdrawOrder.getCoinType());
+            if (chainCoinType == null) {
+                throw new BaseException("未获取到coinType");
             }
+            Integer code = clientService.transfer(chainCoinType.getCoin_type(), chainCoinType.getChain(), withdrawOrder.getId(), withdrawOrder.getAddress(), "test", withdrawOrder.getAmount());
+            withdrawOrder.setStatus(WithdrawOrderStatus.BYADMIN.getCode());
         } else if (checkWithdrewOrderReqDto.getOperate().equals(WithdrawOrderStatus.REFUSE.getCode())) {
             //修改订单状态
             withdrawOrder.setStatus(WithdrawOrderStatus.REFUSE.getCode());
@@ -111,11 +105,15 @@ public class WithdrawOrderServiceImpl extends ServiceImpl<WithdrawOrderMapper, W
             c.setUserId(withdrawOrder.getUserId());
             cList.add(c);
 
+            if (!accountService.balanceChangeSYNC(cList)) {// 资产变更异常
+                throw new AccountOperationBusyException();
+            }
+
             String coinRecordId = withdrawOrder.getCoinRecordId();
-            LambdaUpdateWrapper<Record> lambdaUpdateWrapper=new LambdaUpdateWrapper<>();
-            lambdaUpdateWrapper.eq(Record::getId,coinRecordId);
-            lambdaUpdateWrapper.set(Record::getStatus,CoinConstants.RecordStatus.REFUSE.getStatus());
-            recordService.update(null,lambdaUpdateWrapper);
+            LambdaUpdateWrapper<Record> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+            lambdaUpdateWrapper.eq(Record::getId, coinRecordId);
+            lambdaUpdateWrapper.set(Record::getStatus, CoinConstants.RecordStatus.REFUSE.getStatus());
+            recordService.update(null, lambdaUpdateWrapper);
 
             log.info("后台管理员 {}： 审核失败,原因：{}", userName, checkWithdrewOrderReqDto.getReason());
         }
@@ -131,25 +129,26 @@ public class WithdrawOrderServiceImpl extends ServiceImpl<WithdrawOrderMapper, W
      */
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public BaseResponse withdraw(WithdrawReqDto withdrawReqDto) {
+    public Response withdraw(WithdrawReqDto withdrawReqDto) {
         String userId = ContextHandler.getUserId();
 
         LambdaQueryWrapper<WithdrawConfig> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(WithdrawConfig::getCoinName, withdrawReqDto.getCoinName());
+        lambdaQueryWrapper.eq(WithdrawConfig::getMainCoinType, withdrawReqDto.getMainCoinType());
+        lambdaQueryWrapper.eq(WithdrawConfig::getCoinType, withdrawReqDto.getCoinType());
         WithdrawConfig one = withdrawConfigService.getOne(lambdaQueryWrapper);
         if ("1".equals(one.getStatus())) {
-            return BaseResponse.error(MessageUtils.message("该币种提币已关闭"));
+            return Response.error(MessageUtils.message("该币种提币已关闭"));
         }
         BigDecimal amount = withdrawReqDto.getAmount();
         if (amount.compareTo(one.getMaxWithdraw()) > 0 && amount.compareTo(one.getMinWithdraw()) < 0) {
-            return BaseResponse.error(MessageUtils.message("提币数量不在范围内"));
+            return Response.error(MessageUtils.message("提币数量不在范围内"));
         }
         //计算手续费
         BigDecimal fee = amount.multiply(one.getFeeRate()).add(one.getFee());
         WithdrawOrder withdrawOrder = new WithdrawOrder();
         withdrawOrder.setAddress(withdrawReqDto.getToAddress());
         withdrawOrder.setAmount(amount);
-        withdrawOrder.setCoinName(withdrawReqDto.getCoinName());
+        withdrawOrder.setCoinName(one.getCoinName());
         withdrawOrder.setFee(fee);
         withdrawOrder.setCoinType(one.getCoinType());
         withdrawOrder.setUserId(ContextHandler.getUserId());
@@ -164,23 +163,23 @@ public class WithdrawOrderServiceImpl extends ServiceImpl<WithdrawOrderMapper, W
         BalanceChange c = new BalanceChange();
         c.setAvailable(total.negate());// 扣除金额包括 提现数量+固定额度+比例额度
         c.setFrozen(total); //设置冻结金额
-        c.setCoinName(withdrawReqDto.getCoinName());
+        c.setCoinName(one.getCoinName());
         c.setIncomeType(CoinConstants.IncomeType.PAYOUT.getType());
         c.setMainType(CoinConstants.MainType.FROZEN.getType());
         c.setUserId(userId);
         cList.add(c);
-
         Record cr = new Record();
         // 插入记录
         cr.setIncomeType(CoinConstants.IncomeType.PAYOUT.getType());
-        cr.setSonType("withdrawal");
+        cr.setSonType(RecordSonType.ORDINARY_WITHDRAWAL);
         cr.setStatus(CoinConstants.RecordStatus.WAIT.getStatus());
         cr.setCoinName(withdrawOrder.getCoinName());
         cr.setMainType(CoinConstants.MainType.WITHDRAWAL.getType());
-        cr.setAmount(total);
-        cr.setFee(withdrawOrder.getFee());
+        cr.setAmount(amount);
+        cr.setFee(fee);
         cr.setToAddress(withdrawReqDto.getToAddress());
         cr.setUserId(userId);
+        cr.setCreateBy(ContextHandler.getUserName());
 
         recordService.save(cr);
         withdrawOrder.setCoinRecordId(cr.getId());
@@ -188,6 +187,6 @@ public class WithdrawOrderServiceImpl extends ServiceImpl<WithdrawOrderMapper, W
         if (!accountService.balanceChangeSYNC(cList)) {// 资产变更异常
             throw new AccountOperationBusyException();
         }
-        return BaseResponse.success();
+        return Response.success();
     }
 }

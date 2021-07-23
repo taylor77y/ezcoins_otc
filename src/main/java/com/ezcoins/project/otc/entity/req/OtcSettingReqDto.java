@@ -15,6 +15,7 @@ import javax.validation.constraints.NotBlank;
 @Data
 public class OtcSettingReqDto {
     @ApiModelProperty(value = "卖家昵称",required = true)
+    @NotBlank(message = "{昵称不能为空}")
     private String advertisingName;
 
 

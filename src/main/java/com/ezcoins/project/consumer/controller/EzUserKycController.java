@@ -9,7 +9,7 @@ import com.ezcoins.project.common.service.mapper.SearchModel;
 import com.ezcoins.project.consumer.entity.EzUserKyc;
 import com.ezcoins.project.consumer.entity.req.CheckKycReqDto;
 import com.ezcoins.project.consumer.service.EzUserKycService;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponsePageList;
 import io.swagger.annotations.Api;
@@ -51,9 +51,9 @@ public class EzUserKycController {
     @PutMapping("checkKyc")
     @AuthToken
     @Log(title = "审核实名认证", businessType = BusinessType.GRANT, operatorType = OperatorType.MANAGE)
-    public BaseResponse checkKyc(@RequestBody @Validated CheckKycReqDto kycReqDto) {
+    public Response checkKyc(@RequestBody @Validated CheckKycReqDto kycReqDto) {
         kycService.checkKyc(kycReqDto);
-        return BaseResponse.success();
+        return Response.success();
     }
 
 

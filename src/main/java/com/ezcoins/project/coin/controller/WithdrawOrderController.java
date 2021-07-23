@@ -12,7 +12,7 @@ import com.ezcoins.project.coin.entity.req.CheckWithdrewOrderReqDto;
 import com.ezcoins.project.coin.entity.req.WithdrewConfigReqDto;
 import com.ezcoins.project.coin.service.WithdrawOrderService;
 import com.ezcoins.project.common.service.mapper.SearchModel;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponsePageList;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -47,9 +47,9 @@ public class WithdrawOrderController {
     @PutMapping("reviewWithdrawOrder")
     @AuthToken
     @Log(title = "审核提币订单", businessType = BusinessType.INSERT, operatorType = OperatorType.MANAGE)
-    public BaseResponse reviewWithdrawOrder(@RequestBody CheckWithdrewOrderReqDto checkWithdrewOrderReqDto) {
+    public Response reviewWithdrawOrder(@RequestBody CheckWithdrewOrderReqDto checkWithdrewOrderReqDto) {
         withdrawOrderService.reviewWithdrawOrder(checkWithdrewOrderReqDto);
-        return BaseResponse.success();
+        return Response.success();
     }
 }
 

@@ -15,25 +15,22 @@ public class CoinConstants {
 		WITHDRAWAL("withdrawal", "提币"),
 		/** 系统空投 **/
 		AIRDROP("airdrop", "空投"),
-
 		/**系统**/
 		SYS("sys", "系统"),
-
 		/** 转入 **/
 		TRANSFERIN("transferin", "转入"),
-
         /** 转出 **/
 		TRANSFEROUT("transferout", "转出"),
-
+		FREE("free","手续费"),
         /** 冻结 **/
 		FROZEN("frozen", "冻结"),
-
         /** 解冻 **/
 		UNFREEZE("unfreeze", "解冻"),
 
+		NORECORD("norecord", "不记录"),
+
         /** 锁仓 **/
 		LOCKUP("lockup", "锁仓"),
-
 	    /** 解锁 **/
 		UNLOCK("unlock", "解锁");
 

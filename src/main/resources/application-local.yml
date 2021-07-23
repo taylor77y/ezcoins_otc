@@ -86,11 +86,11 @@ spring:
             multi-statement-allow: true
   mail:
     #服务器
-    host: smtpout.secureserver.net
+    host: 123.58.177.181
     #邮箱发件人
-    username: support@ezcoins.cc
+    username: hotel.happy@vip.163.com
     #授权码
-    password: P@ssw0rdEzcoins
+    password: hotel123456
     properties:
       mail:
         debug: true

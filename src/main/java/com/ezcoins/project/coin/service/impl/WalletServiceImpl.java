@@ -19,7 +19,7 @@ import com.ezcoins.project.coin.udun.Address;
 import com.ezcoins.project.coin.udun.BiPayService;
 import com.ezcoins.project.coin.udun.Trade;
 import com.ezcoins.project.coin.wallet.cc.WalletClientService;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 import com.ezcoins.utils.DateUtils;
 import com.ezcoins.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -67,7 +68,7 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
     private RechargeConfigService rechargeConfigService;
 
     @Override
-    public BaseResponse rechargeAddress(String userId, String id) {
+    public Response rechargeAddress(String userId, String id) {
         String rechargeAddr = null;
         //根据id查询充值地址main_type  coin_type
         RechargeConfig rechargeConfig = configService.getById(id);
@@ -110,7 +111,9 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
             throw new BaseException("币种充值尚未开启");
 
         }
-        return BaseResponse.success().data("rechargeAddr",rechargeAddr);
+        HashMap map=new HashMap(1);
+        map.put("rechargeAddr",rechargeAddr);
+        return Response.success(map);
     }
 
     /**
@@ -135,11 +138,11 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
             return false;
         }
         //判断是否为提款，不是就返回false
-        if (trade.getTradeType() != 2) {
+        if (trade.getS() != 2) {
             return false;
         }
         // [审核通过]判断是否审核中 扣除冻结
-        if (trade.getStatus() == 1 && CoinConstants.RecordStatus.PASS.getStatus().equals(cr.getStatus())) {
+        if (trade.getS() == 1 && CoinConstants.RecordStatus.PASS.getStatus().equals(cr.getStatus())) {
             cr.setStatus(CoinConstants.RecordStatus.OK.getStatus());
             List<BalanceChange> cList = new ArrayList<BalanceChange>();
             BalanceChange c = new BalanceChange();
@@ -155,9 +158,9 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
             withdrawOrder.setStatus(WithdrawOrderStatus.BYWALLET.getCode());
         }
         // [审核拒绝]判断是否审核中 解冻返回余额 返回Txid
-        if (trade.getStatus() == 2 && CoinConstants.RecordStatus.PASS.getStatus().equals(cr.getStatus())) {
+        if (trade.getS() == 2 && CoinConstants.RecordStatus.PASS.getStatus().equals(cr.getStatus())) {
             cr.setStatus(CoinConstants.RecordStatus.REFUSE.getStatus());
-            cr.setTxid(trade.getTxId());
+            cr.setTxid(trade.getTid());
             List<BalanceChange> cList = new ArrayList<BalanceChange>();
             BalanceChange c = new BalanceChange();
             c.setAvailable(cr.getAmount().add(cr.getFee()));
@@ -237,7 +240,6 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
 
         Record rec = new Record(); //添加流水记录
         rec.setUserId(c.getUserId());
-        rec.setCoinName(c.getCoinName());
         rec.setCoinName(c.getCoinName());
         rec.setCreateTime(DateUtils.getNowDate());
         rec.setFee(BigDecimal.ZERO);

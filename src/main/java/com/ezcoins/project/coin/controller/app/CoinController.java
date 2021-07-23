@@ -18,7 +18,7 @@ import com.ezcoins.project.coin.service.*;
 import com.ezcoins.project.common.service.mapper.Field;
 import com.ezcoins.project.common.service.mapper.QueryMethod;
 import com.ezcoins.project.common.service.mapper.SearchModel;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponseList;
 import com.ezcoins.response.ResponsePageList;
@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -72,7 +73,7 @@ public class CoinController extends BaseController {
     @AuthToken
     @PostMapping("addOrUpdateWithdrawalAddr")
     @Log(title = "添加/修改 提币地址", businessType = BusinessType.INSERT, operatorType = OperatorType.MOBILE)
-    public BaseResponse addOrUpdateWithdrawalAddr(@RequestBody UserAddrReqDto addrReqDto){
+    public Response addOrUpdateWithdrawalAddr(@RequestBody UserAddrReqDto addrReqDto){
         return walletAddrService.addOrUpdateWithdrawalAddr(addrReqDto);
     }
 
@@ -80,9 +81,18 @@ public class CoinController extends BaseController {
     @AuthToken
     @DeleteMapping("deleteWithdrawalAddr/{id}")
     @Log(title = "添加/修改 提币地址", businessType = BusinessType.DELETE, operatorType = OperatorType.MOBILE)
-    public BaseResponse deleteWithdrawalAddr(@PathVariable String id){
+    public Response deleteWithdrawalAddr(@PathVariable String id){
         walletAddrService.removeById(id);
-        return BaseResponse.success();
+        return Response.success();
+    }
+    @ApiOperation(value = "根据币种名查询余额")
+    @AuthToken
+    @GetMapping("coinAccount/{coinName}")
+    public Response coinAccount(@PathVariable String coinName) {
+        HashMap map=new HashMap();
+        map.put("balance",accountService.getAccountByUserIdAndCoinId(ContextHandler.getUserId(),coinName)
+                .getAvailable());
+        return Response.success(map);
     }
 
     @ApiOperation(value = "提币地址列表")
@@ -131,24 +141,18 @@ public class CoinController extends BaseController {
     @ApiOperation(value = "充值地址二维码")
     @AuthToken
     @GetMapping("rechargeAddress/{id}")
-    public BaseResponse rechargeAddress(@PathVariable String id) {
+    public Response rechargeAddress(@PathVariable String id) {
         return walletService.rechargeAddress(getUserId(),id);
     }
 
-    @ApiOperation(value = "根据币种名查询余额")
-    @AuthToken
-    @GetMapping("coinAccount/{coinName}")
-    public BaseResponse coinAccount(@PathVariable String coinName) {
-        return BaseResponse.success()
-                .data("balance",accountService.getAccountByUserIdAndCoinId(ContextHandler.getUserId(),coinName)
-                        .getAvailable());
-    }
+
+
 
     @ApiOperation(value = "发起提现")
     @AuthToken
     @PostMapping("withdraw")
     @Log(title = "发起提现", businessType = BusinessType.INSERT, operatorType = OperatorType.MOBILE)
-    public BaseResponse withdraw(@RequestBody WithdrawReqDto withdrawReqDto) {
+    public Response withdraw(@RequestBody WithdrawReqDto withdrawReqDto) {
         return withdrawOrderService.withdraw(withdrawReqDto);
     }
 
@@ -173,9 +177,12 @@ public class CoinController extends BaseController {
         }
         lambdaQueryWrapper.eq(Record::getSonType,type);
         lambdaQueryWrapper.eq(Record::getUserId,ContextHandler.getUserId());
+        lambdaQueryWrapper.orderByDesc(Record::getCreateTime);
         Page<Record> p = recordService.page(page, lambdaQueryWrapper);
         return ResponsePageList.success(p);
     }
+
+
 
     @ApiOperation(value = "账户记录")
     @AuthToken

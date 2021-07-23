@@ -10,7 +10,7 @@ import com.ezcoins.project.otc.entity.EzOneSellConfig;
 import com.ezcoins.project.otc.entity.EzOneSellOrder;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ezcoins.project.otc.entity.req.SellOneKeyReqDto;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

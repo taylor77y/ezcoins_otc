@@ -30,7 +30,7 @@ import com.ezcoins.redis.RedisCache;
 import com.ezcoins.project.acl.entity.req.JwtAuthenticationRequest;
 import com.ezcoins.project.consumer.service.EzUserKycService;
 import com.ezcoins.project.consumer.service.EzUserService;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponseList;
 import com.ezcoins.utils.EncoderUtil;
@@ -44,7 +44,9 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * @Author:
@@ -81,27 +83,27 @@ public class ConsumerController extends BaseController {
     @ApiOperation(value = "发送短信/邮箱验证码")
     @PostMapping("sendMsm")
     @NoRepeatSubmit
-    public BaseResponse sendMsm(@RequestBody @Validated VerificationCodeReqDto codeReqDto) {
+    public Response sendMsm(@RequestBody @Validated VerificationCodeReqDto codeReqDto) {
         if ("1".equals(codeReqDto.getType())) {
-            return BaseResponse.error("手机验证尚未开启，请先使用邮箱验证");
+            return Response.error("手机验证尚未开启，请先使用邮箱验证");
         }
         ezUserService.sendMsm(codeReqDto);
-        return BaseResponse.success();
+        return Response.success();
     }
 
     @ApiOperation(value = "用户注册")
     @PostMapping("register")
     @NoRepeatSubmit
-    public BaseResponse registerUser(@RequestBody @Validated EzUserReqDto ezUserDto) {
-        ezUserService.addUser(ezUserDto);
-        return BaseResponse.success();
+    public Response registerUser(@RequestBody @Validated EzUserReqDto ezUserDto) {
+        ezUserService.addUser(ezUserDto,false);
+        return Response.success();
     }
 
     @ApiOperation(value = "用户登录")
     @PostMapping("login")
     @NoRepeatSubmit
-    public BaseResponse login(@RequestBody @Validated JwtAuthenticationRequest jwtAuthenticationRequest) {
-        return BaseResponse.success().message("登录成功").data("token", ezUserService.login(jwtAuthenticationRequest));
+    public Response<Map<String,String>> login(@RequestBody @Validated JwtAuthenticationRequest jwtAuthenticationRequest) {
+        return Response.success(ezUserService.login(jwtAuthenticationRequest)).message("登录成功");
     }
 
     @ApiOperation(value = "国家列表")
@@ -115,15 +117,15 @@ public class ConsumerController extends BaseController {
      */
     @ApiOperation(value = "根据token获取用户信息")
     @GetMapping("getMemberInfo")
-    public BaseResponse getEzUserInfo() {
+    public Response getEzUserInfo() {
         ezUserService.getById(getUserId());
-        return BaseResponse.success();
+        return Response.success();
     }
 
     @NoRepeatSubmit
     @ApiOperation(value = "找回密码")
     @PostMapping("retrievePassword")
-    public BaseResponse retrievePassword(@RequestBody @Validated RetrievePwReqDto retrievePwReqDto) {
+    public Response retrievePassword(@RequestBody @Validated RetrievePwReqDto retrievePwReqDto) {
         String phoneOrEmail = retrievePwReqDto.getPhoneOrEmail();
         LambdaQueryWrapper<EzUser> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(EzUser::getPhone, phoneOrEmail);
@@ -136,36 +138,36 @@ public class ConsumerController extends BaseController {
             codeRedis = redisCache.getCacheObject(RedisConstants.EMAIL_RETRIEVE_PASSWORD_SMS_KEY + phoneOrEmail);
         }
         if (ezUser == null) {
-            return BaseResponse.error(MessageUtils.message("用户不存在"));
+            return Response.error(MessageUtils.message("用户不存在"));
         }
         if (!codeRedis.equals(retrievePwReqDto.getCode())) {
-            return BaseResponse.error(MessageUtils.message("验证码错误"));
+            return Response.error(MessageUtils.message("验证码错误"));
         }
         ezUser.setPassword(EncoderUtil.encode(retrievePwReqDto.getNewPassword()));
         ezUserService.updateById(ezUser);
 
         redisCache.deleteObject(RedisConstants.EMAIL_RETRIEVE_PASSWORD_SMS_KEY + phoneOrEmail);
-        return BaseResponse.success();
+        return Response.success();
     }
 
     @NoRepeatSubmit
     @ApiOperation(value = "用户实名认证")
     @PostMapping("verified")
     @AuthToken
-    public BaseResponse verified(@RequestBody @Validated UserKycReqDto userKycReqDto) {
+    public Response verified(@RequestBody @Validated UserKycReqDto userKycReqDto) {
         userKycReqDto.setUserId(ContextHandler.getUserId());
         kycService.verified(userKycReqDto);
-        return BaseResponse.success();
+        return Response.success();
     }
 
     @NoRepeatSubmit
     @ApiOperation(value = "用户高级认证")
     @PostMapping("advertisingVerified")
     @AuthToken
-    public BaseResponse advertisingVerified(@RequestBody @Validated AdvertisingReqDto advertisingReqDto) {
+    public Response advertisingVerified(@RequestBody @Validated AdvertisingReqDto advertisingReqDto) {
         advertisingReqDto.setUserId(ContextHandler.getUserId());
         approveService.verified(advertisingReqDto);
-        return BaseResponse.success();
+        return Response.success();
     }
 
 
@@ -288,21 +290,21 @@ public class ConsumerController extends BaseController {
     @PostMapping("updatePassword")
     @Log(title = "修改安全密码", businessType = BusinessType.UPDATE, operatorType = OperatorType.MOBILE)
     @AuthToken
-    public BaseResponse updatePassword(@RequestBody @Validated PasswordUpdateReqDto passwordUpdateReqDto) {
+    public Response updatePassword(@RequestBody @Validated PasswordUpdateReqDto passwordUpdateReqDto) {
         LambdaQueryWrapper<EzUser> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(EzUser::getUserId, ContextHandler.getUserId());
         EzUser user = ezUserService.getOne(queryWrapper);
         boolean matches = EncoderUtil.matches(passwordUpdateReqDto.getPassword(), user.getPassword());
         if (matches) {
             if (EncoderUtil.matches(passwordUpdateReqDto.getNewPassword(), user.getPassword())) {
-                return BaseResponse.error(MessageUtils.message("旧密码与新密码相同"));
+                return Response.error(MessageUtils.message("旧密码与新密码相同"));
             }
             user.setPassword(EncoderUtil.encode(passwordUpdateReqDto.getNewPassword()));
             ezUserService.updateById(user);
         } else {
-            return BaseResponse.error(MessageUtils.message("旧密码输入错误"));
+            return Response.error(MessageUtils.message("旧密码输入错误"));
         }
-        return BaseResponse.success();
+        return Response.success();
     }
 
     @NoRepeatSubmit
@@ -310,22 +312,24 @@ public class ConsumerController extends BaseController {
     @PostMapping("updateSecurityPassword")
     @AuthToken
     @Log(title = "修改安全密码", businessType = BusinessType.UPDATE, operatorType = OperatorType.MOBILE)
-    public BaseResponse updateSecurityPassword(@RequestBody @Validated PasswordUpdateReqDto passwordUpdateReqDto) {
+    public Response updateSecurityPassword(@RequestBody @Validated PasswordUpdateReqDto passwordUpdateReqDto) {
         LambdaQueryWrapper<EzAdvertisingBusiness> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(EzAdvertisingBusiness::getUserId, ContextHandler.getUserId());
         EzAdvertisingBusiness one = businessService.getOne(queryWrapper);
-
+        if (StringUtils.isEmpty(one.getSecurityPassword())){
+            return Response.error(MessageUtils.message("请先设置安全密码"));
+        }
         boolean matches = EncoderUtil.matches(passwordUpdateReqDto.getPassword(), one.getSecurityPassword());
         if (matches) {
             if (EncoderUtil.matches(passwordUpdateReqDto.getNewPassword(), one.getSecurityPassword())) {
-                return BaseResponse.error(MessageUtils.message("旧密码与新密码相同"));
+                return Response.error(MessageUtils.message("旧密码与新密码相同"));
             }
             one.setSecurityPassword(EncoderUtil.encode(passwordUpdateReqDto.getNewPassword()));
             businessService.updateById(one);
         } else {
-            return BaseResponse.error(MessageUtils.message("旧密码输入错误"));
+            return Response.error(MessageUtils.message("旧密码输入错误"));
         }
-        return BaseResponse.success();
+        return Response.success();
     }
 
     @NoRepeatSubmit
@@ -333,7 +337,7 @@ public class ConsumerController extends BaseController {
     @PostMapping("bindSecurityInfo")
     @AuthToken
     @Log(title = "绑定安全信息", businessType = BusinessType.UPDATE, operatorType = OperatorType.MOBILE)
-    public BaseResponse bindSecurityInfo(@RequestBody BingSecurityReqDto bingSecurityReqDto) {
+    public Response bindSecurityInfo(@RequestBody BingSecurityReqDto bingSecurityReqDto) {
         String type = bingSecurityReqDto.getType();
         String phoneOrEmail = bingSecurityReqDto.getPhoneOrEmail();
         String code = bingSecurityReqDto.getCode();
@@ -351,13 +355,13 @@ public class ConsumerController extends BaseController {
         LambdaQueryWrapper<EzUser> lambdaQueryWrapper2 = new LambdaQueryWrapper<>();
         if ("1".equals(type)) {
             if (StringUtils.isNotEmpty(ezUser.getPhone())) {
-                return BaseResponse.error(MessageUtils.message("用户已绑定手机号"));
+                return Response.error(MessageUtils.message("用户已绑定手机号"));
             }
             lambdaQueryWrapper2.eq(EzUser::getPhone, phoneOrEmail);
             lambdaQueryWrapper2.eq(EzUser::getPhoneArea, phoneArea);
             EzUser one = ezUserService.getOne(lambdaQueryWrapper2);
             if (null != one) {
-                return BaseResponse.error(MessageUtils.message("手机号已被绑定"));
+                return Response.error(MessageUtils.message("手机号已被绑定"));
             }
             redisCode = redisCache.getCacheObject(key + phoneArea + phoneOrEmail);
             ezUser.setPhone(phoneOrEmail);
@@ -365,27 +369,27 @@ public class ConsumerController extends BaseController {
             rmKey = key + phoneArea + phoneOrEmail;
         } else {
             if (StringUtils.isNotEmpty(ezUser.getEmail())) {
-                return BaseResponse.error(MessageUtils.message("用户已绑定邮箱"));
+                return Response.error(MessageUtils.message("用户已绑定邮箱"));
             }
             lambdaQueryWrapper2.eq(EzUser::getEmail, phoneOrEmail);
             EzUser one = ezUserService.getOne(lambdaQueryWrapper2);
             if (null != one) {
-                return BaseResponse.error(MessageUtils.message("邮箱已被绑定"));
+                return Response.error(MessageUtils.message("邮箱已被绑定"));
             }
             redisCode = redisCache.getCacheObject(key2 + phoneOrEmail);
             ezUser.setEmail(phoneOrEmail);
             rmKey = key2 + phoneOrEmail;
         }
         if (StringUtils.isEmpty(redisCode)) {
-            return BaseResponse.error(MessageUtils.message("验证码已过期"));
+            return Response.error(MessageUtils.message("验证码已过期"));
         }
 
         if (!code.equals(redisCode)) {
-            return BaseResponse.error(MessageUtils.message("验证码错误"));
+            return Response.error(MessageUtils.message("验证码错误"));
         }
         ezUserService.updateById(ezUser);
         redisCache.deleteObject(rmKey);
-        return BaseResponse.success();
+        return Response.success();
     }
 
 }

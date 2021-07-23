@@ -3,7 +3,7 @@ package com.ezcoins.project.coin.service;
 import com.ezcoins.project.coin.entity.Wallet;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ezcoins.project.coin.udun.Trade;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 
 import java.math.BigDecimal;
 
@@ -24,7 +24,7 @@ public interface WalletService extends IService<Wallet> {
      * @param id
      * @return
      */
-    BaseResponse rechargeAddress(String userId,String id);
+    Response rechargeAddress(String userId,String id);
 
 
     /**
@@ -36,7 +36,7 @@ public interface WalletService extends IService<Wallet> {
 
 
     /**
-     * 处理第三方提币审核结果 [审核通过][审核拒绝][到账返回Txid]
+     * 处理第三方冲币审核结果 [审核通过][审核拒绝][到账返回Txid]
      */
     boolean handleRecharge(String tradeId, String txId, String address,BigDecimal amount, String mainCoinType,String coinType, String memo);
 }

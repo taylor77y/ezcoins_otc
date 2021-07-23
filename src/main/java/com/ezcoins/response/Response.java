@@ -42,6 +42,14 @@ public class Response<T>{
         return r;
     }
 
+    public static <T> Response<T> success() {
+        Response<T> r = new Response<T>();
+        r.setSuccess(true);
+        r.setCode(HttpStatus.HTTP_RES_CODE_200);
+        r.setMessage(HttpStatus.HTTP_RES_CODE_200_VALUE);
+        return r;
+    }
+
     //成功静态方法
     public static <T> Response<T> success(String msg, T t) {
         Response<T> r = new Response<T>();
@@ -60,6 +68,15 @@ public class Response<T>{
         r.setCode(HttpStatus.HTTP_RES_CODE_500);
         r.setMessage(message);
         return r;
+    }
+
+    public static <T> Response<T> error() {
+        Response<T> r = new Response<T>();
+        r.setSuccess(false);
+        r.setCode(HttpStatus.HTTP_RES_CODE_500);
+        r.setMessage(HttpStatus.HTTP_RES_CODE_500_VALUE);
+        return r;
+
     }
 
     //成功静态方法

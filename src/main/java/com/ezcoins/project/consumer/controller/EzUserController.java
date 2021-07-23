@@ -11,7 +11,7 @@ import com.ezcoins.project.consumer.entity.EzUser;
 import com.ezcoins.project.consumer.entity.req.EzUserReqDto;
 import com.ezcoins.project.consumer.entity.req.UserLimitReqDto;
 import com.ezcoins.project.consumer.service.EzUserService;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponsePageList;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -48,9 +48,9 @@ public class EzUserController {
     @AuthToken
     @NoRepeatSubmit
     @Log(title = "添加用户", businessType = BusinessType.INSERT, operatorType = OperatorType.MANAGE)
-    public BaseResponse addUser(@RequestBody EzUserReqDto ezUserDto) {
-        ezUserService.addUser(ezUserDto);
-        return BaseResponse.success();
+    public Response addUser(@RequestBody EzUserReqDto ezUserDto) {
+        ezUserService.addUser(ezUserDto,true);
+        return Response.success();
     }
 
 
@@ -59,9 +59,9 @@ public class EzUserController {
     @AuthToken
     @NoRepeatSubmit
     @Log(title = "修改用户信息", businessType = BusinessType.UPDATE, operatorType = OperatorType.MANAGE)
-    public BaseResponse updateUser(@RequestBody EzUserReqDto ezUserDto) {
+    public Response updateUser(@RequestBody EzUserReqDto ezUserDto) {
         ezUserService.updateUser(ezUserDto);
-        return BaseResponse.success();
+        return Response.success();
     }
 
     @ApiOperation(value = "逻辑删除用户")
@@ -69,9 +69,9 @@ public class EzUserController {
     @AuthToken
     @NoRepeatSubmit
     @Log(title = "逻辑删除用户", businessType = BusinessType.DELETE, operatorType = OperatorType.MANAGE)
-    public BaseResponse deleteUser(@PathVariable String userId) {
+    public Response deleteUser(@PathVariable String userId) {
         ezUserService.getById(userId);
-        return BaseResponse.success();
+        return Response.success();
     }
 
 
@@ -80,9 +80,9 @@ public class EzUserController {
     @AuthToken
     @NoRepeatSubmit
     @Log(title = "封禁/解封账号", businessType = BusinessType.UPDATE, operatorType = OperatorType.MANAGE)
-    public BaseResponse titleOrUnnumber(@RequestBody UserLimitReqDto userLimitReqDto) {
+    public Response titleOrUnnumber(@RequestBody UserLimitReqDto userLimitReqDto) {
         ezUserService.titleOrUnnumber(userLimitReqDto);
-        return BaseResponse.success();
+        return Response.success();
     }
 
 

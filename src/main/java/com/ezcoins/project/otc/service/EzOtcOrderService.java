@@ -7,7 +7,7 @@ import com.ezcoins.project.otc.entity.req.NewOrderRespDto;
 import com.ezcoins.project.otc.entity.resp.OrderInfo;
 import com.ezcoins.project.otc.entity.resp.OtcOrderRespDto;
 import com.ezcoins.project.otc.entity.resp.PaymentDetails;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponseList;
 
@@ -21,7 +21,7 @@ import com.ezcoins.response.ResponseList;
  */
 public interface EzOtcOrderService extends IService<EzOtcOrder> {
 
-    BaseResponse releaseAdvertisingOrder(OtcOrderReqDto otcOrderReqDto);
+    Response releaseAdvertisingOrder(OtcOrderReqDto otcOrderReqDto);
 
     /**
     * @Description: 下单
@@ -39,7 +39,7 @@ public interface EzOtcOrderService extends IService<EzOtcOrder> {
     * @Author: Wanglei
     * @Date: 2021/6/18
     */
-    BaseResponse offShelfOrder(String orderNo);
+    Response offShelfOrder(String orderNo);
 
     /**
     * @Description: 商户 接单(订单广告)
@@ -48,7 +48,7 @@ public interface EzOtcOrderService extends IService<EzOtcOrder> {
     * @Author: Wanglei
     * @Date: 2021/6/18
     */
-    BaseResponse merchantOrder(OrderOperateReqDto orderOperateReqDto);
+    Response merchantOrder(OrderOperateReqDto orderOperateReqDto);
 
 
     /**

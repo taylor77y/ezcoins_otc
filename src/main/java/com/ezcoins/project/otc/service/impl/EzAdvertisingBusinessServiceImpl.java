@@ -7,7 +7,8 @@ import com.ezcoins.project.otc.entity.req.OtcSettingReqDto;
 import com.ezcoins.project.otc.mapper.EzAdvertisingBusinessMapper;
 import com.ezcoins.project.otc.service.EzAdvertisingBusinessService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
+import com.ezcoins.response.Response;
 import com.ezcoins.utils.EncoderUtil;
 import com.ezcoins.utils.MessageUtils;
 import com.ezcoins.utils.StringUtils;
@@ -38,7 +39,7 @@ public class EzAdvertisingBusinessServiceImpl extends ServiceImpl<EzAdvertisingB
      * @param otcSettingReqDto
      */
     @Override
-    public BaseResponse otcSetting(OtcSettingReqDto otcSettingReqDto) {
+    public Response otcSetting(OtcSettingReqDto otcSettingReqDto) {
         String name = otcSettingReqDto.getAdvertisingName();
         String securityPassword = otcSettingReqDto.getSecurityPassword();
         String userId = ContextHandler.getUserId();
@@ -46,24 +47,20 @@ public class EzAdvertisingBusinessServiceImpl extends ServiceImpl<EzAdvertisingB
         LambdaQueryWrapper<EzAdvertisingBusiness> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(EzAdvertisingBusiness::getUserId, userId);
         EzAdvertisingBusiness advertisingBusiness = baseMapper.selectOne(queryWrapper);
-        advertisingBusiness.setSecurityPassword(EncoderUtil.encode(securityPassword));
-        advertisingBusiness.setUserId(ContextHandler.getUserId());
-        if (StringUtils.isNotEmpty(name) && advertisingBusiness.getAdvertisingName().equals(userId)) {
-            LambdaQueryWrapper<EzAdvertisingBusiness> queryWrapper1 = new LambdaQueryWrapper<>();
-            queryWrapper1.eq(EzAdvertisingBusiness::getAdvertisingName, name);// 判断昵称是否纯在
-            Integer count = baseMapper.selectCount(queryWrapper1);
-            if (count > 0) {
-                return BaseResponse.error(MessageUtils.message("昵称重复，请重新输入"));
-            }
-            advertisingBusiness.setAdvertisingName(name);
-            baseMapper.updateById(advertisingBusiness);
-            return BaseResponse.success().message(MessageUtils.message("安全密码修改成功"));
+        if (advertisingBusiness.getSecurityPassword() != null) {
+            return Response.error(MessageUtils.message("OTC信息不能进行修改"));
         }
+        advertisingBusiness.setSecurityPassword(EncoderUtil.encode(securityPassword));
+        LambdaQueryWrapper<EzAdvertisingBusiness> queryWrapper1 = new LambdaQueryWrapper<>();
+        queryWrapper1.eq(EzAdvertisingBusiness::getAdvertisingName, name);// 判断昵称是否纯在
+        Integer count = baseMapper.selectCount(queryWrapper1);
+        if (count > 0) {
+            return Response.error(MessageUtils.message("昵称重复，请重新输入"));
+        }
+        advertisingBusiness.setAdvertisingName(name);
         baseMapper.updateById(advertisingBusiness);
-        return BaseResponse.success();
+        return Response.success();
     }
-
-
     /**
      * @param sellUserId
      * @param buyUserId
@@ -114,18 +111,18 @@ public class EzAdvertisingBusinessServiceImpl extends ServiceImpl<EzAdvertisingB
                 buyInfo.setFinishRate((finishBuy + 1) / (totalBuy + 1));//买家提升完成率
                 buyInfo.setFinishBuyRate((finishBuyRete + 1) / (buyCount + 1));
             } else {
-                sellInfo.setFinishRate((finishSell + 1)/( totalSell + 1));//增加降低完成率
-                buyInfo.setFinishRate(finishBuy/ (totalBuy + 1));//买家提升完成率
-                buyInfo.setFinishBuyRate((finishBuyRete/ buyCount)+ 1);
+                sellInfo.setFinishRate((finishSell + 1) / (totalSell + 1));//增加降低完成率
+                buyInfo.setFinishRate(finishBuy / (totalBuy + 1));//买家提升完成率
+                buyInfo.setFinishBuyRate((finishBuyRete / buyCount) + 1);
             }
         } else {
             Long releaseTime = finishTime.getTime() - payTime.getTime();//放行时间
             var time = Math.floor(releaseTime / 60 % 60);
             buyInfo.setAveragePass((time + sellInfo.getAveragePass() * sellInfo.getSellCount()) / (sellInfo.getSellCount() + 1));//平均放行时间
 
-            sellInfo.setFinishRate((finishSell + 1)/ (totalSell + 1));//增加降低完成率
-            buyInfo.setFinishRate((finishBuy+ 1)/ (totalBuy + 1));//买家提升完成率
-            buyInfo.setFinishBuyRate((finishBuyRete+ 1)/ (buyCount + 1));
+            sellInfo.setFinishRate((finishSell + 1) / (totalSell + 1));//增加降低完成率
+            buyInfo.setFinishRate((finishBuy + 1) / (totalBuy + 1));//买家提升完成率
+            buyInfo.setFinishBuyRate((finishBuyRete + 1) / (buyCount + 1));
         }
         businesses.add(sellInfo);
         businesses.add(buyInfo);

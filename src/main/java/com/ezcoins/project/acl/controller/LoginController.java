@@ -15,7 +15,8 @@ import com.ezcoins.project.acl.mapper.MenuMapper;
 import com.ezcoins.project.acl.service.AclUserService;
 import com.ezcoins.project.common.mq.producer.LoginProducer;
 import com.ezcoins.redis.RedisCache;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
+import com.ezcoins.response.Response;
 import com.ezcoins.security.util.JWTHelper;
 import com.ezcoins.security.util.JWTInfo;
 import com.ezcoins.utils.EncoderUtil;
@@ -65,7 +66,7 @@ public class LoginController extends BaseController {
     @ApiOperation(value = "管理员用户登录")
     @IgnoreUserToken
     @NoRepeatSubmit
-    public BaseResponse login(@RequestBody JwtAuthenticationRequest authenticationRequest) {
+    public Response login(@RequestBody JwtAuthenticationRequest authenticationRequest) {
         AclUser aclUser = aclUserService.selectByUsername(authenticationRequest.getUsername());
         //用户不存在
         if (aclUser == null || UserStatus.DELETED.getCode().equals(aclUser.getIsDeleted())) {
@@ -92,18 +93,18 @@ public class LoginController extends BaseController {
         result.put("name", user.getUserName());
         result.put("token", token);
         result.put("avatar", "https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif");
-        return BaseResponse.success().data(result);
+        return Response.success(result);
     }
 
 
     @PutMapping("out")
     @ApiOperation(value = "管理员用户退出")
     @AuthToken
-    public BaseResponse out() {
+    public Response out() {
         if (!"admin".equals( getUserName())) {
             redisCache.deleteObject(RedisConstants.LOGIN_MENU_CODE + getUserName());
         }
-        return BaseResponse.success();
+        return Response.success();
     }
 
 }

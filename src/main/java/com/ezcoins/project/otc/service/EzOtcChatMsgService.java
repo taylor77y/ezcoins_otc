@@ -4,7 +4,7 @@ import com.ezcoins.project.otc.entity.EzOtcChatMsg;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ezcoins.project.otc.entity.req.ChatMsgReqDto;
 import com.ezcoins.project.otc.entity.resp.ChatMsgRespDto;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponseList;
 
 import java.io.IOException;
@@ -24,7 +24,7 @@ public interface EzOtcChatMsgService extends IService<EzOtcChatMsg> {
      * @param chatMsgList
      * @return
      */
-    BaseResponse sendChat(List<EzOtcChatMsg> chatMsgList, String sendId);
+    Response sendChat(List<EzOtcChatMsg> chatMsgList, String sendId);
 
 
     /**

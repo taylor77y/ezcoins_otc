@@ -7,7 +7,8 @@ import com.ezcoins.project.otc.entity.req.OrderRecordQueryReqDto;
 import com.ezcoins.project.otc.entity.req.SellOneKeyReqDto;
 import com.ezcoins.project.otc.entity.resp.OrderRecordRespDto;
 import com.ezcoins.project.otc.entity.resp.OtcInfoOrder;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.project.otc.entity.resp.PaymentDetails;
+import com.ezcoins.response.Response;
 import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponseList;
 
@@ -28,7 +29,7 @@ public interface EzOtcOrderMatchService extends IService<EzOtcOrderMatch> {
     * @Author: Wanglei
     * @Date: 2021/6/18
     */
-    BaseResponse cancelOrder(String matchOrderNo);
+    Response cancelOrder(String matchOrderNo);
 
     /***
     * @Description: 买家确认 付款
@@ -37,7 +38,7 @@ public interface EzOtcOrderMatchService extends IService<EzOtcOrderMatch> {
     * @Author: Wanglei
     * @Date: 2021/6/19
     */
-    BaseResponse confirmPayment(String matchOrderNo);
+    Response confirmPayment(String matchOrderNo);
 
 
     /**
@@ -47,7 +48,7 @@ public interface EzOtcOrderMatchService extends IService<EzOtcOrderMatch> {
      * @Author: Wanglei
      * @Date: 2021/6/19
      */
-    BaseResponse sellerPut(String matchOrderNo,boolean isAdmin);
+    Response sellerPut(String matchOrderNo,boolean isAdmin);
 
 
     /**
@@ -72,7 +73,7 @@ public interface EzOtcOrderMatchService extends IService<EzOtcOrderMatch> {
      * @param sellOneKeyReqDto
      * @return
      */
-    BaseResponse sellOneKey(SellOneKeyReqDto sellOneKeyReqDto);
+    Response<PaymentDetails> sellOneKey(SellOneKeyReqDto sellOneKeyReqDto);
 
 
     /**

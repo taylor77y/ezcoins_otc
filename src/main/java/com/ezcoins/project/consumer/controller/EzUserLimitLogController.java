@@ -9,7 +9,7 @@ import com.ezcoins.constant.enums.OperatorType;
 import com.ezcoins.project.common.service.mapper.SearchModel;
 import com.ezcoins.project.consumer.entity.EzUserLimitLog;
 import com.ezcoins.project.consumer.service.EzUserLimitLogService;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponsePageList;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -46,9 +46,9 @@ public class EzUserLimitLogController {
     @AuthToken
     @NoRepeatSubmit
     @Log(title = "批量删除封号记录",businessType = BusinessType.DELETE,operatorType= OperatorType.MANAGE)
-    public BaseResponse removeSysLogs(@RequestBody List<String> idList){
+    public Response removeSysLogs(@RequestBody List<String> idList){
         limitLogService.removeByIds(idList);
-        return BaseResponse.success();
+        return Response.success();
     }
     //
 

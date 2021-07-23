@@ -1,8 +1,9 @@
 package com.ezcoins.aspectj;
 
 import com.ezcoins.aspectj.lang.annotation.NoRepeatSubmit;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 import com.ezcoins.utils.IpUtils;
+import com.ezcoins.utils.MessageUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -57,7 +58,7 @@ public class RepeatSubmitAspect {
                     Object result =  pjp.proceed();
                     return result;
                 }else {
-                    return BaseResponse.error("点击的太快了,请慢一点!");
+                    return Response.error(MessageUtils.message("点击的太快了,请慢一点!"));
                 }
             }else {
                 //第一次操作
@@ -68,7 +69,7 @@ public class RepeatSubmitAspect {
         }catch (Throwable e){
             //打印输出异常
             e.printStackTrace();
-            return BaseResponse.error(e.getMessage());
+            return Response.error(e.getMessage());
         }
     }
 

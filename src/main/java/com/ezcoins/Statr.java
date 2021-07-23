@@ -38,12 +38,11 @@ public class Statr implements CommandLineRunner {
     public void run(String... args) throws Exception {
         AuthenticationInterceptor.flag = false;
         sync();
-
+        AuthenticationInterceptor.flag = true;
     }
     private void sync() throws Exception {
         ScheduledTasks.rmbPrice = MoneyChangeUtils.getUSDToCNY();
         if (ScheduledTasks.rmbPrice!=null){
-            AuthenticationInterceptor.flag = true;
             log.info("启动成功");
         }
         Executors.newSingleThreadExecutor().submit(new Runnable() {
@@ -54,7 +53,7 @@ public class Statr implements CommandLineRunner {
                         HashMap<String, BigDecimal> price = ScheduledTasks.getPrice();
                         price.put("usdtrmb",ScheduledTasks.rmbPrice);
                         WebSocketHandle.price(price);
-                        Thread.sleep(2000);
+                        Thread.sleep(10000);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

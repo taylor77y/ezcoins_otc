@@ -4,7 +4,7 @@ import com.ezcoins.project.otc.entity.EzOneSellConfig;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ezcoins.project.otc.entity.req.SellConfigReqDto;
 import com.ezcoins.project.otc.entity.req.SellOneKeyReqDto;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 
 /**
  * <p>
@@ -17,5 +17,5 @@ import com.ezcoins.response.BaseResponse;
 public interface EzSellConfigService extends IService<EzOneSellConfig> {
 
 
-    BaseResponse updateOrAddSellConfig(SellConfigReqDto sellConfigReqDto);
+    Response updateOrAddSellConfig(SellConfigReqDto sellConfigReqDto);
 }

@@ -55,7 +55,7 @@ public interface EzUserService extends IService<EzUser> {
      * 注册用户
      * @param ezUserDto
      */
-    void addUser(EzUserReqDto ezUserDto);
+    void addUser(EzUserReqDto ezUserDto,boolean isAdmin);
 
     /**
      * 用户登录

@@ -11,7 +11,7 @@ import com.ezcoins.project.system.entity.EzSysLog;
 import com.ezcoins.project.system.entity.EzSysLog;
 import com.ezcoins.project.system.service.EzSysLogService;
 import com.ezcoins.project.system.service.EzSysLogService;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponsePageList;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -48,9 +48,9 @@ public class EzSysLogController {
     @AuthToken
     @NoRepeatSubmit
     @Log(title = "批量删除系统日志",businessType = BusinessType.DELETE,operatorType= OperatorType.MANAGE)
-    public BaseResponse removeSysLogs(@RequestBody List<String> idList){
+    public Response removeSysLogs(@RequestBody List<String> idList){
         ezSysLogService.removeByIds(idList);
-        return BaseResponse.success();
+        return Response.success();
     }
 
 

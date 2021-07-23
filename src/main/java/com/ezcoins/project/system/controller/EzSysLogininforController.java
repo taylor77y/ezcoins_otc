@@ -9,7 +9,7 @@ import com.ezcoins.constant.enums.OperatorType;
 import com.ezcoins.project.common.service.mapper.SearchModel;
 import com.ezcoins.project.system.entity.EzSysLogininfor;
 import com.ezcoins.project.system.service.EzSysLogininforService;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponsePageList;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -46,9 +46,9 @@ public class EzSysLogininforController {
     @AuthToken
     @NoRepeatSubmit
     @Log(title = "批量删除登录日志",businessType = BusinessType.CLEAN,operatorType= OperatorType.MANAGE)
-    public BaseResponse removeSysLogininfor(@RequestBody List<String> idList){
+    public Response removeSysLogininfor(@RequestBody List<String> idList){
         ezSysLogininforService.removeByIds(idList);
-        return BaseResponse.success();
+        return Response.success();
     }
 }
 

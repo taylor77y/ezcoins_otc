@@ -4,7 +4,7 @@ import com.google.code.kaptcha.Producer;
 import com.ezcoins.redis.RedisCache;
 import com.ezcoins.utils.IdUtils;
 import com.ezcoins.constant.Constants;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.FastByteArrayOutputStream;
@@ -36,7 +36,7 @@ public class CaptchaController
 
     
     @GetMapping("/captchaImage")
-    public BaseResponse getCode(HttpServletResponse response) throws IOException
+    public Response getCode(HttpServletResponse response) throws IOException
     {
         String uuid = IdUtils.simpleUUID();
         String verifyKey = Constants.CAPTCHA_CODE_KEY + uuid;
@@ -66,10 +66,10 @@ public class CaptchaController
         }
         catch (IOException e)
         {
-            return BaseResponse.error().message(e.getMessage());
+            return Response.error().message(e.getMessage());
         }
 
-        BaseResponse ajax = BaseResponse.success();
+        Response ajax = Response.success();
 //        ajax.put("uuid", uuid);
 //        ajax.put("img", Base64.encode(os.toByteArray()));
         return ajax;

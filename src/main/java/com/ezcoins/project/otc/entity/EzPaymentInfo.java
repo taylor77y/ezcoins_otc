@@ -12,6 +12,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import javax.validation.constraints.NotBlank;
+
 /**
  * <p>
  * 用户 支付宝信息
@@ -35,6 +37,7 @@ public class EzPaymentInfo implements Serializable {
     private String userId;
 
     @ApiModelProperty(value = "收款二维码类型id：1：银行  2：支付宝 3：微信")
+    @NotBlank(message = "请先选择收款方式")
     private Integer paymentMethodId;
 
     @ApiModelProperty(value = "卖家真实姓名")

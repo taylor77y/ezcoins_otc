@@ -13,7 +13,7 @@ import com.ezcoins.project.consumer.entity.req.CheckKycReqDto;
 import com.ezcoins.project.consumer.service.EzAdvertisingApproveService;
 import com.ezcoins.project.consumer.service.EzUserKycService;
 import com.ezcoins.project.otc.service.EzAdvertisingBusinessService;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponsePageList;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -49,9 +49,9 @@ public class EzAdvertisingApproveController {
     @PutMapping("checkAdvertising")
     @AuthToken
     @Log(title = "审核实名认证", businessType = BusinessType.GRANT, operatorType = OperatorType.MANAGE)
-    public BaseResponse checkAdvertising(@RequestBody @Validated CheckAdvertisingReqDto checkAdvertisingReqDto) {
+    public Response checkAdvertising(@RequestBody @Validated CheckAdvertisingReqDto checkAdvertisingReqDto) {
         advertisingApproveService.checkAdvertising(checkAdvertisingReqDto);
-        return BaseResponse.success();
+        return Response.success();
     }
 
 

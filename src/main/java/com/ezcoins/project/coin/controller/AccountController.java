@@ -12,7 +12,7 @@ import com.ezcoins.project.coin.entity.req.ReviseAccountReqDto;
 import com.ezcoins.project.coin.service.AccountService;
 import com.ezcoins.project.coin.service.WithdrawOrderService;
 import com.ezcoins.project.common.service.mapper.SearchModel;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponsePageList;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -48,7 +48,7 @@ public class AccountController {
     @NoRepeatSubmit
     @AuthToken
     @Log(title = "修改资产", businessType = BusinessType.INSERT, operatorType = OperatorType.MANAGE)
-    public BaseResponse revise(@RequestBody ReviseAccountReqDto reviseAccountReqDto) {
+    public Response revise(@RequestBody ReviseAccountReqDto reviseAccountReqDto) {
         return accountService.revise(reviseAccountReqDto);
     }
 

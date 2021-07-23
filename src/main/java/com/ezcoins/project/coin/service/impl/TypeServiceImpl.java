@@ -6,7 +6,7 @@ import com.ezcoins.project.coin.entity.Type;
 import com.ezcoins.project.coin.mapper.TypeMapper;
 import com.ezcoins.project.coin.service.TypeService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 import com.ezcoins.utils.MessageUtils;
 import org.springframework.stereotype.Service;
 

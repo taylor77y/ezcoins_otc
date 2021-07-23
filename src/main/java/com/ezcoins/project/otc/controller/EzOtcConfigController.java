@@ -12,7 +12,7 @@ import com.ezcoins.project.otc.entity.EzPaymentMethod;
 import com.ezcoins.project.otc.entity.req.PaymentMethodReqDto;
 import com.ezcoins.project.otc.service.EzOtcConfigService;
 import com.ezcoins.project.otc.service.EzOtcOrderService;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponsePageList;
 import io.swagger.annotations.Api;
@@ -53,9 +53,9 @@ public class EzOtcConfigController {
     @PostMapping("updateOtcConfig")
     @AuthToken
     @Log(title = "修改OTC基本配置", businessType = BusinessType.UPDATE, operatorType = OperatorType.MANAGE)
-    public BaseResponse updateOtcConfig(@RequestBody EzOtcConfig ezOtcConfig) {
+    public Response updateOtcConfig(@RequestBody EzOtcConfig ezOtcConfig) {
         otcConfigService.updateById(ezOtcConfig);
-        return BaseResponse.success();
+        return Response.success();
     }
 
 }

@@ -74,7 +74,7 @@ public class PhoneService {
         String s = HttpUtils.sendGet(SMSAPI, "un=" + un + "&pwd=" + pwd + "&dstno=" + phone + "&msg=" + msg + "&type=" + "1" + "&sendid=" + sendid + "&agreedterm=" + agreedterm);
         if (!s.contains(SUCCESS)){
             log.info("发送邮件失败-异常 {}", s);
-            throw new BaseException(MessageUtils.message("短信发送失败"));
+            throw new BaseException("短信发送失败");
         }
         redisCache.setCacheObject(key+phone,code,TIMEOUT, TimeUnit.MINUTES);
     }

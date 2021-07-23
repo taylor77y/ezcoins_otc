@@ -46,25 +46,27 @@ public class WalletCallbackController {
             @ApiImplicitParam(name = "sign", value = "md5加密后的签名", required = true)
     })
     public void tradeCallback(@RequestParam("timestamp")  String timestamp,
-                                @RequestParam("key")String key,
+                                @RequestParam("plainText")String plainText,
                                 @RequestParam("body")String body,
+                                @RequestParam("encrypted")String encrypted,
                                 @RequestParam("sign")String sign,
                                 HttpServletResponse response) throws Exception {
-        log.info("timestamp:{},key:{},sign:{},body:{}",timestamp,key,sign,body);
-        if(!HttpUtil.checkSign(key,timestamp,null,body,sign)){
-			ServletUtils.renderErrorString(response,"fail");
-        }
+        log.info("timestamp:{},plainText:{},sign:{},body:{}",timestamp,plainText,sign,encrypted);
         Trade trade = JSONObject.parseObject(body,Trade.class);
+
+        if(!HttpUtil.checkSign(trade.getUm(),trade.getAddr(),trade.getTid(),trade.getAmt().toString(),trade.getS()+"",encrypted)){
+            ServletUtils.renderErrorString(response,"fail");
+        }
+
         log.info("trade:{}",trade);
         //金额为最小单位，需要转换,包括amount和fee字段
-        BigDecimal amount = trade.getAmount();
+        BigDecimal amount = trade.getAmt();
         BigDecimal fee = trade.getFee();
-
         log.info("amount={},fee={}",amount.toPlainString(),fee.toPlainString());
         //TODO 业务处理
-        if(trade.getTradeType() == 1){
+        if(trade.getTt() == 1){
             log.info("=====收到充币通知======");
-            log.info("address:{},amount:{},mainCoinType:{},fee:{}",trade.getAddress(),trade.getAmount(),trade.getMainCoinType(),trade.getFee());
+            log.info("address:{},amount:{},mainCoinType:{},fee:{}",trade.getAddr(),trade.getAmt(),trade.getChain(),trade.getFee());
             boolean rs = false;
             try {
                 rs = walletClientService.rechargeCallback(trade);
@@ -78,22 +80,21 @@ public class WalletCallbackController {
 			}
             return;
         }
-        else if(trade.getTradeType() == 2){
+        else if(trade.getTt() == 2){
             log.info("=====收到提币处理通知=====");
-            log.info("address:{},amount:{},mainCoinType:{},businessId:{}",trade.getAddress(),trade.getAmount(),trade.getMainCoinType(),trade.getRequest_id());
-            if(trade.getStatus() == 1){
-                log.info("审核通过，转账中");
+            log.info("address:{},amount:{},mainCoinType:{},businessId:{}",trade.getAddr(),trade.getAmt(),trade.getCoin(),trade.getRequest_id());
+            if(trade.getS() == 1){
+                log.info("提币待定");
                 //TODO: 提币交易已发出，理提币订单状态，扣除提币资金
             }
-            else if(trade.getStatus() == 2){
-                log.info("审核不通过");
-                //TODO: 处理提币订单状态，订单号为 businessId
+            else if(trade.getS() == 2){
+                log.info("审核通过，转账中");
+                //TODO: 处理提币订单状态，订单号为 busin
             }
-            else if(trade.getStatus() == 3){
-                log.info("提币已到账");
+            else if(trade.getS() == 3){
+                log.info("审核不通过");
                 //TODO: 提币已到账，可以向提币用户发出通知
             }
-
             boolean rs = false;
             try {
                 rs = walletClientService.withdrawCallback(trade);

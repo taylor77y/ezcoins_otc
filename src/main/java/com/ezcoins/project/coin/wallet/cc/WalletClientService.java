@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import com.ezcoins.base.BaseException;
+import com.ezcoins.exception.CustomException;
 import com.ezcoins.project.coin.service.WalletService;
 import com.ezcoins.project.coin.udun.*;
 import com.ezcoins.project.coin.udun.ResponseMessage;
@@ -82,7 +83,7 @@ public class WalletClientService {
      * 转账
      *
      */
-    public Integer transfer(String coin_type, String chain, String request_id, String address, String account, BigDecimal num) throws Exception {
+    public Integer transfer(String coin_type, String chain, String request_id, String address, String account, BigDecimal num) {
         HashMap<String, String> map = new HashMap<>(6);
         map.put("account", account);
         map.put("address", address);
@@ -107,11 +108,16 @@ public class WalletClientService {
         String post = HttpUtils.sendPost(gateway + Api.WITHDRAW, JSON.toJSONString(jsonObject));
         Map<String, Object> resp = (Map) JSONObject.parse(post);
         Integer code = (Integer) resp.get("code");
+
         if (code != 200) {
             log.info("调用失败，重新发起1次：");
             post = HttpUtils.sendPost(gateway + Api.WITHDRAW, JSON.toJSONString(jsonObject));
             resp = (Map) JSONObject.parse(post);
             code = (Integer) resp.get("code");
+        }
+        if (code != 200){
+            String msg = (String) resp.get("msg");
+            throw new CustomException(msg);
         }
        return code;
     }
@@ -128,11 +134,11 @@ public class WalletClientService {
      */
     public boolean rechargeCallback(Trade trade) throws Exception {
         //金额为最小单位，需要转换,包括amount和fee字段
-        BigDecimal amount = trade.getAmount();
+        BigDecimal amount = trade.getAmt();
         BigDecimal fee = trade.getFee();
-        trade.setAmount(amount);
+        trade.setAmt(amount);
         trade.setFee(fee);
-        return walletService.handleRecharge(trade.getTradeId(), trade.getTxId(), trade.getAddress(), amount, trade.getMainCoinType(),trade.getCoinType(), trade.getMemo());
+        return walletService.handleRecharge(trade.getTradeId(), trade.getTid(), trade.getAddr(), amount, trade.getChain(),trade.getChain(), trade.getUm());
     }
 
 
@@ -140,9 +146,9 @@ public class WalletClientService {
 
     public boolean withdrawCallback(Trade trade) {
         //金额为最小单位，需要转换,包括amount和fee字段
-        BigDecimal amount = trade.getAmount();
+        BigDecimal amount = trade.getAmt();
         BigDecimal fee = trade.getFee();
-        trade.setAmount(amount);
+        trade.setAmt(amount);
         trade.setFee(fee);
         return walletService.handleThirdpartyWithdrawal(trade);
     }

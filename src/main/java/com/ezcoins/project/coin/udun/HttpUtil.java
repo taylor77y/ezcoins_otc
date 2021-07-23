@@ -64,6 +64,12 @@ public class HttpUtil {
         return checkSign.equals(sign);
     }
 
+    public static boolean checkSign(String username, String address, String transactionId, String amount, String status,String encrypted) throws Exception {
+      String checkSign = SignUtil.sign(username, address, transactionId, amount,status);
+      return checkSign.equals(encrypted);
+    }
+
+
     public static void main(String[] args) {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("a", "1");

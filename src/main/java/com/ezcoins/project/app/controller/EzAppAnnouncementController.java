@@ -12,7 +12,7 @@ import com.ezcoins.utils.DateUtils;
 import com.ezcoins.constant.enums.BusinessType;
 import com.ezcoins.constant.enums.OperatorType;
 import com.ezcoins.project.app.entity.req.AnnouncementReqDto;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponsePageList;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -50,9 +50,9 @@ public class EzAppAnnouncementController {
     @AuthToken
     @NoRepeatSubmit
     @Log(title = "发布公告",businessType = BusinessType.INSERT,operatorType= OperatorType.MANAGE)
-    public BaseResponse announce(@RequestBody @Validated AnnouncementReqDto announcementReqDto){
+    public Response announce(@RequestBody @Validated AnnouncementReqDto announcementReqDto){
         announcementService.announce(announcementReqDto);
-        return BaseResponse.success();
+        return Response.success();
     }
 
 
@@ -61,12 +61,12 @@ public class EzAppAnnouncementController {
     @AuthToken
     @NoRepeatSubmit
     @Log(title = "撤销公告",businessType = BusinessType.UPDATE,operatorType= OperatorType.MANAGE)
-    public BaseResponse cancelAnnouncement(@PathVariable String id){
+    public Response cancelAnnouncement(@PathVariable String id){
         LambdaUpdateWrapper<EzAppAnnouncement> updateWrapper=new LambdaUpdateWrapper<>();
         updateWrapper.eq(EzAppAnnouncement::getId,id).set(EzAppAnnouncement::getIfCancel,"1")
                 .set(EzAppAnnouncement::getCancelTime, DateUtils.getNowDate());
         announcementService.update(updateWrapper);
-        return BaseResponse.success();
+        return Response.success();
     }
 
 
@@ -75,9 +75,9 @@ public class EzAppAnnouncementController {
     @AuthToken
     @NoRepeatSubmit
     @Log(title = "批量删除封号记录",businessType = BusinessType.DELETE,operatorType= OperatorType.MANAGE)
-    public BaseResponse removeAnnouncement(@RequestBody List<String> idList){
+    public Response removeAnnouncement(@RequestBody List<String> idList){
         announcementService.removeByIds(idList);
-        return BaseResponse.success();
+        return Response.success();
     }
 
 }

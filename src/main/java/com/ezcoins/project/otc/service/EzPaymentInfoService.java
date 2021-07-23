@@ -4,7 +4,7 @@ package com.ezcoins.project.otc.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ezcoins.project.otc.entity.EzPaymentInfo;
 import com.ezcoins.project.otc.entity.req.PaymentQrcodeTypeReqDto;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 
 /**
  * <p>
@@ -26,5 +26,5 @@ public interface EzPaymentInfoService extends IService<EzPaymentInfo> {
     * @Author: Wanglei
     * @Date: 2021/6/15
     */
-    BaseResponse alipayPaymentMethod(PaymentQrcodeTypeReqDto qrcodeTypeReqDto);
+    Response alipayPaymentMethod(PaymentQrcodeTypeReqDto qrcodeTypeReqDto);
 }

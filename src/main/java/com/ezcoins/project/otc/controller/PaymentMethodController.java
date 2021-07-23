@@ -12,7 +12,7 @@ import com.ezcoins.project.otc.entity.EzPaymentMethod;
 import com.ezcoins.project.otc.entity.req.PaymentMethodReqDto;
 import com.ezcoins.project.otc.service.EzPaymentInfoService;
 import com.ezcoins.project.otc.service.EzPaymentMethodService;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponsePageList;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -55,9 +55,9 @@ public class PaymentMethodController {
     @PostMapping("addOrUpdatePaymentMethod")
     @AuthToken
     @Log(title = "添加/修改  收款方式", businessType = BusinessType.INSERT, operatorType = OperatorType.MANAGE)
-    public BaseResponse addOrUpdatePaymentMethod(@RequestBody PaymentMethodReqDto paymentMethodReqDto) {
+    public Response addOrUpdatePaymentMethod(@RequestBody PaymentMethodReqDto paymentMethodReqDto) {
         methodService.addOrUpdatePaymentMethod(paymentMethodReqDto);
-        return BaseResponse.success();
+        return Response.success();
     }
 
     @ApiOperation(value = "收款方式信息列表")

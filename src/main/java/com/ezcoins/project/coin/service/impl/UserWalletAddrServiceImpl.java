@@ -7,7 +7,7 @@ import com.ezcoins.project.coin.entity.req.UserAddrReqDto;
 import com.ezcoins.project.coin.mapper.UserWalletAddrMapper;
 import com.ezcoins.project.coin.service.UserWalletAddrService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponseList;
 import com.ezcoins.utils.BeanUtils;
 import com.ezcoins.utils.StringUtils;
@@ -27,13 +27,13 @@ public class UserWalletAddrServiceImpl extends ServiceImpl<UserWalletAddrMapper,
     /***
      * @Description: 增加提币地址
      * @Param: [addrReqDto]
-     * @return: com.ezcoins.response.BaseResponse
+     * @return: com.ezcoins.response.Response
      * @Author: Wanglei
      * @Date: 2021/7/8
      * @param addrReqDto
      */
     @Override
-    public BaseResponse addOrUpdateWithdrawalAddr(UserAddrReqDto addrReqDto) {
+    public Response addOrUpdateWithdrawalAddr(UserAddrReqDto addrReqDto) {
         String userId = ContextHandler.getUserId();
         UserWalletAddr userWalletAddr = new UserWalletAddr();
         BeanUtils.copyBeanProp(userWalletAddr,addrReqDto);
@@ -45,19 +45,19 @@ public class UserWalletAddrServiceImpl extends ServiceImpl<UserWalletAddrMapper,
             userWalletAddr.setUpdateBy(userId);
             baseMapper.updateById(userWalletAddr);
         }
-        return BaseResponse.success();
+        return Response.success();
     }
 
     /**
      * 提币地址列表
      *
-     * @param rechargeConfigId
+     * @param
      * @return
      */
     @Override
-    public ResponseList<UserWalletAddr> withdrawalAddrList(String rechargeConfigId) {
+    public ResponseList<UserWalletAddr> withdrawalAddrList(String withdrawalConfigId) {
         LambdaQueryWrapper<UserWalletAddr> lambdaQueryWrapper=new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(UserWalletAddr::getWithdrawalConfigId,rechargeConfigId);
+        lambdaQueryWrapper.eq(UserWalletAddr::getWithdrawalConfigId,withdrawalConfigId);
         lambdaQueryWrapper.eq(UserWalletAddr::getUserId,ContextHandler.getUserId());
         return ResponseList.success(baseMapper.selectList(lambdaQueryWrapper));
     }

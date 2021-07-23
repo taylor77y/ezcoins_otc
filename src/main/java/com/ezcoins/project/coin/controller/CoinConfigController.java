@@ -19,7 +19,7 @@ import com.ezcoins.project.common.service.mapper.SearchModel;
 import com.ezcoins.project.config.entity.EzSmsConfig;
 import com.ezcoins.project.otc.entity.EzPaymentMethod;
 import com.ezcoins.project.otc.entity.req.PaymentMethodReqDto;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponsePageList;
 import io.swagger.annotations.Api;
@@ -65,9 +65,9 @@ public class CoinConfigController {
     @PostMapping("addOrUpdate")
     @AuthToken
     @Log(title = "添加/修改  提币配置", businessType = BusinessType.INSERT, operatorType = OperatorType.MANAGE)
-    public BaseResponse addOrUpdate(@RequestBody WithdrewConfigReqDto withdrewConfigReqDto) {
+    public Response addOrUpdate(@RequestBody WithdrewConfigReqDto withdrewConfigReqDto) {
         withdrawConfigService.addOrUpdate(withdrewConfigReqDto);
-        return BaseResponse.success();
+        return Response.success();
     }
 
     @NoRepeatSubmit
@@ -75,12 +75,12 @@ public class CoinConfigController {
     @PutMapping("withdrewSwitch")
     @AuthToken
     @Log(title = "更改提币状态", businessType = BusinessType.UPDATE, operatorType = OperatorType.MANAGE)
-    public BaseResponse withdrewSwitch(@RequestBody @Validated RwStatusReqDto rwStatusReqDto) {
+    public Response withdrewSwitch(@RequestBody @Validated RwStatusReqDto rwStatusReqDto) {
         LambdaUpdateWrapper<WithdrawConfig> queryWrapper=new LambdaUpdateWrapper<>();
         queryWrapper.eq(WithdrawConfig::getId,rwStatusReqDto.getId());
         queryWrapper.set(WithdrawConfig::getStatus,rwStatusReqDto.getOperate());
         withdrawConfigService.update(queryWrapper);
-        return BaseResponse.success();
+        return Response.success();
     }
 
 
@@ -89,12 +89,12 @@ public class CoinConfigController {
     @PutMapping("rechargeSwitch")
     @AuthToken
     @Log(title = "更改冲币状态", businessType = BusinessType.UPDATE, operatorType = OperatorType.MANAGE)
-    public BaseResponse rechargeSwitch(@RequestBody @Validated RwStatusReqDto rwStatusReqDto) {
+    public Response rechargeSwitch(@RequestBody @Validated RwStatusReqDto rwStatusReqDto) {
         LambdaUpdateWrapper<RechargeConfig> queryWrapper=new LambdaUpdateWrapper<>();
         queryWrapper.eq(RechargeConfig::getId,rwStatusReqDto.getId());
         queryWrapper.set(RechargeConfig::getStatus,rwStatusReqDto.getOperate());
         rechargeConfigService.update(queryWrapper);
-        return BaseResponse.success();
+        return Response.success();
     }
 
 
@@ -103,9 +103,9 @@ public class CoinConfigController {
     @PostMapping("addOrUpdateRecharge")
     @AuthToken
     @Log(title = "添加/修改  冲币配置", businessType = BusinessType.INSERT, operatorType = OperatorType.MANAGE)
-    public BaseResponse addOrUpdateRecharge(@RequestBody RechargeConfigReqDto rechargeConfigReqDto) {
+    public Response addOrUpdateRecharge(@RequestBody RechargeConfigReqDto rechargeConfigReqDto) {
         rechargeConfigService.addOrUpdate(rechargeConfigReqDto);
-        return BaseResponse.success();
+        return Response.success();
     }
 
 

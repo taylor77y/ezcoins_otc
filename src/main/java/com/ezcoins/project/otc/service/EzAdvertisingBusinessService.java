@@ -3,7 +3,7 @@ package com.ezcoins.project.otc.service;
 import com.ezcoins.project.otc.entity.EzAdvertisingBusiness;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ezcoins.project.otc.entity.req.OtcSettingReqDto;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 
 import java.util.Date;
 
@@ -25,7 +25,7 @@ public interface EzAdvertisingBusinessService extends IService<EzAdvertisingBusi
     * @Author: Wanglei
     * @Date: 2021/6/19
     */
-    BaseResponse otcSetting(OtcSettingReqDto otcSettingReqDto);
+    Response otcSetting(OtcSettingReqDto otcSettingReqDto);
 
     /**
     * @Description:

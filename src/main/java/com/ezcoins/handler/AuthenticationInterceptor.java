@@ -2,6 +2,7 @@ package com.ezcoins.handler;
 
 import com.ezcoins.aspectj.lang.annotation.AuthToken;
 import com.ezcoins.aspectj.lang.annotation.IgnoreUserToken;
+import com.ezcoins.base.BaseException;
 import com.ezcoins.constant.UserConstants;
 import com.ezcoins.constant.enums.LoginType;
 import com.ezcoins.context.ContextHandler;
@@ -63,6 +64,9 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
         AuthToken authToken = method.getAnnotation(AuthToken.class);
         if (authToken != null) {
             String token = jwtHelper.getToken(request);
+            CheckException.checkToken(StringUtils.isEmpty(token), () -> {
+                log.error("token失效，请重新登录");
+            });
             //获取token
             if (StringUtils.isEmpty(token)) {
                 throw new TokenException();
@@ -70,15 +74,18 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
             //解析token
             IJWTInfo fromToken = jwtHelper.getInfoFromToken(token);
             log.info("用户{}", fromToken);
-            if (fromToken == null) {
-                throw new TokenException();
-            }
+
+            CheckException.checkToken(fromToken == null, () -> {
+                log.error("token失效，请重新登录");
+            });
+
             //根据token存储的值，redis判断是否失效
             boolean checkToken = jwtHelper.verifyToken(fromToken);
-            if (!checkToken) {
-                log.info("请求路径{} token为空", request.getPathInfo());
-                throw new TokenException();
-            }
+
+            CheckException.checkToken(!checkToken, () -> {
+                log.error("token失效，请重新登录");
+            });
+
             ContextHandler.setUserId(fromToken.getUserId());
             ContextHandler.setUserName(fromToken.getUserName());
             ContextHandler.setUserType(fromToken.getUserType());
@@ -101,7 +108,7 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
                             log.error("登录已失效，请重新登录");
                         });
                     }
-                    CheckException.check("1".equals(user.getKycStatus()), "实名认证未通过");
+                    CheckException.check("1".equals(user.getKycStatus()), "请先完成实名认证");
                 }
 
                 if (authToken.status()) {

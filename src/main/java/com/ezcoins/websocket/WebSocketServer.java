@@ -1,6 +1,8 @@
 package com.ezcoins.websocket;
 
 import com.alibaba.fastjson.JSONObject;
+import com.ezcoins.aspectj.lang.annotation.Log;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.websocket.*;
@@ -10,6 +12,7 @@ import javax.websocket.server.ServerEndpoint;
 /**
  * ping-pay websocket
  */
+@Slf4j
 @ServerEndpoint("/ezcoins/server")
 @Component
 public class WebSocketServer {
@@ -67,7 +70,6 @@ public class WebSocketServer {
      */
     @OnError
     public void onError(Session session, Throwable error) {
-        error.printStackTrace();
     }
 
     public static synchronized void addOnlineCount() {

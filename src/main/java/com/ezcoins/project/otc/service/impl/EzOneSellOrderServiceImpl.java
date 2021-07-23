@@ -13,7 +13,7 @@ import com.ezcoins.project.otc.mapper.EzOneSellOrderMapper;
 import com.ezcoins.project.otc.service.EzOneSellOrderService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ezcoins.project.otc.service.EzSellConfigService;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

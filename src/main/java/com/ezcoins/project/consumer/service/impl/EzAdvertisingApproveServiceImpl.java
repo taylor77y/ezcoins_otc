@@ -127,7 +127,7 @@ public class EzAdvertisingApproveServiceImpl extends ServiceImpl<EzAdvertisingAp
         //查看用户是否通过实名认证
         EzUser user = userService.getById(advertisingReqDto.getUserId());
         if (user.getKycStatus().equals(UserKycStatus.NOTCERTIFIED.getCode())){
-            throw new BaseException(MessageUtils.message("用户未通过实名认证"));
+            throw new BaseException("用户未通过实名认证");
         }
         EzAdvertisingApprove advertisingApprove =null;
         //查看用户的实名认证
@@ -159,7 +159,7 @@ public class EzAdvertisingApproveServiceImpl extends ServiceImpl<EzAdvertisingAp
             baseMapper.insert(advertisingApprove);
         }else {
             if (advertisingApprove.getStatus().equals(KycStatus.BY.getCode())){
-                throw new BaseException(MessageUtils.message("用户认证已通过"));
+                throw new BaseException("用户认证已通过");
             }
             advertisingApprove.setMargin(advertisingReqDto.getMargin());
             advertisingApprove.setMemo(null);

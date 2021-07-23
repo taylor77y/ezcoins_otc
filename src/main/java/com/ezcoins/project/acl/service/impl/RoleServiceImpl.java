@@ -15,7 +15,7 @@ import com.ezcoins.project.acl.mapper.RoleMapper;
 import com.ezcoins.project.acl.mapper.RoleMenuMapper;
 import com.ezcoins.project.acl.mapper.UserRoleMapper;
 import com.ezcoins.project.acl.service.RoleService;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -48,7 +48,7 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
 
 
     @Override
-    public BaseResponse findRoleByUserId(String userId) {
+    public Response findRoleByUserId(String userId) {
         List<Menu> authMenuList = userRoleMapper.selectAdminRoleMenu(userId);
         //获取分类一级菜单
         List<Menu> menuList = authMenuList.stream().filter(authMenu -> authMenu.getParentId() == 0)
@@ -57,7 +57,10 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
                     return menu;
                 })
                 .collect(Collectors.toList());
-        return BaseResponse.success().data("allRolesList",CollectionUtils.isEmpty(menuList) ? authMenuList : menuList);
+
+        HashMap hashMap=new HashMap();
+        hashMap.put("allRolesList",CollectionUtils.isEmpty(menuList) ? authMenuList : menuList);
+        return Response.success(hashMap);
     }
 
     //设置子节点

@@ -155,9 +155,9 @@ private WalletService walletService;
      */
     public boolean withdrawCallback(Trade trade) throws Exception {
         //金额为最小单位，需要转换,包括amount和fee字段
-        BigDecimal amount = trade.getAmount();
+        BigDecimal amount = trade.getAmt();
         BigDecimal fee = trade.getFee();
-        trade.setAmount(amount);
+        trade.setAmt(amount);
         trade.setFee(fee);
         boolean rs = walletService.handleThirdpartyWithdrawal(trade);
         return rs;

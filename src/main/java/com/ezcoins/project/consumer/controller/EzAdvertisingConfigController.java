@@ -12,7 +12,7 @@ import com.ezcoins.project.consumer.entity.EzAdvertisingApprove;
 import com.ezcoins.project.consumer.entity.EzAdvertisingConfig;
 import com.ezcoins.project.consumer.service.EzAdvertisingApproveService;
 import com.ezcoins.project.consumer.service.EzAdvertisingConfigService;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponsePageList;
 import com.ezcoins.utils.StringUtils;
@@ -60,10 +60,10 @@ public class EzAdvertisingConfigController {
             @ApiImplicitParam(name = "minMargin", value = "最低保证金", required = true),
     })
     @Log(title = "修改高级认证配置",businessType = BusinessType.UPDATE,operatorType= OperatorType.MANAGE)
-    public BaseResponse update(@RequestBody HashMap<String,Object> params) {
+    public Response update(@RequestBody HashMap<String,Object> params) {
         String minMargin1 = (String) params.get("minMargin");
         if (StringUtils.isEmpty(minMargin1)){
-            return BaseResponse.error();
+            return Response.error();
         }
         BigDecimal minMargin = new BigDecimal(minMargin1);
         LambdaUpdateWrapper<EzAdvertisingConfig> updateWrapper=new LambdaUpdateWrapper<>();
@@ -71,7 +71,7 @@ public class EzAdvertisingConfigController {
         updateWrapper.set(EzAdvertisingConfig::getUpdateBy, ContextHandler.getUserName());
         updateWrapper.eq(EzAdvertisingConfig::getId,1);
         advertisingConfigService.update(null,updateWrapper);
-        return BaseResponse.success();
+        return Response.success();
     }
 }
 

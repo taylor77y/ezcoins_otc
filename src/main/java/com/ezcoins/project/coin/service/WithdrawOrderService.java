@@ -4,7 +4,7 @@ import com.ezcoins.project.coin.entity.WithdrawOrder;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ezcoins.project.coin.entity.req.CheckWithdrewOrderReqDto;
 import com.ezcoins.project.coin.entity.req.WithdrawReqDto;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 
 /**
  * <p>
@@ -31,5 +31,5 @@ public interface WithdrawOrderService extends IService<WithdrawOrder> {
      * @param withdrawReqDto
      * @return
      */
-    BaseResponse withdraw(WithdrawReqDto withdrawReqDto);
+    Response withdraw(WithdrawReqDto withdrawReqDto);
 }

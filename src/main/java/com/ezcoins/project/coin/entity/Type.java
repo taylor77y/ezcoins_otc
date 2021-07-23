@@ -41,6 +41,12 @@ public class Type implements Serializable {
     @ApiModelProperty(value = "otc交易手续费比例")
     private BigDecimal otcFeeRatio;
 
+    @ApiModelProperty(value = "最大发布订单数量")
+    private BigDecimal maxAmount;
+
+    @ApiModelProperty(value = "最小发布订单数量")
+    private BigDecimal minAmount;
+
     @ApiModelProperty(value = "otc状态（0启用 1禁用 ）")
     private String otcStatus;
 

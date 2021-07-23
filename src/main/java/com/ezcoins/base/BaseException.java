@@ -22,17 +22,19 @@ public class BaseException extends RuntimeException{
      */
     private String code;
 
-    /**
-     * 错误码对应的参数
-     */
-    private Object[] args;
 
     /**
      * 错误消息
      */
     private String defaultMessage;
 
-    public BaseException(String module, String code, Object[] args, String defaultMessage){
+    /**
+     * 错误消息对应的参数
+     */
+    private Object[] args;
+
+
+    public BaseException(String module, String code, String defaultMessage, Object[] args){
         this.module = module;
         this.code = code;
         this.args = args;
@@ -40,34 +42,35 @@ public class BaseException extends RuntimeException{
     }
 
     public BaseException(String module, String code, Object[] args){
-        this(module, code, args, null);
+        this(module, code, null, args);
     }
 
     public BaseException(String module, String defaultMessage)
     {
-        this(module, null, null, defaultMessage);
+        this(module, null, defaultMessage, null);
     }
 
-    public BaseException(String code, Object[] args)
+    public BaseException(String defaultMessage, Object[] args)
     {
-        this(null, code, args, null);
+        this(null, null, defaultMessage, args);
+    }
+
+    public BaseException(Object[] args,String code,String defaultMessage)
+    {
+        this(null, code, defaultMessage, args);
     }
 
     public BaseException(String defaultMessage){
-        this(null, null, null, defaultMessage);
+        this(null, null, defaultMessage, null);
     }
 
     @Override
     public String getMessage()
     {
         String message = null;
-        if (!StringUtils.isEmpty(code))
+        if (!StringUtils.isEmpty(defaultMessage))
         {
-            message = MessageUtils.message(code, args);
-        }
-        if (message == null)
-        {
-            message = defaultMessage;
+            message = MessageUtils.message(defaultMessage, args);
         }
         return message;
     }

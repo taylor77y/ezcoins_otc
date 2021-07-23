@@ -12,4 +12,8 @@ public interface RecordSonType {
 
     public static final String HANDLING_FEE="7";//手续费
 
+    public static final String TRANSACTION_FREEZE="8";//交易冻结
+
+    public static final String TRANSACTION_UNFREEZE="9";//交易解冻
+
 }

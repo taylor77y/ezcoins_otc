@@ -24,7 +24,7 @@ import com.ezcoins.project.otc.entity.resp.AdOrderRespDto;
 import com.ezcoins.project.otc.service.EzOtcOrderMatchService;
 import com.ezcoins.project.otc.service.EzOtcOrderService;
 import com.ezcoins.project.otc.service.EzPaymentInfoService;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponseList;
 import com.ezcoins.response.ResponsePageList;
@@ -74,13 +74,12 @@ public class EzOtcOrderController {
     @AuthToken
     @ApiOperation(value = "后台根据用户id发布订单")
     @PostMapping("releaseOrder")
-    public BaseResponse releaseOrder(@RequestBody OtcOrderReqDto otcOrderReqDto){
+    public Response releaseOrder(@RequestBody OtcOrderReqDto otcOrderReqDto){
         if (StringUtils.isEmpty(otcOrderReqDto.getUserId())){
-            return BaseResponse.error("用户id不能为空");
+            return Response.error("用户id不能为空");
         }
         return otcOrderService.releaseAdvertisingOrder(otcOrderReqDto);
     }
-
 
 
     @AuthToken
@@ -106,22 +105,6 @@ public class EzOtcOrderController {
         adOrderRespDto.setAccounts(accountService.list(accountLambdaQueryWrapper));
         return Response.success(adOrderRespDto);
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 }
 

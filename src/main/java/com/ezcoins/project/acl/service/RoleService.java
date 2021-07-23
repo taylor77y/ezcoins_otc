@@ -3,7 +3,7 @@ package com.ezcoins.project.acl.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ezcoins.project.acl.entity.Role;
 import com.ezcoins.project.acl.entity.req.AclRoleReqDto;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 
 /**
  * <p>
@@ -15,7 +15,7 @@ import com.ezcoins.response.BaseResponse;
  */
 public interface RoleService extends IService<Role> {
 
-    BaseResponse findRoleByUserId(String userId);
+    Response findRoleByUserId(String userId);
 
     void addAclRole(AclRoleReqDto aclRoleReqDto);
 

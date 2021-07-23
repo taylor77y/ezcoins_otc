@@ -27,12 +27,6 @@ public class EzOtcConfig implements Serializable {
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
 
-    @ApiModelProperty(value = "最大发布订单数量")
-    private BigDecimal maxAmount;
-
-    @ApiModelProperty(value = "最小发布订单数量")
-    private BigDecimal minAmount;
-
     @ApiModelProperty(value = "每日最大取消数量")
     private Integer maxCancelNum;
 

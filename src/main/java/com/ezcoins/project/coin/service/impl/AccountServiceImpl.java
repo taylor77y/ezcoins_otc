@@ -11,6 +11,7 @@ import com.ezcoins.exception.coin.AccountBalanceNotEnoughException;
 import com.ezcoins.exception.coin.AccountOperationBusyException;
 import com.ezcoins.project.coin.entity.Account;
 import com.ezcoins.project.coin.entity.Record;
+import com.ezcoins.project.coin.entity.SysAirport;
 import com.ezcoins.project.coin.entity.Type;
 import com.ezcoins.project.coin.entity.req.ReviseAccountReqDto;
 import com.ezcoins.project.coin.entity.resp.AccountRespDto;
@@ -19,11 +20,12 @@ import com.ezcoins.project.coin.mapper.AccountMapper;
 import com.ezcoins.project.coin.service.AccountService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ezcoins.project.coin.service.RecordService;
+import com.ezcoins.project.coin.service.SysAirportService;
 import com.ezcoins.project.coin.service.TypeService;
 import com.ezcoins.project.consumer.entity.EzUser;
 import com.ezcoins.project.consumer.service.EzUserService;
 import com.ezcoins.redis.CacheUtils;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 import com.ezcoins.utils.BeanUtils;
 import com.ezcoins.utils.DateUtils;
 import com.ezcoins.utils.SpringUtils;
@@ -35,6 +37,9 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import java.math.BigDecimal;
@@ -66,6 +71,10 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
 
     @Autowired
     private EzUserService userService;
+
+
+    @Autowired
+    private SysAirportService airportService;
 
     /**
      * 创建用户 【资金账户】
@@ -214,26 +223,30 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
             try {
                 if (!isLock || baseMapper.updateById(acc) <= 0) {
                     throw new AccountOperationBusyException();
-                } else {
-                    if (CoinConstants.MainType.FROZEN.getType().equals(c.getMainType()) || CoinConstants.MainType.UNFREEZE.getType().equals(c.getMainType())
-                            || CoinConstants.MainType.LOCKUP.getType().equals(c.getMainType()) || CoinConstants.MainType.UNLOCK.getType().equals(c.getMainType())) {
+                } else {//CoinConstants.MainType.FROZEN.getType().equals(c.getMainType()) || CoinConstants.MainType.UNFREEZE.getType().equals(c.getMainType())
+                    if (CoinConstants.MainType.LOCKUP.getType().equals(c.getMainType()) || CoinConstants.MainType.UNLOCK.getType().equals(c.getMainType()) ||
+                            CoinConstants.MainType.NORECORD.getType().equals(c.getMainType())) {
                         // 冻结/解冻/锁仓/解锁 不生成资产流水
                     } else if (CoinConstants.MainType.RECHARGE.getType().equals(c.getMainType())
                             || CoinConstants.MainType.WITHDRAWAL.getType().equals(c.getMainType())) {
                         // 充值/提现 单独生成资产流水
                     } else {
-                        Record rec = new Record();
-                        rec.setUserId(c.getUserId());
-                        rec.setCoinName(c.getCoinName());
-                        rec.setFee(c.getFee());
-                        rec.setMemo(c.getMemo());
-                        rec.setIncomeType(c.getIncomeType());
-                        rec.setMainType(c.getMainType());
-                        rec.setSonType(c.getSonType());
-                        rec.setStatus(CoinConstants.RecordStatus.OK.getStatus());
-                        rec.setAmount(c.getAvailable());
-                        recordService.save(rec);
-                        WebSocketHandle.accountChange(c.getUserId(),c.getCoinName(),c.getAvailable(),c.getSonType());
+                        if (c.getAvailable().compareTo(BigDecimal.ZERO)!=0){
+                            Record rec = new Record();
+                            rec.setUserId(c.getUserId());
+                            rec.setCoinName(c.getCoinName());
+                            rec.setFee(c.getFee());
+                            rec.setMemo(c.getMemo());
+                            rec.setIncomeType(c.getIncomeType());
+                            rec.setMainType(c.getMainType());
+                            rec.setSonType(c.getSonType());
+                            rec.setStatus(CoinConstants.RecordStatus.OK.getStatus());
+                            rec.setAmount(c.getAvailable());
+                            rec.setCreateBy(acc.getCreateBy());
+                            recordService.save(rec);
+                            WebSocketHandle.accountChange(c.getUserId(),c.getCoinName(),c.getAvailable(),c.getSonType());
+                        }
+
                     }
                 }
             } catch (Exception e) {
@@ -248,7 +261,8 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
     }
 
     @Override
-    public BaseResponse revise(ReviseAccountReqDto reviseAccountReqDto) {
+    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public Response revise(ReviseAccountReqDto reviseAccountReqDto) {
         String userId = reviseAccountReqDto.getUserId();
         BigDecimal amount = reviseAccountReqDto.getAmount();
         String type = reviseAccountReqDto.getType();//增加：1  减少：0
@@ -256,7 +270,7 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
         String coinName = reviseAccountReqDto.getCoinName();
         EzUser user = userService.getById(userId);
         if (StringUtils.isNull(user)) {
-            return BaseResponse.error("用户不存在");
+            return Response.error("用户不存在");
         }
         List<BalanceChange> bList = new ArrayList<>();
 
@@ -264,6 +278,8 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
         balanceChange.setCoinName(coinName);
         balanceChange.setMemo(memo);
         balanceChange.setUserId(userId);
+
+
         if ("1".equals(type)) {
             balanceChange.setAvailable(amount);
             balanceChange.setMainType(CoinConstants.MainType.SYS.getType());
@@ -279,7 +295,14 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
         if (!balanceChangeSYNC(bList)) {// 资产变更异常
             throw new AccountOperationBusyException();
         }
-        return BaseResponse.success();
+        SysAirport sysAirport=new SysAirport();
+        sysAirport.setUserId(userId);
+        sysAirport.setUserName(user.getUserName());
+        sysAirport.setCreateBy(ContextHandler.getUserName());
+        sysAirport.setBonus(balanceChange.getAvailable());
+        sysAirport.setMemo(memo);
+        airportService.save(sysAirport);
+        return Response.success();
     }
 
 

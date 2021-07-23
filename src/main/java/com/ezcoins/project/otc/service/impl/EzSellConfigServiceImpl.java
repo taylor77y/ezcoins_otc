@@ -13,7 +13,7 @@ import com.ezcoins.project.otc.entity.req.SellOneKeyReqDto;
 import com.ezcoins.project.otc.mapper.EzSellConfigMapper;
 import com.ezcoins.project.otc.service.EzSellConfigService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 import com.ezcoins.utils.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,7 +37,7 @@ public class EzSellConfigServiceImpl extends ServiceImpl<EzSellConfigMapper, EzO
 
 
     @Override
-    public BaseResponse updateOrAddSellConfig(SellConfigReqDto sellConfigReqDto) {
+    public Response updateOrAddSellConfig(SellConfigReqDto sellConfigReqDto) {
         EzOneSellConfig ezSellConfig = new EzOneSellConfig();
         BeanUtils.copyBeanProp(ezSellConfig,sellConfigReqDto);
         if (sellConfigReqDto.getId()==null){//增加
@@ -47,7 +47,7 @@ public class EzSellConfigServiceImpl extends ServiceImpl<EzSellConfigMapper, EzO
             lambdaQueryWrapper.eq(EzOneSellConfig::getStatus,"0");
             EzOneSellConfig ezOneSellConfig = baseMapper.selectOne(lambdaQueryWrapper);
             if (null!=ezOneSellConfig){
-                return BaseResponse.error("该币种已存在，请先关闭原来的配置");
+                return Response.error("该币种已存在，请先关闭原来的配置");
             }
             ezSellConfig.setCreateBy(ContextHandler.getUserName());
             baseMapper.insert(ezSellConfig);
@@ -55,6 +55,6 @@ public class EzSellConfigServiceImpl extends ServiceImpl<EzSellConfigMapper, EzO
             ezSellConfig.setUpdateBy(ContextHandler.getUserName());
             baseMapper.updateById(ezSellConfig);
         }
-        return BaseResponse.success();
+        return Response.success();
     }
 }

@@ -9,7 +9,7 @@ import com.ezcoins.project.acl.entity.req.AclUserReqDto;
 import com.ezcoins.project.acl.service.AclUserService;
 import com.ezcoins.project.acl.service.RoleService;
 import com.ezcoins.project.common.service.mapper.SearchModel;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponsePageList;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -45,22 +45,22 @@ public class AclUserController {
     @ApiOperation(value = "新增管理用户")
     @PostMapping("register")
     @Log(title = "新增管理用户", businessType = BusinessType.INSERT, operatorType = OperatorType.MANAGE)
-    public BaseResponse save(@RequestBody @Validated AclUserReqDto user) {
+    public Response save(@RequestBody @Validated AclUserReqDto user) {
         userService.register(user);
-        return BaseResponse.success();
+        return Response.success();
     }
 
     @ApiOperation(value = "根据id删除管理用户")
     @DeleteMapping("remove/{id}")
     @Log(title = "删除管理用户", businessType = BusinessType.DELETE, operatorType = OperatorType.MANAGE)
-    public BaseResponse remove(@PathVariable String id) {
+    public Response remove(@PathVariable String id) {
         userService.removeById(id);
-        return BaseResponse.success();
+        return Response.success();
     }
 
     @ApiOperation(value = "根据用户获取角色数据")
     @GetMapping("toAssign/{userId}")
-    public BaseResponse toAssign(@PathVariable String userId) {
+    public Response toAssign(@PathVariable String userId) {
         return roleService.findRoleByUserId(userId);
     }
 

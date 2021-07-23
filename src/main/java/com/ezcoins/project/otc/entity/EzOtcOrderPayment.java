@@ -24,8 +24,8 @@ public class EzOtcOrderPayment implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @ApiModelProperty(value = "id")
-    @TableId(value = "id", type = IdType.AUTO)
-    private Integer id;
+    @TableId(value = "id", type = IdType.ASSIGN_ID)
+    private String id;
 
     @ApiModelProperty(value = "匹配订单号")
     private String orderMatchNo;

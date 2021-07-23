@@ -4,7 +4,7 @@ package com.ezcoins.project.common;
 import com.ezcoins.config.EzCoinsConfig;
 import com.ezcoins.config.ServerConfig;
 import com.ezcoins.constant.Constants;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 import com.ezcoins.utils.FileUploadUtils;
 import com.ezcoins.utils.FileUtils;
 import com.ezcoins.utils.StringUtils;
@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.HashMap;
 
 
 @RestController
@@ -56,17 +57,20 @@ public class CommonController{
 
     
     @PostMapping("/common/upload")
-    public BaseResponse uploadFile(@RequestParam("file") MultipartFile file) throws Exception{
+    public Response uploadFile(@RequestParam("file") MultipartFile file) throws Exception{
         try {
             // 上传文件路径
             String filePath = EzCoinsConfig.getUploadPath();
             // 上传并返回新文件名称
             String fileName = FileUploadUtils.upload(filePath, file);
             String url = serverConfig.getUrl() + fileName;
-            return BaseResponse.success().data("fileName", fileName).data("url", url);
+            HashMap map=new HashMap(2);
+            map.put("fileName",fileName);
+            map.put("url",url);
+            return Response.success(map);
         }
         catch (Exception e){
-            return BaseResponse.error(e.getMessage());
+            return Response.error(e.getMessage());
         }
     }
 
@@ -92,7 +96,7 @@ public class CommonController{
     }
 
     @PostMapping("/common/ossUpload/{model}")
-    public BaseResponse ossUpload(@RequestParam("file") MultipartFile file,@PathVariable String model) {
+    public Response ossUpload(@RequestParam("file") MultipartFile file,@PathVariable String model) {
         //获取上传文件  MultipartFile
         //返回上传到oss的路径
         try {
@@ -101,10 +105,13 @@ public class CommonController{
             // 上传并返回新文件名称
             String fileName = FileUploadUtils.upload(filePath, file);
             String url = serverConfig.getUrl() + fileName;
-            return BaseResponse.success().data("fileName", fileName).data("url", url);
+            HashMap map=new HashMap(2);
+            map.put("fileName",fileName);
+            map.put("url",url);
+            return Response.success(map);
         }
         catch (Exception e){
-            return BaseResponse.error(e.getMessage());
+            return Response.error(e.getMessage());
         }
     }
 }

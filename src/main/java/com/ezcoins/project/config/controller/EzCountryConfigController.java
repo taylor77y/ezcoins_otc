@@ -12,7 +12,7 @@ import com.ezcoins.project.config.entity.EzSmsConfig;
 import com.ezcoins.project.config.entity.req.CountryReqDto;
 import com.ezcoins.project.config.service.EzCountryConfigService;
 import com.ezcoins.project.consumer.entity.EzUser;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponsePageList;
 import com.ezcoins.utils.BeanUtils;
@@ -50,7 +50,7 @@ public class EzCountryConfigController {
     @PostMapping("/addCountryConfigs")
     @AuthToken
     @Log(title = "添加国家编号配置", businessType = BusinessType.INSERT, operatorType = OperatorType.MANAGE)
-    public BaseResponse addCountryConfigs(@RequestBody CountryReqDto countryReqDto){
+    public Response addCountryConfigs(@RequestBody CountryReqDto countryReqDto){
         //判断配置是否存在
         LambdaQueryWrapper<EzCountryConfig> queryWrapper=new LambdaQueryWrapper<>();
         queryWrapper.eq(EzCountryConfig::getCountryName,countryReqDto.getCountryName())
@@ -60,21 +60,21 @@ public class EzCountryConfigController {
 
         EzCountryConfig countryConfig = countryConfigService.getOne(queryWrapper,true);
         if (countryConfig!=null){
-            return BaseResponse.error(MessageUtils.message("内容重复"));
+            return Response.error(MessageUtils.message("内容重复"));
         }
         EzCountryConfig ezCountryConfig = new EzCountryConfig();
         BeanUtils.copyBeanProp(ezCountryConfig,countryReqDto);
         countryConfigService.save(ezCountryConfig);
-        return BaseResponse.success();
+        return Response.success();
     }
 
     @ApiOperation(value = "批量删除国家编号配置")
     @DeleteMapping("/removeCountryConfigs")
     @AuthToken
     @Log(title = "批量删除国家编号配置", businessType = BusinessType.DELETE, operatorType = OperatorType.MANAGE)
-    public BaseResponse removeCountryConfigs(@RequestBody List<String> idList){
+    public Response removeCountryConfigs(@RequestBody List<String> idList){
         countryConfigService.removeByIds(idList);
-        return BaseResponse.success();
+        return Response.success();
     }
 
 

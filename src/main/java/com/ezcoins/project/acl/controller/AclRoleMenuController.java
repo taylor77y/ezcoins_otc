@@ -17,7 +17,7 @@ import com.ezcoins.project.acl.service.MenuService;
 import com.ezcoins.project.acl.service.RoleMenuService;
 import com.ezcoins.project.acl.service.RoleService;
 import com.ezcoins.project.common.service.mapper.SearchModel;
-import com.ezcoins.response.BaseResponse;
+import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponsePageList;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -26,7 +26,9 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -58,9 +60,11 @@ public class AclRoleMenuController extends BaseController {
     @ApiOperation(value = "当前用户路由")
     @GetMapping("selectAdminRoleMenu")
     @AuthToken
-    public BaseResponse selectAdminRoleMenu(){
+    public Response selectAdminRoleMenu(){
         List<Menu> authMenuList =menuService.selectAdminRoleMenu(getUserId());
-        return BaseResponse.success().data("list",authMenuList);
+        Map<String, Object> result = new HashMap<>(2);
+        result.put("list",authMenuList);
+        return Response.success(result);
     }
 
     /**
@@ -91,9 +95,9 @@ public class AclRoleMenuController extends BaseController {
     @PostMapping("/addAclRole")
     @AuthToken
     @Log(title = "添加角色", businessType = BusinessType.INSERT, operatorType = OperatorType.MANAGE)
-    public BaseResponse addAclRole(@RequestBody @Validated AclRoleReqDto aclRoleReqDto) {
+    public Response addAclRole(@RequestBody @Validated AclRoleReqDto aclRoleReqDto) {
         roleService.addAclRole(aclRoleReqDto);
-        return BaseResponse.success();
+        return Response.success();
     }
 
     /**
@@ -105,13 +109,13 @@ public class AclRoleMenuController extends BaseController {
     @DeleteMapping("/delAclRole/{id}")
     @AuthToken
     @Log(title = "删除角色", businessType = BusinessType.DELETE, operatorType = OperatorType.MANAGE)
-    public BaseResponse delAuthRole(@PathVariable String id) {
+    public Response delAuthRole(@PathVariable String id) {
         //删除角色权限关联表
         LambdaQueryWrapper<RoleMenu> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(RoleMenu::getRoleId, id);
         roleMenuService.remove(lambdaQueryWrapper);
         roleService.removeById(id);
-        return BaseResponse.success();
+        return Response.success();
     }
 
 
@@ -124,9 +128,9 @@ public class AclRoleMenuController extends BaseController {
     @PostMapping("/updateAclRole")
     @AuthToken
     @Log(title = "修改角色", businessType = BusinessType.UPDATE, operatorType = OperatorType.MANAGE)
-    public BaseResponse updateAclRole(@RequestBody @Validated AclRoleReqDto aclRoleReqDto) {
+    public Response updateAclRole(@RequestBody @Validated AclRoleReqDto aclRoleReqDto) {
         roleService.updateAclRole(aclRoleReqDto);
-        return BaseResponse.success();
+        return Response.success();
     }
 
 
@@ -140,9 +144,9 @@ public class AclRoleMenuController extends BaseController {
     @PostMapping("/addAuthMenu")
     @AuthToken
     @Log(title = "添加权限", businessType = BusinessType.INSERT, operatorType = OperatorType.MANAGE)
-    public BaseResponse addAuthMenu(@RequestBody @Validated AclMenuReqDto aclMenuReqDto) {
+    public Response addAuthMenu(@RequestBody @Validated AclMenuReqDto aclMenuReqDto) {
         menuService.addAclMenu(aclMenuReqDto);
-        return BaseResponse.success();
+        return Response.success();
     }
 
     /**
@@ -154,9 +158,9 @@ public class AclRoleMenuController extends BaseController {
     @DeleteMapping("/delAclMenu/{id}")
     @AuthToken
     @Log(title = "删除权限", businessType = BusinessType.DELETE, operatorType = OperatorType.MANAGE)
-    public BaseResponse delAclMenu(@PathVariable Integer id) {
+    public Response delAclMenu(@PathVariable Integer id) {
         menuService.delAclMenu(id);
-        return BaseResponse.success();
+        return Response.success();
     }
 
     /**
@@ -168,9 +172,9 @@ public class AclRoleMenuController extends BaseController {
     @PostMapping("/updateAclMenu")
     @AuthToken
     @Log(title = "删除权限", businessType = BusinessType.DELETE, operatorType = OperatorType.MANAGE)
-    public BaseResponse updateAuthMenu(@RequestBody @Validated AclMenuReqDto aclMenuReqDto) {
+    public Response updateAuthMenu(@RequestBody @Validated AclMenuReqDto aclMenuReqDto) {
         menuService.updateAclMenu(aclMenuReqDto);
-        return BaseResponse.success();
+        return Response.success();
     }
 
 
@@ -180,8 +184,10 @@ public class AclRoleMenuController extends BaseController {
     @ApiOperation(value = "菜单树")
     @GetMapping("/findMenuTree")
     @AuthToken
-    public BaseResponse findMenuTree() {
-        return BaseResponse.success().data("list", menuService.findMenuTree());
+    public Response findMenuTree() {
+        Map<String, Object> result = new HashMap<>(2);
+        result.put("list",menuService.findMenuTree());
+        return Response.success(result);
     }
 
 

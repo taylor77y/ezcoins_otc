@@ -137,10 +137,24 @@ public class WebSocketHandle {
     public static void accountChange(String userId, String coinName, BigDecimal amount, String sonType) {
         String message;
         if (sonType.equals(RecordSonType.SYS_AIRPORT)) {//系统空投
-            message = String.format("【ezcoins】 %s。", "系统空投"+amount+coinName+"，资产已到账");
+            message = String.format("%s。", "系统空投"+amount+coinName+"，资产已到账");
         } else if (sonType.equals(RecordSonType.SYS_DEDUCTION)) {//通过
-            message = String.format("【ezcoins】 %s。", "系统已变跟你的资产"+amount+coinName);
-        } else {
+            message = String.format("%s。", "系统已变跟你的资产"+amount+coinName);
+        } else if (sonType.equals(RecordSonType.TRANSFER_IN)) {//通过
+            message = String.format("%s。", "你购买的"+amount+coinName+"已到账");
+        }else if (sonType.equals(RecordSonType.TRANSFER_OUT)) {//通过
+            message = String.format("%s。", "出售"+amount+coinName+"成功");
+        }else if (sonType.equals(RecordSonType.ORDINARY_WITHDRAWAL)) {//通过
+            message = String.format("%s。", "提币成功"+amount+coinName+"成功");
+        }else if (sonType.equals(RecordSonType.ORDINARY_RECHARGE)) {//通过
+            message = String.format("%s。", "冲币成功"+amount+coinName+"成功，资产已到账");
+        }else if (sonType.equals(RecordSonType.HANDLING_FEE)) {//通过
+            message = String.format("%s。", "发布订单成功，已扣除"+amount+coinName+"手续费");
+        }else if (sonType.equals(RecordSonType.TRANSACTION_FREEZE)) {//交易冻结
+            message = String.format("%s。", "交易进行中，已冻结"+amount+coinName);
+        }else if (sonType.equals(RecordSonType.TRANSACTION_UNFREEZE)) {//交易解冻
+            message = String.format("%s。", "交易完成，已解冻"+amount+coinName);
+        }else {
             return;
         }
         send(userId, message);
