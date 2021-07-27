@@ -73,9 +73,10 @@ public interface EzUserService extends IService<EzUser> {
     void updateUser(EzUserReqDto ezUserDto);
 
 
-    /**
-     * 封禁 解封 账号
-     * @param userLimitReqDto
-     */
-    void titleOrUnnumber(UserLimitReqDto userLimitReqDto);
-}
+//    /**
+//     * 封禁 解封 账号
+//     * @param userLimitReqDto
+//     */
+//    void titleOrUnnumber(UserLimitReqDto userLimitReqDto);
+//
+ }

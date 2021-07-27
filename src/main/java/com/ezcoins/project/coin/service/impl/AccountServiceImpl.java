@@ -155,14 +155,14 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
 
 
     @Override
-    public Account getAccountByUserIdAndCoinId(String userId, String coinName) throws AccountOperationBusyException {
+    public Account getAccountByUserIdAndCoinId(String userId, String coinName,String userName) throws AccountOperationBusyException {
         LambdaQueryWrapper<Account> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(Account::getCoinName, coinName);
         lambdaQueryWrapper.eq(Account::getUserId, userId);
         Account account = baseMapper.selectOne(lambdaQueryWrapper);
         if (account == null) {
             //没有查到就去创建
-            List<Account> accountList = processCoinAccount(userId,ContextHandler.getUserName());
+            List<Account> accountList = processCoinAccount(userId,userName);
             if (StringUtils.isNotEmpty(accountList)) {
                 for (Account a : accountList) {
                     if (a.getCoinName().equals(coinName)) {
@@ -190,7 +190,17 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
                 log.error("参数异常{}", JSON.toJSON(c));
                 return false;
             }
-            Account acc = getAccountByUserIdAndCoinId(c.getUserId(), c.getCoinName()); //通过用户id和币种id查询账户
+
+           String userName=ContextHandler.getUserName();
+            if (StringUtils.isEmpty(userName)){
+                EzUser byId = userService.getById(c.getUserId());
+                if (byId==null){
+                    log.error("参数异常{}",c.getUserId());
+                    return false;
+                }
+                userName=byId.getUserName();
+            }
+            Account acc = getAccountByUserIdAndCoinId(c.getUserId(), c.getCoinName(),userName); //通过用户id和币种id查询账户
             if (StringUtils.isNull(acc)) {
                 log.error("参数异常-{},找到不到账户", JSON.toJSON(c));
                 return false;

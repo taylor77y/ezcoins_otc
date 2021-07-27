@@ -78,25 +78,21 @@ public class ServletUtils
         return null;
     }
     
-    public static String renderErrorString(HttpServletResponse response, String string)
-    {
-        try
-        {
+    public static String renderErrorString(HttpServletResponse response, String string){
+        try{
             response.setStatus(500);
             response.setContentType("application/json");
             response.setCharacterEncoding("utf-8");
             response.getWriter().print(string);
         }
-        catch (IOException e)
-        {
+        catch (IOException e){
             e.printStackTrace();
         }
         return null;
     }
 
     
-    public static boolean isAjaxRequest(HttpServletRequest request)
-    {
+    public static boolean isAjaxRequest(HttpServletRequest request){
         String accept = request.getHeader("accept");
         if (accept != null && accept.indexOf("application/json") != -1)
         {

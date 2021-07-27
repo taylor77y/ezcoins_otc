@@ -18,6 +18,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ezcoins.project.coin.udun.Address;
 import com.ezcoins.project.coin.udun.BiPayService;
 import com.ezcoins.project.coin.udun.Trade;
+import com.ezcoins.project.coin.wallet.cc.ChainCoinType;
+import com.ezcoins.project.coin.wallet.cc.CoinTypeUtils;
 import com.ezcoins.project.coin.wallet.cc.WalletClientService;
 import com.ezcoins.response.Response;
 import com.ezcoins.utils.DateUtils;
@@ -80,15 +82,15 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
 
         String finalMainCoinType = mainCoinType;
         List<Wallet> collect = wallets.stream().filter(e -> e.getMainCoinType().equals(finalMainCoinType)).collect(Collectors.toList());
-        if (collect.size()!=0){
-            rechargeAddr=collect.get(0).getAddress();
-        }else if ("60".equals(mainCoinType)){
+        if (collect.size() != 0) {
+            rechargeAddr = collect.get(0).getAddress();
+        } else if ("60".equals(mainCoinType)) {
             Address coinAddress = walletClientService.createAddressList("test");
             Wallet wallet = new Wallet();
-            if (StringUtils.isNotNull(coinAddress)){
+            if (StringUtils.isNotNull(coinAddress)) {
                 Integer integer = coinAddress.getId();
-                if (integer==3){
-                    mainCoinType="60";
+                if (integer == 3) {
+                    mainCoinType = "60";
                     wallet.setAddress(coinAddress.getAddress());
                     wallet.setMainCoinType(mainCoinType);
                     wallet.setUserId(userId);
@@ -96,8 +98,8 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
                     baseMapper.insert(wallet);
                 }
             }
-            rechargeAddr=wallet.getAddress();
-        }else {
+            rechargeAddr = wallet.getAddress();
+        } else {
 //            Address coinAddress = biPayService.createCoinAddress(mainCoinType, userId.toString(), "");
 //            Wallet wallet = new Wallet();
 //            if (StringUtils.isNotNull(coinAddress) || true) {
@@ -111,8 +113,8 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
             throw new BaseException("币种充值尚未开启");
 
         }
-        HashMap map=new HashMap(1);
-        map.put("rechargeAddr",rechargeAddr);
+        HashMap map = new HashMap(1);
+        map.put("rechargeAddr", rechargeAddr);
         return Response.success(map);
     }
 
@@ -126,39 +128,41 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
     public boolean handleThirdpartyWithdrawal(Trade trade) {
         // 查询提币订单，没有就返回false
         Record cr = null;
-        WithdrawOrder withdrawOrder=null;
+        WithdrawOrder withdrawOrder = null;
         if (StringUtils.isNotNull(trade) && StringUtils.isNotNull(trade.getRequest_id())) {
             //移除企业编号
             Long businessId = Long.parseLong(trade.getRequest_id().replace(CoinConstants.BUSINESSID, ""));
-
             withdrawOrder = withdrawOrderService.getById(businessId);
+            if (StringUtils.isNull(withdrawOrder)) {
+                return false;
+            }
             cr = recordService.getById(withdrawOrder.getCoinRecordId());
         }
-        if (StringUtils.isNull(cr) || StringUtils.isNull(withdrawOrder)) {
+        if (StringUtils.isNull(cr)) {
             return false;
         }
         //判断是否为提款，不是就返回false
-        if (trade.getS() != 2) {
+        if (trade.getTt() != 2) {
             return false;
         }
         // [审核通过]判断是否审核中 扣除冻结
-        if (trade.getS() == 1 && CoinConstants.RecordStatus.PASS.getStatus().equals(cr.getStatus())) {
-            cr.setStatus(CoinConstants.RecordStatus.OK.getStatus());
+        if (trade.getS() == 2 && CoinConstants.RecordStatus.WAIT.getStatus().equals(cr.getStatus())) {
+            cr.setStatus(CoinConstants.RecordStatus.PASS.getStatus());
             List<BalanceChange> cList = new ArrayList<BalanceChange>();
             BalanceChange c = new BalanceChange();
             c.setFrozen(cr.getAmount().add(cr.getFee()).negate());
             c.setUserId(cr.getUserId());
             c.setIncomeType(CoinConstants.IncomeType.PAYOUT.getType());
             c.setMainType(CoinConstants.MainType.WITHDRAWAL.getType());
-            c.setSonType("withdrawal");
+            c.setSonType(RecordSonType.ORDINARY_WITHDRAWAL);
             cList.add(c);
-            if (! accountService.balanceChangeSYNC(cList)) {// 资产变更异常
+            if (!accountService.balanceChangeSYNC(cList)) {// 资产变更异常
                 throw new AccountOperationBusyException();
             }
             withdrawOrder.setStatus(WithdrawOrderStatus.BYWALLET.getCode());
         }
         // [审核拒绝]判断是否审核中 解冻返回余额 返回Txid
-        if (trade.getS() == 2 && CoinConstants.RecordStatus.PASS.getStatus().equals(cr.getStatus())) {
+        if (trade.getS() == 3 && CoinConstants.RecordStatus.WAIT.getStatus().equals(cr.getStatus())) {
             cr.setStatus(CoinConstants.RecordStatus.REFUSE.getStatus());
             cr.setTxid(trade.getTid());
             List<BalanceChange> cList = new ArrayList<BalanceChange>();
@@ -183,16 +187,14 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
     /**
      * 处理第三方提币审核结果 [审核通过][审核拒绝][到账返回Txid]
      *
-     * @param tradeId
      * @param txId
      * @param address
      * @param amount
      * @param mainCoinType
      * @param coinType
-     * @param memo
      */
     @Override
-    public boolean handleRecharge(String tradeId, String txId, String address, BigDecimal amount, String mainCoinType, String coinType, String memo) {
+    public boolean handleRecharge(String txId, String address, BigDecimal amount, String mainCoinType, String coinType) {
         Record record = recordService.selectCoinRecordByTxId(txId); //通过交易id查询流水记录
         if (StringUtils.isNotNull(record)) {
             log.error("重复充值Txid[{}]！！！", txId);
@@ -203,12 +205,12 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
         c.setAvailable(amount); //设置余额
 
 
-        LambdaQueryWrapper<RechargeConfig> lambdaQueryWrapper=new LambdaQueryWrapper<>();
+        LambdaQueryWrapper<RechargeConfig> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(RechargeConfig::getMainCoinType, mainCoinType);
         lambdaQueryWrapper.eq(RechargeConfig::getCoinType, coinType);
         RechargeConfig config = rechargeConfigService.getOne(lambdaQueryWrapper);
         if (StringUtils.isNull(config)) {
-            log.error("币种mainCoinType{}，coinType：{}找不到！！！", mainCoinType,coinType);
+            log.error("币种mainCoinType{}，coinType：{}找不到！！！", mainCoinType, coinType);
             return false;
         }
 
@@ -217,9 +219,9 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
         c.setMainType(CoinConstants.MainType.RECHARGE.getType());
         c.setSonType(RecordSonType.ORDINARY_RECHARGE);
 
-        LambdaQueryWrapper<Wallet> queryWrapper=new LambdaQueryWrapper<>();
+        LambdaQueryWrapper<Wallet> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Wallet::getAddress, address);
-        queryWrapper.eq(Wallet::getMainCoinType,mainCoinType);
+        queryWrapper.eq(Wallet::getMainCoinType, mainCoinType);
         Wallet wallet = baseMapper.selectOne(queryWrapper); //通过地址查询到钱包信息
         if (StringUtils.isNull(wallet)) {
             log.error("参数异常-找到不到充值地址[{}]", address);
@@ -232,9 +234,11 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
         try {
             sync = accountService.balanceChangeSYNC(cList);
         } catch (Exception e) {
+            log.info("资产变更异常");
             return false;// 资产变更异常
         }
         if (!sync) {// 资产变更异常
+            log.info("资产变更失败");
             return false;
         }
 
@@ -251,26 +255,10 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
         rec.setFromAddress(null);
         rec.setToAddress(address);
         rec.setTxid(txId);
-        rec.setMemo(memo);
 
         recordService.save(rec);
         return true;
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 }

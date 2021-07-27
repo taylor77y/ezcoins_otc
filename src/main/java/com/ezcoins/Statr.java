@@ -10,8 +10,10 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import net.bytebuddy.implementation.bytecode.Throw;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -32,7 +34,8 @@ import java.util.concurrent.Executors;
 public class Statr implements CommandLineRunner {
 
     @Autowired
-    EmailService emailService;
+    @Qualifier("threadPoolTaskExecutor")
+    private ThreadPoolTaskExecutor taskExecutor;
 
     @Override
     public void run(String... args) throws Exception {
@@ -45,7 +48,7 @@ public class Statr implements CommandLineRunner {
         if (ScheduledTasks.rmbPrice!=null){
             log.info("启动成功");
         }
-        Executors.newSingleThreadExecutor().submit(new Runnable() {
+        taskExecutor.submit(new Runnable() {
             @Override
             public void run() {
                 while (true) {

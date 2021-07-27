@@ -40,6 +40,9 @@ public class EzOtcOrderAppeal implements Serializable {
     @ApiModelProperty(value = "申诉理由")
     private String reason;
 
+    @ApiModelProperty(value = "凭证地址")
+    private String voucher;
+
     @ApiModelProperty(value = "匹配订单号")
     private String orderMatchNo;
 

@@ -2,10 +2,15 @@ package com.ezcoins.project.otc.mq;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.ezcoins.constant.RecordSonType;
 import com.ezcoins.constant.SystemOrderTips;
+import com.ezcoins.constant.enums.coin.CoinConstants;
 import com.ezcoins.constant.enums.otc.MatchOrderStatus;
 import com.ezcoins.constant.interf.RedisConstants;
+import com.ezcoins.exception.coin.AccountOperationBusyException;
 import com.ezcoins.mq.RabbitMQConfiguration;
+import com.ezcoins.project.coin.entity.vo.BalanceChange;
+import com.ezcoins.project.coin.service.AccountService;
 import com.ezcoins.project.otc.entity.EzOtcChatMsg;
 import com.ezcoins.project.otc.entity.EzOtcOrder;
 import com.ezcoins.project.otc.entity.EzOtcOrderMatch;
@@ -56,6 +61,9 @@ public class OrderFailureListener {
     @Autowired
     private EzOtcChatMsgService otcChatMsgService;
 
+    @Autowired
+    private AccountService accountService;
+
     @RabbitHandler
     public void process(String order, Message message, @Headers Map<String, Object> headers, Channel channel) throws IOException {
         String[] splitContent = new String[2];
@@ -73,16 +81,27 @@ public class OrderFailureListener {
         }
         //取消订单
         if (match.getStatus().equals(MatchOrderStatus.WAITFORPAYMENT.getCode())) {
-
-            match.setStatus(MatchOrderStatus.CANCELLED.getCode());
-            matchService.updateById(match);
             //将订单匹配数量增加回去
             EzOtcOrder ezOtcOrder = otcOrderService.getById(match.getOrderNo());
             if (ezOtcOrder==null){
                 return;
             }
             ezOtcOrder.setQuotaAmount(ezOtcOrder.getQuotaAmount().subtract(match.getAmount()));
-            otcOrderService.updateById(ezOtcOrder);
+            if (ezOtcOrder.getType().equals("0")){//买
+                List<BalanceChange> cList = new ArrayList<>();
+                BalanceChange b = new BalanceChange();
+                b.setCoinName(match.getCoinName());
+                b.setAvailable(match.getAmount());
+                b.setFrozen(match.getAmount().negate());
+                b.setIncomeType(CoinConstants.IncomeType.INCOME.getType());
+                b.setMainType(CoinConstants.MainType.UNFREEZE.getType());
+                b.setSonType(RecordSonType.TRANSACTION_UNFREEZE);
+                b.setUserId(match.getUserId());
+                cList.add(b);
+                if (!accountService.balanceChangeSYNC(cList)) {// 资产变更异常
+                    throw new AccountOperationBusyException();
+                }
+            }
             //查询当前用户取消订单数量
             int count = 1;
             Object object = redisCache.getCacheObject(RedisConstants.CANCEL_ORDER_COUNT_KEY + match.getUserId());
@@ -97,14 +116,15 @@ public class OrderFailureListener {
             ezOtcChatMsg1.setOrderMatchNo(match.getOrderMatchNo());
             ezOtcChatMsg1.setReceiveUserId(match.getUserId());
             ezOtcChatMsg1.setSendText(SystemOrderTips.SYSTEM_CANCEL);
-
             ezOtcChatMsg2.setOrderMatchNo(match.getOrderMatchNo());
             ezOtcChatMsg2.setReceiveUserId(match.getOtcOrderUserId());
             ezOtcChatMsg2.setSendText(SystemOrderTips.SYSTEM_CANCEL_2);
-
             list.add(ezOtcChatMsg1);
             list.add(ezOtcChatMsg2);
             otcChatMsgService.sendSysChat(list, MatchOrderStatus.COMPLETED.getCode());
+            match.setStatus(MatchOrderStatus.CANCELLED.getCode());
+            matchService.updateById(match);
+            otcOrderService.updateById(ezOtcOrder);
 
         }
         //接单广告取消

@@ -7,8 +7,7 @@ import javax.ws.rs.DELETE;
  * 
  * 
  */
-public enum BusinessType
-{
+public enum BusinessType{
     /**
      * 其它
      */

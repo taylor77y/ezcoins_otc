@@ -21,6 +21,4 @@ public enum ChainCoinType {
     public String getCoin_type(){
         return this.coin_type;
     }
-
-
 }

@@ -75,15 +75,6 @@ public class EzUserController {
     }
 
 
-    @ApiOperation(value = "封禁/解封账号")
-    @PutMapping("titleOrUnnumber")
-    @AuthToken
-    @NoRepeatSubmit
-    @Log(title = "封禁/解封账号", businessType = BusinessType.UPDATE, operatorType = OperatorType.MANAGE)
-    public Response titleOrUnnumber(@RequestBody UserLimitReqDto userLimitReqDto) {
-        ezUserService.titleOrUnnumber(userLimitReqDto);
-        return Response.success();
-    }
 
 
 

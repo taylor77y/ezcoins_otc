@@ -38,5 +38,5 @@ public interface WalletService extends IService<Wallet> {
     /**
      * 处理第三方冲币审核结果 [审核通过][审核拒绝][到账返回Txid]
      */
-    boolean handleRecharge(String tradeId, String txId, String address,BigDecimal amount, String mainCoinType,String coinType, String memo);
+    boolean handleRecharge(String txId, String address,BigDecimal amount, String mainCoinType,String coinType);
 }

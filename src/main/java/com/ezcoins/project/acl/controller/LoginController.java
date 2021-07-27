@@ -1,7 +1,6 @@
 package com.ezcoins.project.acl.controller;
 
 import com.ezcoins.aspectj.lang.annotation.AuthToken;
-import com.ezcoins.aspectj.lang.annotation.IgnoreUserToken;
 import com.ezcoins.aspectj.lang.annotation.NoRepeatSubmit;
 import com.ezcoins.base.BaseController;
 import com.ezcoins.constant.enums.LoginType;
@@ -64,7 +63,6 @@ public class LoginController extends BaseController {
 
     @PostMapping("login")
     @ApiOperation(value = "管理员用户登录")
-    @IgnoreUserToken
     @NoRepeatSubmit
     public Response login(@RequestBody JwtAuthenticationRequest authenticationRequest) {
         AclUser aclUser = aclUserService.selectByUsername(authenticationRequest.getUsername());

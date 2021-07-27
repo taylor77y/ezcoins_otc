@@ -37,6 +37,7 @@ public class EzOtcChatMsgController {
     @AuthToken
     public ResponseList<EzOtcChatMsg> advertisingBusinessList(@PathVariable String orderMatchNo) {
         LambdaQueryWrapper<EzOtcChatMsg> queryWrapper=new LambdaQueryWrapper<>();
+        queryWrapper.eq(EzOtcChatMsg::getIsSystem,"1");
         queryWrapper.eq(EzOtcChatMsg::getOrderMatchNo,orderMatchNo);
         return ResponseList.success(otcChatMsgService.list(queryWrapper));
     }

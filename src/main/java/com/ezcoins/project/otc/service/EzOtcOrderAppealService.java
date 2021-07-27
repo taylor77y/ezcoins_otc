@@ -25,10 +25,10 @@ public interface EzOtcOrderAppealService extends IService<EzOtcOrderAppeal> {
 
     /**
      * 取消申诉
-     * @param orderMatchNo
+     * @param id
      * @return
      */
-    Response cancelAppeal(String orderMatchNo);
+    Response cancelAppeal(String id);
 
     /**
      * 处理投诉

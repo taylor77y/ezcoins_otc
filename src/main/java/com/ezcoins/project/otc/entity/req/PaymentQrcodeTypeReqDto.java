@@ -19,6 +19,8 @@ public class PaymentQrcodeTypeReqDto {
     private int paymentMethodId;
     @ApiModelProperty(value = "开户银行名")
     private String bankName;
+    @ApiModelProperty(value = "银行地址")
+    private String optional;
     @ApiModelProperty(value = "真实姓名")
     private String realName;
     @ApiModelProperty(value = "账号")

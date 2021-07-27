@@ -18,7 +18,7 @@ public class SerializerBigDecimal extends JsonSerializer<BigDecimal> {
         if(Objects.isNull(value)) {
             gen.writeNull();
         } else {
-            gen.writeNumber(value.setScale(5, RoundingMode.FLOOR));
+            gen.writeNumber(value.setScale(8, RoundingMode.FLOOR));
         }
     }
 }

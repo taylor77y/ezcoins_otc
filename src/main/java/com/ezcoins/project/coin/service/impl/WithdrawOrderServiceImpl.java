@@ -114,7 +114,6 @@ public class WithdrawOrderServiceImpl extends ServiceImpl<WithdrawOrderMapper, W
             lambdaUpdateWrapper.eq(Record::getId, coinRecordId);
             lambdaUpdateWrapper.set(Record::getStatus, CoinConstants.RecordStatus.REFUSE.getStatus());
             recordService.update(null, lambdaUpdateWrapper);
-
             log.info("后台管理员 {}： 审核失败,原因：{}", userName, checkWithdrewOrderReqDto.getReason());
         }
         withdrawOrder.setUpdateBy(userName);

@@ -31,4 +31,22 @@ public class CoinTypeUtils {
         }
         return null;
     }
+    public static String getMainCoinType(String chain,String coin){
+        if (chain.equals(ChainCoinType.ERC20.getChain()) && coin.equals(ChainCoinType.ERC20.getCoin_type())){
+            return CoinType.Ethereum.getCode();
+        }
+        return null;
+
+    }
+    public static String getCoinType(String chain,String coin){
+        if (chain.equals(ChainCoinType.ERC20.getChain()) && coin.equals(ChainCoinType.ERC20.getCoin_type())){
+            return "0xdac17f958d2ee523a2206206994597c13d831ec7";
+        }
+        return null;
+    }
+
+
+
+
+
 }

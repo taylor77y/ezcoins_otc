@@ -16,18 +16,20 @@ import javax.validation.constraints.NotBlank;
 public class UserLimitReqDto {
 
     @ApiModelProperty(value = "用户id")
-    @NotBlank(message = "{审核类型不能为空}")
     private String userId;
 
+    @ApiModelProperty(value = "用户名")
+    private String userName;
+
     @ApiModelProperty(value = "封号原因")
+    @NotBlank(message = "请输入封号原因")
     private String detailed;
 
-    @ApiModelProperty(value = "封禁类型( 登录封禁：1)")
-    @NotBlank(message = "{封禁类型不能为空}")
+    @ApiModelProperty(value = "封禁类别（0：登录封禁 1：提现封禁 2：发布广告封禁 3：买卖封禁 ）")
     private String type;
 
-    @ApiModelProperty(value = "帐号状态（0正常 1停用）")
-    @NotBlank(message = "{操作类型不能为空}")
-    private String operate;
+    @ApiModelProperty(value = "封禁时间(天数)")
+    private Integer day;
+
 
 }

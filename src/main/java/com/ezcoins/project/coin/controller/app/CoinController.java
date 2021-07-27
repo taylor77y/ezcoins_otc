@@ -4,9 +4,11 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ezcoins.aspectj.lang.annotation.AuthToken;
+import com.ezcoins.aspectj.lang.annotation.Limit;
 import com.ezcoins.aspectj.lang.annotation.Log;
 import com.ezcoins.base.BaseController;
 import com.ezcoins.constant.enums.BusinessType;
+import com.ezcoins.constant.enums.LimitType;
 import com.ezcoins.constant.enums.OperatorType;
 import com.ezcoins.context.ContextHandler;
 import com.ezcoins.project.coin.entity.*;
@@ -90,7 +92,7 @@ public class CoinController extends BaseController {
     @GetMapping("coinAccount/{coinName}")
     public Response coinAccount(@PathVariable String coinName) {
         HashMap map=new HashMap();
-        map.put("balance",accountService.getAccountByUserIdAndCoinId(ContextHandler.getUserId(),coinName)
+        map.put("balance",accountService.getAccountByUserIdAndCoinId(ContextHandler.getUserId(),coinName,ContextHandler.getUserName())
                 .getAvailable());
         return Response.success(map);
     }
@@ -151,6 +153,7 @@ public class CoinController extends BaseController {
     @ApiOperation(value = "发起提现")
     @AuthToken
     @PostMapping("withdraw")
+    @Limit(LIMIT_TYPE = LimitType.WITHDRAWLIMIT)
     @Log(title = "发起提现", businessType = BusinessType.INSERT, operatorType = OperatorType.MOBILE)
     public Response withdraw(@RequestBody WithdrawReqDto withdrawReqDto) {
         return withdrawOrderService.withdraw(withdrawReqDto);

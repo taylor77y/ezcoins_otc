@@ -2,7 +2,6 @@ package com.ezcoins.project.app.controller.app;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.ezcoins.aspectj.lang.annotation.AuthToken;
-import com.ezcoins.aspectj.lang.annotation.IgnoreUserToken;
 import com.ezcoins.base.BaseController;
 import com.ezcoins.constant.enums.app.AppUpdateType;
 import com.ezcoins.project.app.entity.EzAppVersion;
@@ -44,7 +43,6 @@ public class EzAppController extends BaseController {
 
     @ApiOperation(value = "获取 上架app版本列表 ")
     @PostMapping("getAppVersion")
-    @IgnoreUserToken
     public Response<AppVersionRespDto> getAppVersion(@RequestBody VersionReqDto versionReqDto) {
         String locale = LocaleContextHolder.getLocale().toString();
 

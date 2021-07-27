@@ -36,6 +36,9 @@ public class EzOtcOrderPayment implements Serializable {
     @ApiModelProperty(value = "开户银行名")
     private String bankName;
 
+    @ApiModelProperty(value = "银行地址")
+    private String optional;
+
     @ApiModelProperty(value = "卖家姓名")
     private String realName;
 

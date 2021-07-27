@@ -134,22 +134,13 @@ public class WalletClientService {
      */
     public boolean rechargeCallback(Trade trade) throws Exception {
         //金额为最小单位，需要转换,包括amount和fee字段
-        BigDecimal amount = trade.getAmt();
-        BigDecimal fee = trade.getFee();
-        trade.setAmt(amount);
-        trade.setFee(fee);
-        return walletService.handleRecharge(trade.getTradeId(), trade.getTid(), trade.getAddr(), amount, trade.getChain(),trade.getChain(), trade.getUm());
+        String mainCoinType = CoinTypeUtils.getMainCoinType(trade.getChain(), trade.getChain());
+        String coinType = CoinTypeUtils.getCoinType(trade.getChain(), trade.getChain());
+        return walletService.handleRecharge(trade.getTid(), trade.getAddr(), trade.getAmt(), mainCoinType,coinType);
     }
-
-
-
 
     public boolean withdrawCallback(Trade trade) {
         //金额为最小单位，需要转换,包括amount和fee字段
-        BigDecimal amount = trade.getAmt();
-        BigDecimal fee = trade.getFee();
-        trade.setAmt(amount);
-        trade.setFee(fee);
         return walletService.handleThirdpartyWithdrawal(trade);
     }
 }

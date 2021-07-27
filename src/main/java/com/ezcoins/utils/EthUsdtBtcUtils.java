@@ -12,7 +12,7 @@ import java.util.Map;
  * @Email: 1044508403@qq.com
  * @Description:
  * @Date:2021/7/6 15:16
- * @Version:1.0
+ * @Version:1.0t5
  */
 public class EthUsdtBtcUtils {
     private EthUsdtBtcUtils(){}

@@ -22,7 +22,7 @@ import java.util.List;
 public interface AccountService extends IService<Account> {
     List<AccountRespDto> coinAccountListByUserId(String userId);
 
-    Account getAccountByUserIdAndCoinId(String userId, String coinName) throws AccountOperationBusyException;
+    Account getAccountByUserIdAndCoinId(String userId, String coinName,String userName) throws AccountOperationBusyException;
 
     List<Account> processCoinAccount(String userId,String userName);
 

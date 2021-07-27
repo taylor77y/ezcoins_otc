@@ -46,7 +46,10 @@ public class EzPaymentInfoServiceImpl extends ServiceImpl<EzPaymentInfoMapper, E
     public Response alipayPaymentMethod(PaymentQrcodeTypeReqDto qrcodeTypeReqDto) {
         if (qrcodeTypeReqDto.getPaymentMethodId() == PaymentMethod.BANK.getCode()) {
             if (StringUtils.isEmpty(qrcodeTypeReqDto.getBankName())) {
-                return Response.error(MessageUtils.message("银行名称不能为空"));
+                return Response.error(MessageUtils.message("请输入银行名称"));
+            }
+            if (StringUtils.isEmpty(qrcodeTypeReqDto.getOptional())) {
+                return Response.error(MessageUtils.message("请输入银行地址"));
             }
         } else {
             if (StringUtils.isEmpty(qrcodeTypeReqDto.getPaymentQrCode())) {
@@ -54,15 +57,6 @@ public class EzPaymentInfoServiceImpl extends ServiceImpl<EzPaymentInfoMapper, E
             }
         }
         String userId = ContextHandler.getUserId();
-        String realName = qrcodeTypeReqDto.getRealName();
-        EzUserKyc one = kycService.getOneApprove(userId);
-        if (null == one) {
-            return Response.error(MessageUtils.message("请先完成实名认证"));
-        }
-
-        if (!(one.getLastName()+one.getFirstName()).equals(realName)) {
-            return Response.error(MessageUtils.message("请输入认证的真实姓名"));
-        }
         String id = qrcodeTypeReqDto.getId();
         EzPaymentInfo paymentInfo = new EzPaymentInfo();
         BeanUtils.copyBeanProp(paymentInfo, qrcodeTypeReqDto);

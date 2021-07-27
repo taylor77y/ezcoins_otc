@@ -5,6 +5,7 @@ import com.ezcoins.project.coin.udun.BiPayClient;
 import com.ezcoins.project.coin.udun.BiPayService;
 import com.ezcoins.project.coin.udun.HttpUtil;
 import com.ezcoins.project.coin.udun.Trade;
+import com.ezcoins.response.Response;
 import com.ezcoins.utils.ServletUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -40,24 +41,22 @@ public class WalletCallbackController {
      */
     @RequestMapping("/bipay/notify")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "tim estamp", value = "时间戳", required = true),
-            @ApiImplicitParam(name = "key", value = "钥匙", required = true),
+            @ApiImplicitParam(name = "timestamp", value = "时间戳", required = true),
             @ApiImplicitParam(name = "body", value = "请求json字符串", required = true),
-            @ApiImplicitParam(name = "sign", value = "md5加密后的签名", required = true)
+            @ApiImplicitParam(name = "sign", value = "钥匙", required = true),
+            @ApiImplicitParam(name = "encrypted", value = "md5加密后的数据", required = true)
     })
-    public void tradeCallback(@RequestParam("timestamp")  String timestamp,
-                                @RequestParam("plainText")String plainText,
-                                @RequestParam("body")String body,
-                                @RequestParam("encrypted")String encrypted,
-                                @RequestParam("sign")String sign,
-                                HttpServletResponse response) throws Exception {
-        log.info("timestamp:{},plainText:{},sign:{},body:{}",timestamp,plainText,sign,encrypted);
+    public Response tradeCallback(@RequestParam("timestamp")  String timestamp,
+                                  @RequestParam("body")String body,
+                                  @RequestParam("sign")String sign,
+                                  @RequestParam("encrypted")String encrypted,
+                                  HttpServletResponse response) throws Exception {
+        log.info("timestamp:{},sign:{},body:{}",timestamp,sign,encrypted);
         Trade trade = JSONObject.parseObject(body,Trade.class);
-
-        if(!HttpUtil.checkSign(trade.getUm(),trade.getAddr(),trade.getTid(),trade.getAmt().toString(),trade.getS()+"",encrypted)){
-            ServletUtils.renderErrorString(response,"fail");
+        System.out.println(trade);
+        if(!HttpUtil.checkSign(sign,timestamp,body,encrypted)){
+            return Response.error("md5 fail",500);
         }
-
         log.info("trade:{}",trade);
         //金额为最小单位，需要转换,包括amount和fee字段
         BigDecimal amount = trade.getAmt();
@@ -74,13 +73,11 @@ public class WalletCallbackController {
                 rs = false;
             }
             if (rs) {
-				ServletUtils.renderString(response,"success");
+                return Response.success();
 			}else {
-				ServletUtils.renderErrorString(response,"fail");
+                return Response.error();
 			}
-            return;
-        }
-        else if(trade.getTt() == 2){
+        } else if(trade.getTt() == 2){
             log.info("=====收到提币处理通知=====");
             log.info("address:{},amount:{},mainCoinType:{},businessId:{}",trade.getAddr(),trade.getAmt(),trade.getCoin(),trade.getRequest_id());
             if(trade.getS() == 1){
@@ -102,13 +99,11 @@ public class WalletCallbackController {
                 rs = false;
             }
             if (rs) {
-				ServletUtils.renderString(response,"success");
+                return Response.success();
 			}else {
-				ServletUtils.renderErrorString(response,"fail");
+                return Response.error();
 			}
-            return;
         }
-        response.setStatus(200);
-		ServletUtils.renderString(response,"success");
+        return Response.error("请选择充值或者提现");
     }
 }

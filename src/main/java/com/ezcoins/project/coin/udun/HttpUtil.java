@@ -59,13 +59,12 @@ public class HttpUtil {
         return ((a - b) > 0.5 ? 1 : 0) + b;
     }
 
-    public static boolean checkSign(String key, String timestamp, String nonce, String body, String sign) throws Exception {
-        String checkSign = SignUtil.sign(key, timestamp, nonce, body);
-        return checkSign.equals(sign);
-    }
 
-    public static boolean checkSign(String username, String address, String transactionId, String amount, String status,String encrypted) throws Exception {
-      String checkSign = SignUtil.sign(username, address, transactionId, amount,status);
+    public static boolean checkSign(String sign,String timestamp,String body,String encrypted) throws Exception {
+      if (!"47023067b4ac0b6d3cab1f667acc81c7".equals(sign)){
+          return false;
+      }
+      String checkSign = SignUtil.sign(sign, timestamp,body);
       return checkSign.equals(encrypted);
     }
 

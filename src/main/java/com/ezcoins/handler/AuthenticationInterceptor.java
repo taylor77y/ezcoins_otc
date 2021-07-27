@@ -1,21 +1,27 @@
 package com.ezcoins.handler;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.ezcoins.aspectj.lang.annotation.AuthToken;
-import com.ezcoins.aspectj.lang.annotation.IgnoreUserToken;
+import com.ezcoins.aspectj.lang.annotation.Limit;
 import com.ezcoins.base.BaseException;
 import com.ezcoins.constant.UserConstants;
+import com.ezcoins.constant.enums.LimitType;
 import com.ezcoins.constant.enums.LoginType;
 import com.ezcoins.context.ContextHandler;
 import com.ezcoins.exception.CheckException;
 import com.ezcoins.exception.jwt.TokenException;
-import com.ezcoins.project.acl.entity.AclUser;
-import com.ezcoins.project.acl.service.AclUserService;
 import com.ezcoins.project.consumer.entity.EzUser;
+import com.ezcoins.project.consumer.entity.EzUserLimit;
+import com.ezcoins.project.consumer.entity.EzUserLimitLog;
+import com.ezcoins.project.consumer.service.EzUserLimitLogService;
+import com.ezcoins.project.consumer.service.EzUserLimitService;
 import com.ezcoins.project.consumer.service.EzUserService;
 import com.ezcoins.security.util.IJWTInfo;
 import com.ezcoins.security.util.JWTHelper;
+import com.ezcoins.utils.DateUtils;
+import com.ezcoins.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
@@ -41,6 +47,11 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
 
     @Resource
     private EzUserService userService;
+    @Resource
+    private EzUserLimitService limitService;
+
+    @Resource
+    private EzUserLimitLogService limitLogService;
 
 
     public static boolean flag = false;
@@ -54,80 +65,87 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
         if (!flag) {
             return false;
         }
-
         HandlerMethod handlerMethod = (HandlerMethod) handler;
-        IgnoreUserToken annotation = handlerMethod.getBeanType().getAnnotation(IgnoreUserToken.class);
-        if (annotation != null) {
-            return true;
-        }
         Method method = handlerMethod.getMethod();
         AuthToken authToken = method.getAnnotation(AuthToken.class);
         if (authToken != null) {
             String token = jwtHelper.getToken(request);
-            CheckException.checkToken(StringUtils.isEmpty(token), () -> {
-                log.error("token失效，请重新登录");
-            });
             //获取token
             if (StringUtils.isEmpty(token)) {
                 throw new TokenException();
             }
             //解析token
             IJWTInfo fromToken = jwtHelper.getInfoFromToken(token);
+            if (StringUtils.isNull(fromToken)) {
+                throw new TokenException();
+            }
             log.info("用户{}", fromToken);
-
-            CheckException.checkToken(fromToken == null, () -> {
-                log.error("token失效，请重新登录");
-            });
-
             //根据token存储的值，redis判断是否失效
-            boolean checkToken = jwtHelper.verifyToken(fromToken);
-
-            CheckException.checkToken(!checkToken, () -> {
-                log.error("token失效，请重新登录");
-            });
-
+            boolean checkToken = jwtHelper.verifyToken(fromToken, token);
+            if (!checkToken) {
+                throw new TokenException();
+            }
             ContextHandler.setUserId(fromToken.getUserId());
             ContextHandler.setUserName(fromToken.getUserName());
             ContextHandler.setUserType(fromToken.getUserType());
             //APP权限
             if (fromToken.getUserType().equals(LoginType.APP.getType())) {
-                EzUser user = null;
-                if (authToken.advertisingStatus()) {
-                    user = userService.getById(fromToken.getUserId());
-                    CheckException.checkToken(user == null, () -> {
-                        log.error("登录已失效，请重新登录");
+                EzUser user = userService.getById(fromToken.getUserId());
+                if (null == user) {
+                    throw new TokenException();
+                }
+                if (authToken.status()) {
+                    CheckException.check("1".equals(user.getStatus()), "用户被禁止", () -> {
+                        log.error("用户被禁止");
                     });
+                }
+                if (authToken.advertisingStatus()) {
                     CheckException.check("1".equals(user.getLevel()), "请先进行高级认证", () -> {
                         log.error("请先进行高级认证");
                     });
                 }
                 if (authToken.kyc()) {
-                    if (user == null) {
-                        user = userService.getById(fromToken.getUserId());
-                        CheckException.checkToken(user == null, () -> {
-                            log.error("登录已失效，请重新登录");
-                        });
-                    }
-                    CheckException.check("1".equals(user.getKycStatus()), "请先完成实名认证");
+                    CheckException.check("1".equals(user.getKycStatus()), "请先完成实名认证",() -> {
+                        log.error("请先完成实名认证");
+                    });
                 }
-
-                if (authToken.status()) {
-                    if (user == null) {
-                        user = userService.getById(fromToken.getUserId());
-                        CheckException.checkToken(user == null, () -> {
-                            log.error("登录已失效，请重新登录");
-                        });
+                Limit limitAnnotation = handlerMethod.getBeanType().getAnnotation(Limit.class);
+                if (limitAnnotation != null) {
+                    LambdaQueryWrapper<EzUserLimitLog> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+                    lambdaQueryWrapper.eq(EzUserLimitLog::getIsExpire, "0");
+                    lambdaQueryWrapper.eq(EzUserLimitLog::getUserId, fromToken.getUserId());
+                    lambdaQueryWrapper.eq(EzUserLimitLog::getType, limitAnnotation.LIMIT_TYPE().getCode());
+                    EzUserLimitLog one = limitLogService.getOne(lambdaQueryWrapper);
+                    if (one != null) {
+                        if (one.getBanTime() != null && one.getBanTime().getTime() < DateUtils.getNowDate().getTime()) {
+                            one.setIsExpire("1");
+                            limitLogService.updateById(one);
+                            LambdaUpdateWrapper<EzUserLimit> queryWrapper = new LambdaUpdateWrapper<>();
+                            queryWrapper.eq(EzUserLimit::getUserId, fromToken.getUserId());
+                            if (limitAnnotation.LIMIT_TYPE().equals(LimitType.LOGINLIMIT)) {
+                                queryWrapper.eq(EzUserLimit::getLogin, 0);
+                            } else if (limitAnnotation.LIMIT_TYPE().equals(LimitType.WITHDRAWLIMIT)) {
+                                queryWrapper.eq(EzUserLimit::getWithdraw, 0);
+                            } else if (limitAnnotation.LIMIT_TYPE().equals(LimitType.ORDERLIMIT)) {
+                                queryWrapper.eq(EzUserLimit::getOrder, 0);
+                            } else if (limitAnnotation.LIMIT_TYPE().equals(LimitType.BUSINESSLIMIT)) {
+                                queryWrapper.eq(EzUserLimit::getBusiness, 0);
+                            }
+                            limitService.update(queryWrapper);
+                            return true;
+                        }
+                        throw new BaseException("用户行为已被限制");
                     }
-                    CheckException.check("1".equals(user.getStatus()), "用户被禁止");
+                } else if (fromToken.getUserType().equals(LoginType.WEB.getType())) {
                 }
-            } else if (fromToken.getUserType().equals(LoginType.WEB.getType())) {
             }
         }
         return true;
     }
 
     @Override
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception
+            ex) throws Exception {
         ContextHandler.remove();
         super.afterCompletion(request, response, handler, ex);
     }

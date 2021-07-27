@@ -3,10 +3,12 @@ package com.ezcoins.project.otc.controller.app;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ezcoins.aspectj.lang.annotation.AuthToken;
+import com.ezcoins.aspectj.lang.annotation.Limit;
 import com.ezcoins.aspectj.lang.annotation.Log;
 import com.ezcoins.aspectj.lang.annotation.NoRepeatSubmit;
 import com.ezcoins.base.BaseException;
 import com.ezcoins.constant.enums.BusinessType;
+import com.ezcoins.constant.enums.LimitType;
 import com.ezcoins.constant.enums.OperatorType;
 import com.ezcoins.constant.enums.otc.MatchOrderStatus;
 import com.ezcoins.constant.enums.otc.PaymentMethod;
@@ -49,8 +51,6 @@ import java.util.stream.Collectors;
 public class OtcController {
     @Autowired
     private EzPaymentInfoService paymentInfoService;
-    @Autowired
-    private EzPaymentMethodService methodService;
     @Autowired
     private EzAdvertisingBusinessService advertisingBusinessService;
     @Autowired
@@ -162,7 +162,6 @@ public class OtcController {
     public Response updateOrAddPaymentInfo(@RequestBody PaymentQrcodeTypeReqDto qrcodeTypeReqDto) {
         return paymentInfoService.alipayPaymentMethod(qrcodeTypeReqDto);
     }
-
     @NoRepeatSubmit
     @AuthToken
     @ApiOperation(value = "删除收款方式")
@@ -172,7 +171,6 @@ public class OtcController {
         paymentInfoService.removeById(id);
         return Response.success();
     }
-
     @AuthToken
     @ApiImplicitParams({@ApiImplicitParam(name = "securityPassword", value = "安全密码", required = true), })
     @ApiOperation(value = "判断安全密码是否正确")
@@ -187,7 +185,6 @@ public class OtcController {
         }
         return Response.success();
     }
-
 
     @ApiOperation(value = "发布广告订单限制")
     @GetMapping("orderLimit")
@@ -205,29 +202,27 @@ public class OtcController {
     @ApiOperation(value = "发布广告订单")
     @PostMapping("releaseAdvertisingOrder")
     @AuthToken(kyc = true)
+    @Limit(LIMIT_TYPE = LimitType.ORDERLIMIT)
     @Log(title = "发布广告订单", businessType = BusinessType.INSERT, operatorType = OperatorType.MOBILE)
     public Response releaseAdvertisingOrder(@RequestBody OtcOrderReqDto otcOrderReqDto) {
         otcOrderReqDto.setUserId(ContextHandler.getUserId());
         return otcOrderService.releaseAdvertisingOrder(otcOrderReqDto);
     }
-
     @NoRepeatSubmit
     @ApiOperation(value = "用户根据订单号下单购买/出售")
     @PostMapping("placeAnOrder")
     @AuthToken(kyc = true)
+    @Limit(LIMIT_TYPE = LimitType.ORDERLIMIT)
     @Log(title = "下单", businessType = BusinessType.INSERT, operatorType = OperatorType.MOBILE)
     public Response<PaymentDetails> placeAnOrder(@RequestBody PlaceOrderReqDto placeOrderReqDto) {
         return otcOrderService.placeAnOrder(placeOrderReqDto);
     }
-
-
     @ApiOperation(value = "订单列表")
     @PostMapping("otcOrderList")
     @AuthToken
     public ResponseList<OtcOrderRespDto> otcOrderList(@RequestBody OtcOrderQueryReqDto orderQueryReqDto) {
         return otcOrderService.otcOrderList(orderQueryReqDto);
     }
-
     @ApiOperation(value = "NEW ORDER")
     @PostMapping("newOrderList")
     @AuthToken
@@ -261,7 +256,6 @@ public class OtcController {
     public Response cancelOrder(@PathVariable String matchOrderNo) {
         return orderMatchService.cancelOrder(matchOrderNo);
     }
-
     @NoRepeatSubmit
     @ApiOperation(value = "买家确认付款")
     @PutMapping("confirmPayment/{matchOrderNo}")
@@ -270,7 +264,6 @@ public class OtcController {
     public Response confirmPayment(@PathVariable String matchOrderNo) {
         return orderMatchService.confirmPayment(matchOrderNo);
     }
-
     @NoRepeatSubmit
     @ApiOperation(value = "卖家放款")
     @PutMapping("sellerPut/{matchOrderNo}")
@@ -279,8 +272,6 @@ public class OtcController {
     public Response sellerPut(@PathVariable String matchOrderNo) {
         return orderMatchService.sellerPut(matchOrderNo,false);
     }
-
-
     @ApiOperation(value = "一键卖币(只支持人民币)")
     @PostMapping("sellOneKey")
     @AuthToken(kyc = true)
@@ -288,12 +279,12 @@ public class OtcController {
     public Response<PaymentDetails> sellOneKey(@RequestBody @Validated SellOneKeyReqDto sellOneKeyReqDto) {
         return orderMatchService.sellOneKey(sellOneKeyReqDto);
     }
-
     @ApiOperation(value = "一键卖币配置")
     @GetMapping("oneKeyConfig")
     public ResponseList<EzOneSellConfig> oneKeyConfig() {
         return ResponseList.success(ezSellConfigService.list());
     }
+
 
 
     @NoRepeatSubmit
@@ -305,13 +296,14 @@ public class OtcController {
        return appealService.appeal(appealReqDto);
     }
 
+
     @NoRepeatSubmit
     @ApiOperation(value = "取消申诉")
-    @PutMapping("cancelAppeal/{orderMatchNo}")
+    @PutMapping("cancelAppeal/{id}")
     @AuthToken
     @Log(title = "取消申诉", businessType = BusinessType.UPDATE, operatorType = OperatorType.MOBILE)
-    public Response cancelAppeal(@PathVariable String orderMatchNo) {
-        return appealService.cancelAppeal(orderMatchNo);
+    public Response cancelAppeal(@PathVariable String id) {
+        return appealService.cancelAppeal(id);
     }
 
 

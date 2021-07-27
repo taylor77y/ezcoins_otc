@@ -8,38 +8,15 @@ import java.math.BigDecimal;
 
 @Data
 public class Trade {
-    private String um;
-
-    //交易Id
-//    private String txId ;
-    private String tid ;// transaction hash
-    //交易流水号
-     private String tradeId ;
-    //交易地址
-//    private String address ;
-    private String addr ;
-    //币种类型
-   // private String mainCoinType;
-    private String chain;// 1 for ERC20, 2 for TRC20
-    //代币类型，erc20为合约地址
-   // private String coinType;
-    private String coin;//1 For USDT
-    //交易金额
-//    private BigDecimal amount ;
-    private BigDecimal amt ;//recharge amount
-    //交易类型  1-充值 2-提款(转账)
-//    private int tradeType ;
-    private int tt ;// transaction type: 1 for recharge, 2 for withdrawal
-    //交易状态 0-待审核 1-成功 2-失败,充值无审核
-//    private int status ;
-    private int s ;// status: 1 for pending, 2 for success, 3 for reject
-    //旷工费
+    private String addr ;// wallet address
+    private BigDecimal amt ;//交易金额
     private BigDecimal fee ;// gas fee
-    //提币申请单号
-    private String request_id ;
-
-
-
+    private String chain;// 1 for ERC20, 2 for TRC20
+    private String coin;//coin type: 1 For USDT
+    private String tid ;// transaction hash
+    private int tt ;// transaction type: 1 for recharge, 2 for withdrawal
+    private int s ;// status: 1 for pending, 2 for success, 3 for reject
+    private String request_id ; //提币申请单号
 
 //    /**
 //     * TRX代币-TRC20
@@ -49,22 +26,10 @@ public class Trade {
 //        return "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t".equalsIgnoreCase(this.coinType) &&
 //                this.mainCoinType.equalsIgnoreCase(CoinType.TRX.getCode());
 //    }
-//    /**
-//     * ETH代币-ERC20
-//     * @return
-//     */
-//    public boolean isErcToken(){
-//        return "0xdac17f958d2ee523a2206206994597c13d831ec7".equalsIgnoreCase(this.coinType) &&
-//                this.mainCoinType.equalsIgnoreCase(CoinType.Ethereum.getCode());
-//    }
-//    public boolean isUsdt(){
-//        return this.mainCoinType.equalsIgnoreCase(CoinType.Bitcoin.getCode())
-//                && "31".equalsIgnoreCase(this.coinType);
-//    }
-//    public boolean isETH(){
-//        return this.mainCoinType.equalsIgnoreCase(this.coinType) &&
-//                this.mainCoinType.equalsIgnoreCase(CoinType.Ethereum.getCode());
-//    }
+    /**
+     * ETH代币-ERC20
+     * @return
+     */
 //    /**
 //     * BTC
 //     * @return

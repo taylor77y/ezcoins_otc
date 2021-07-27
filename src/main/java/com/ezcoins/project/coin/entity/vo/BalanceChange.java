@@ -31,5 +31,4 @@ public class BalanceChange {
     private String sonType;
 	/**备注**/
     private String memo;
-
 }

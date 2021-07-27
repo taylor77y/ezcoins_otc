@@ -46,6 +46,9 @@ public class EzPaymentInfo implements Serializable {
     @ApiModelProperty(value = "开户银行名")
     private String bankName;
 
+    @ApiModelProperty(value = "银行地址")
+    private String optional;
+
     @ApiModelProperty(value = "账号")
     private String accountNumber;
 

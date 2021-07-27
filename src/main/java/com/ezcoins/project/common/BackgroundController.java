@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -80,9 +81,10 @@ public class BackgroundController {
         List<Record> list = recordService.list(queryWrapper1);
         //按照类型进行分类
         Map<String, List<Record>> stringListMap = list.stream().collect(Collectors.groupingBy(Record::getSonType));
-        indexRespDto.setTotalRecharge(stringListMap.get(RecordSonType.ORDINARY_RECHARGE).stream().collect(CollectorsUtil.summingBigDecimal(Record::getAmount)).abs());
-        indexRespDto.setTotalWithdraw(stringListMap.get(RecordSonType.ORDINARY_WITHDRAWAL).stream().collect(CollectorsUtil.summingBigDecimal(Record::getAmount)).abs());
-
+        List<Record> re = stringListMap.getOrDefault(RecordSonType.ORDINARY_RECHARGE,new ArrayList<>());
+        List<Record> wi = stringListMap.getOrDefault(RecordSonType.ORDINARY_WITHDRAWAL,new ArrayList<>());
+        indexRespDto.setTotalRecharge(re.stream().collect(CollectorsUtil.summingBigDecimal(Record::getAmount)).abs());
+        indexRespDto.setTotalWithdraw(wi.stream().collect(CollectorsUtil.summingBigDecimal(Record::getAmount)).abs());
         return Response.success(indexRespDto);
     }
 

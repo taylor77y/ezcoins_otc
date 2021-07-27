@@ -23,7 +23,6 @@ import java.util.Date;
 @ApiModel(value="EzUserLimitLog对象", description="封号记录表")
 public class EzUserLimitLog implements Serializable {
     private static final long serialVersionUID = 1L;
-
     @ApiModelProperty(value = "id")
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
@@ -31,20 +30,26 @@ public class EzUserLimitLog implements Serializable {
     @ApiModelProperty(value = "用户id")
     private String userId;
 
+    @ApiModelProperty(value = "用户名")
+    private String userName;
+
     @ApiModelProperty(value = "详细")
     private String detailed;
 
-    @ApiModelProperty(value = "封禁类型( 登录封禁：1)")
+    @ApiModelProperty(value = "封禁类别（0：登录封禁 1：提现封禁 2：发布广告封禁 3：买卖封禁）")
     private String type;
 
-    @ApiModelProperty(value = "帐号状态（0正常 1停用）")
-    private String status;
+    @ApiModelProperty(value = "是否过期 1（true）已过期 ，0（false）未过期")
+    private String isExpire;
 
-    @ApiModelProperty(value = "操作人")
+    @ApiModelProperty(value = "封号操作者")
     private String createBy;
 
     @ApiModelProperty(value = "创建时间")
     @TableField(fill = FieldFill.INSERT)
     private Date createTime;
+
+    @ApiModelProperty(value = "封号到期时间（null：永久封号）")
+    private Date banTime;
 
 }

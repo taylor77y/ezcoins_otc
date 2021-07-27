@@ -86,22 +86,21 @@ spring:
             multi-statement-allow: true
   mail:
     #服务器
-    host: 123.58.177.181
-    #邮箱发件人
-    username: hotel.happy@vip.163.com
-    #授权码
-    password: hotel123456
+    host: smtpout.secureserver.net
+      #邮箱发件人
+    username: support@ezcoins.cc
+      #授权码
+    password: P@ssw0rdEzcoins
     properties:
       mail:
-        debug: true
-        smtp:
+        smtps:
           ssl:
             enable: false
           socketFactory:
-            port: 25
+            port: 465
             class: javax.net.ssl.SSLSocketFactory
           # 必须进行授权认证，它的目的就是阻止他人任意乱发邮件
-    protocol: smtp
+    protocol: smtps
     default-encoding: utf-8
 #          auth: true
 #          starttls:

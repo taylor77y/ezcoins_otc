@@ -34,9 +34,9 @@ public class JWTHelper {
     @Autowired
     private RedisCache redisCache;
 
-    public String getToken(HttpServletRequest request){
+    public String getToken(HttpServletRequest request) {
         String token = request.getHeader(tokenProperties.getHeader());
-        if (StringUtils.isNotEmpty(token) && token.startsWith(Constants.TOKEN_PREFIX)){
+        if (StringUtils.isNotEmpty(token) && token.startsWith(Constants.TOKEN_PREFIX)) {
             token = token.replace(Constants.TOKEN_PREFIX, "");
         }
         return token;
@@ -45,12 +45,11 @@ public class JWTHelper {
 
     public IJWTInfo jwtInfo(HttpServletRequest request) throws Exception {
         String token = request.getHeader(tokenProperties.getHeader());
-        if (StringUtils.isNotEmpty(token) && token.startsWith(Constants.TOKEN_PREFIX)){
+        if (StringUtils.isNotEmpty(token) && token.startsWith(Constants.TOKEN_PREFIX)) {
             token = token.replace(Constants.TOKEN_PREFIX, "");
         }
         return getInfoFromToken(token);
     }
-
 
 
     /**
@@ -75,26 +74,23 @@ public class JWTHelper {
     /**
      * 将用户数据存入数据库
      */
-     public String createToken(IJWTInfo jwtInfo){
-         redisCache.setCacheObject(RedisConstants.LOGIN_USER_KEY+jwtInfo.getUserId()+"_"+jwtInfo.getUserType(),
-                 jwtInfo,tokenProperties.getExpireTime(),
-                 TimeUnit.MINUTES);
-        return generateToken(jwtInfo,null);
-     }
-
+    public String createToken(IJWTInfo jwtInfo) {
+        String token = generateToken(jwtInfo, null);
+        redisCache.setCacheObject(RedisConstants.LOGIN_USER_KEY + jwtInfo.getUserId() + "_" + jwtInfo.getUserType(),
+                token, tokenProperties.getExpireTime(),
+                TimeUnit.MINUTES);
+        return token;
+    }
     /**
      * 验证token是否过期
      */
-    public boolean verifyToken(IJWTInfo jwtInfo){
-        IJWTInfo redisCacheCacheObject = redisCache.getCacheObject(RedisConstants.LOGIN_USER_KEY + jwtInfo.getUserId() + "_" + jwtInfo.getUserType());
-        if (StringUtils.isNull(redisCacheCacheObject)){
+    public boolean verifyToken(IJWTInfo jwtInfo,String token) {
+        String redisToken= redisCache.getCacheObject(RedisConstants.LOGIN_USER_KEY + jwtInfo.getUserId() + "_" + jwtInfo.getUserType());
+        if (StringUtils.isNull(redisToken)) {
             return false;
         }
-        return jwtInfo.equals(redisCacheCacheObject);
+        return token.equals(redisToken);
     }
-
-
-
     /**
      * 密钥加密token
      *
@@ -122,15 +118,16 @@ public class JWTHelper {
      * @return
      * @throws Exception
      */
-    public  Jws<Claims> parserToken(String token) throws Exception {
-        Jws<Claims> claimsJws =null;
+    public Jws<Claims> parserToken(String token) throws Exception {
+        Jws<Claims> claimsJws = null;
         try {
-           claimsJws = Jwts.parser().setSigningKey(tokenProperties.getSecret()).parseClaimsJws(token);
-        }catch (Exception e){
+            claimsJws = Jwts.parser().setSigningKey(tokenProperties.getSecret()).parseClaimsJws(token);
+        } catch (Exception e) {
             throw new TokenException();
         }
         return claimsJws;
     }
+
     /**
      * 公钥解析token
      *
@@ -141,6 +138,7 @@ public class JWTHelper {
     public static Jws<Claims> parserToken(String token, byte[] pubKey) throws Exception {
         return Jwts.parser().setSigningKey(rsaKeyHelper.getPublicKey(pubKey)).parseClaimsJws(token);
     }
+
     /**
      * 获取token中的用户信息
      *
@@ -148,14 +146,15 @@ public class JWTHelper {
      * @return
      * @throws Exception
      */
-    public  IJWTInfo getInfoFromToken(String token) throws Exception {
+    public IJWTInfo getInfoFromToken(String token) throws Exception {
         Jws<Claims> claimsJws = parserToken(token);
-        if (null==claimsJws){
+        if (null == claimsJws) {
             return null;
         }
         Claims body = claimsJws.getBody();
         return new JWTInfo(body.getSubject(), StringHelper.getObjectValue(body.get(JWTConstans.JWT_KEY_USER_ID)), StringHelper.getObjectValue(body.get(JWTConstans.JWT_KEY_USER_TYPE)));
     }
+
     /**
      * 获取token中的用户信息
      *

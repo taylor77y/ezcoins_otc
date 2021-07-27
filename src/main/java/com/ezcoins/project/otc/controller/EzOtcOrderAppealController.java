@@ -43,6 +43,7 @@ public class EzOtcOrderAppealController {
     public ResponseList<EzOtcOrderAppeal> appealBy(@PathVariable String orderMatchNo) {
         LambdaQueryWrapper<EzOtcOrderAppeal> queryWrapper=new LambdaQueryWrapper<>();
         queryWrapper.eq(EzOtcOrderAppeal::getOrderMatchNo,orderMatchNo);
+        queryWrapper.eq(EzOtcOrderAppeal::getStatus,"1");
         return ResponseList.success(appealService.list(queryWrapper));
     }
 

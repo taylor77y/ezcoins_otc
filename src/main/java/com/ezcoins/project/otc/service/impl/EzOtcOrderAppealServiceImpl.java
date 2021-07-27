@@ -62,9 +62,10 @@ public class EzOtcOrderAppealServiceImpl extends ServiceImpl<EzOtcOrderAppealMap
         //查询用户是否已申诉
         LambdaQueryWrapper<EzOtcOrderAppeal> lambdaQueryWrapper=new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(EzOtcOrderAppeal::getOrderMatchNo,appealReqDto.getOrderMatchNo());
+        lambdaQueryWrapper.eq(EzOtcOrderAppeal::getStatus,"1");
         lambdaQueryWrapper.eq(EzOtcOrderAppeal::getUserId,userId);
         if (baseMapper.selectCount(lambdaQueryWrapper)>0){
-            return Response.error(MessageUtils.message("用户已申诉"));
+            return Response.error(MessageUtils.message("用户已申诉，等待处理"));
         }
         EzOtcOrderAppeal ezOtcOrderAppeal = new EzOtcOrderAppeal();
         BeanUtils.copyBeanProp(ezOtcOrderAppeal,appealReqDto);
@@ -83,32 +84,19 @@ public class EzOtcOrderAppealServiceImpl extends ServiceImpl<EzOtcOrderAppealMap
 
     /**
      * 取消申诉
-     * @param orderMatchNo
+     * @param id
      * @return
      */
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public Response cancelAppeal(String orderMatchNo) {
-        //通过订单号查询到订单
-        EzOtcOrderMatch orderMatch = matchService.getById(orderMatchNo);
-        LambdaQueryWrapper<EzOtcOrderAppeal> queryWrapper=new LambdaQueryWrapper<>();
-        queryWrapper.eq(EzOtcOrderAppeal::getOrderMatchNo,orderMatchNo);
-        List<EzOtcOrderAppeal> ezOtcOrderAppeals = baseMapper.selectList(queryWrapper);
-        ezOtcOrderAppeals.forEach(e->{
-            if (e.getUserId().equals(ContextHandler.getUserId())){
-                if (!"1".equals(e.getStatus())){//不是未处理状态了
-                    throw new BaseException(MessageUtils.message("申诉状态已改变"));
-                }else {
-                    e.setStatus("2");
-                    baseMapper.updateById(e);
-                }
-            }else {
-                if ("2".equals(e.getStatus())){
-                 orderMatch.setIsAppeal("1");
-                 matchService.updateById(orderMatch);
-                }
-            }
-        });
+    public Response cancelAppeal(String id) {
+        //通过id查询到申诉信息
+        EzOtcOrderAppeal ezOtcOrderAppeal = baseMapper.selectById(id);
+        if (!"1".equals(ezOtcOrderAppeal.getStatus())){
+            return Response.error(MessageUtils.message("申诉状态已改变"));
+        }
+        ezOtcOrderAppeal.setStatus("2");
+        baseMapper.updateById(ezOtcOrderAppeal);
         return Response.success();
     }
     /**

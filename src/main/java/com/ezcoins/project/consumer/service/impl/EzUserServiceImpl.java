@@ -53,10 +53,8 @@ import java.util.Map;
 @Service
 @Slf4j
 public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> implements EzUserService {
-
     @Autowired
     private EzUserMapper ezUserMapper;
-
 
     @Autowired
     private RedisCache redisCache;
@@ -73,9 +71,6 @@ public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> impleme
     @Autowired
     private LoginProducer loginProducer;
 
-
-    @Autowired
-    private EzUserLimitLogService ezUserLimitLogService;
 
     @Autowired
     private EzAdvertisingBusinessService businessService;
@@ -211,7 +206,6 @@ public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> impleme
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void addUser(EzUserReqDto ezUserDto, boolean isAdmin) {
         //获取注册的数据
-
         String phone = ezUserDto.getPhone();
         String phoneArea = ezUserDto.getPhoneArea();
         String email = ezUserDto.getEmail();
@@ -299,8 +293,11 @@ public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> impleme
         lambdaQueryWrapper.eq(EzUser::getPhone, authenticationRequest.getUsername()).or().eq(EzUser::getEmail, authenticationRequest.getUsername());
         EzUser ezUser = baseMapper.selectOne(lambdaQueryWrapper);
         //用户不存在
-        if (ezUser == null || UserStatus.DELETED.getCode().equals(ezUser.getIsDeleted())) {
+        if (ezUser == null) {
             throw new UserException("登录用户不存在", null);
+        }
+        if ("1".equals(ezUser.getStatus())) {
+            throw new UserException("用户已被封禁", null);
         }
         //密码错误
         if (!EncoderUtil.matches(authenticationRequest.getPassword(), ezUser.getPassword())) {
@@ -315,14 +312,12 @@ public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> impleme
         final String ip = IpUtils.getIpAddr(ServletUtils.getRequest());
         ezUser.setLoginIp(ip);
         baseMapper.updateById(ezUser);
-
         loginProducer.sendMsgLoginFollowUp(ezUser.getUserName(), userId, ezUser.getNickName(), LoginType.APP.getType());
         Map<String, String> map = new HashMap<>(2);
         map.put("token", token);
         map.put("userId", userId);
         return map;
     }
-
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateUser(EzUserReqDto ezUserDto) {
@@ -343,30 +338,5 @@ public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> impleme
         ezUser.setUpdateBy(SecurityUtils.getUsername());
         ezUser.setUpdateTime(DateUtils.getNowDate());
         CheckException.checkDb(baseMapper.updateById(ezUser), "用户更新失败");
-    }
-
-    /**
-     * 封禁 解封 账号
-     *
-     * @param userLimitReqDto
-     */
-    @Override
-    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void titleOrUnnumber(UserLimitReqDto userLimitReqDto) {
-        switch (userLimitReqDto.getType()) {
-            case UserConstants.LOGIN_LIMIT:
-                EzUser ezUser = new EzUser();
-                ezUser.setUserId(userLimitReqDto.getUserId());
-                ezUser.setStatus(userLimitReqDto.getOperate());
-                baseMapper.updateById(ezUser);
-                break;
-            default:
-                throw new BaseException("未知类型：{}", userLimitReqDto.getType());
-        }
-
-        EzUserLimitLog ezUserLimitLog = new EzUserLimitLog();
-        BeanUtils.copyBeanProp(ezUserLimitLog, userLimitReqDto);
-        ezUserLimitLog.setCreateBy(ContextHandler.getUserName());
-        ezUserLimitLogService.save(ezUserLimitLog);
     }
 }

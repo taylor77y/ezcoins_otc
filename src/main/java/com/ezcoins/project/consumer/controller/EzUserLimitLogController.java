@@ -27,32 +27,17 @@ import java.util.List;
  * @since 2021-06-10
  */
 @RestController
-@Api(tags = "Admin-封号记录")
+@Api(tags = "Admin-用户封禁模块")
 @RequestMapping("/admin/consumer/userLimitLog")
 public class EzUserLimitLogController {
-
     @Autowired
     private EzUserLimitLogService limitLogService;
-
-    @ApiOperation(value = "封号/解号 记录列表")
+    @ApiOperation(value = "封号记录列表")
     @PostMapping("userLimitLogList")
     @AuthToken
     public ResponsePageList<EzUserLimitLog> userList(@RequestBody SearchModel<EzUserLimitLog> searchModel) {
         return ResponsePageList.success(limitLogService.page(searchModel.getPage(), searchModel.getQueryModel()));
     }
-
-    @DeleteMapping("removeUserLimitLogs")
-    @ApiOperation(value = "根据id批量删除 封号/解号 记录")
-    @AuthToken
-    @NoRepeatSubmit
-    @Log(title = "批量删除封号记录",businessType = BusinessType.DELETE,operatorType= OperatorType.MANAGE)
-    public Response removeSysLogs(@RequestBody List<String> idList){
-        limitLogService.removeByIds(idList);
-        return Response.success();
-    }
-    //
-
-
 
 }
 
