@@ -63,9 +63,6 @@ public class RabbitMQConfig {
     public Binding bindingLogFanoutExchange(Queue fanoutOperLogQueue,FanoutExchange fanoutOperLogExchange) {
         return BindingBuilder.bind(fanoutOperLogQueue).to(fanoutOperLogExchange);
     }
-
-
-
     // 绑定交换机 fanoutUniqueloginQueue
     @Bean
     public Binding bindingUniqueLogFanoutExchange(Queue fanoutUserLoginQueue,FanoutExchange fanoutUserLoginExchange) {

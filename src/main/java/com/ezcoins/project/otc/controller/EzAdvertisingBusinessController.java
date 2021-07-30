@@ -48,7 +48,7 @@ public class EzAdvertisingBusinessController {
     @ApiOperation(value = "修改商户信息")
     @PostMapping("updateAdvertisingBusiness")
     @AuthToken
-    @Log(title = "修改商户信息", businessType = BusinessType.INSERT, operatorType = OperatorType.MANAGE)
+    @Log(title = "OTC模块", logInfo ="修改商户信息", operatorType = OperatorType.MANAGE)
     public Response updateAdvertisingBusiness(@RequestBody BusinessReqDto businessReqDto){
         if (StringUtils.isNotEmpty(businessReqDto.getAdvertisingName()) && !advertisingBusinessService.isUpdateBy(businessReqDto.getId())) {
             return Response.error("商户名不能再进行修改了");

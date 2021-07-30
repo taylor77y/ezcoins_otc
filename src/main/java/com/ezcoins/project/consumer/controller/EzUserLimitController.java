@@ -42,15 +42,15 @@ public class EzUserLimitController {
     @ApiOperation(value = "封号")
     @PostMapping("title")
     @AuthToken
-    @Log(title = "封号",businessType = BusinessType.INSERT,operatorType= OperatorType.MANAGE)
+    @Log(title = "用户中心模块", logInfo ="封号", operatorType = OperatorType.MANAGE)
     public Response title(@RequestBody UserLimitReqDto userLimitReqDto) {
         return limitService.title(userLimitReqDto);
     }
 
-    @ApiOperation(value = "解封")
+    @ApiOperation(value = "")
     @PutMapping("unblock/{userId}/{type}")
     @AuthToken
-    @Log(title = "解封",businessType = BusinessType.UPDATE,operatorType= OperatorType.MANAGE)
+    @Log(title = "用户中心模块", logInfo ="解封", operatorType = OperatorType.MANAGE)
     public Response unblock(@PathVariable String userId,@PathVariable String type) {
         return limitService.unblock(userId,type);
     }

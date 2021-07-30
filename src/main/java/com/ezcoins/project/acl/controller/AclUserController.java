@@ -44,7 +44,7 @@ public class AclUserController {
 
     @ApiOperation(value = "新增管理用户")
     @PostMapping("register")
-    @Log(title = "新增管理用户", businessType = BusinessType.INSERT, operatorType = OperatorType.MANAGE)
+    @Log(title = "管理员模块", logInfo ="新增管理用户", operatorType = OperatorType.MANAGE)
     public Response save(@RequestBody @Validated AclUserReqDto user) {
         userService.register(user);
         return Response.success();
@@ -52,12 +52,11 @@ public class AclUserController {
 
     @ApiOperation(value = "根据id删除管理用户")
     @DeleteMapping("remove/{id}")
-    @Log(title = "删除管理用户", businessType = BusinessType.DELETE, operatorType = OperatorType.MANAGE)
+    @Log(title = "管理员模块", logInfo ="删除管理用户", operatorType = OperatorType.MANAGE)
     public Response remove(@PathVariable String id) {
         userService.removeById(id);
         return Response.success();
     }
-
     @ApiOperation(value = "根据用户获取角色数据")
     @GetMapping("toAssign/{userId}")
     public Response toAssign(@PathVariable String userId) {

@@ -2,6 +2,9 @@ package com.ezcoins.project.common.mq.producer;
 
 import com.alibaba.fastjson.JSON;
 import com.ezcoins.aspectj.lang.annotation.Log;
+import com.ezcoins.constant.enums.OperatorType;
+import com.ezcoins.manager.AsyncManager;
+import com.ezcoins.manager.factory.AsyncFactory;
 import com.ezcoins.mq.RabbitMQConfig;
 import com.ezcoins.utils.*;
 import com.ezcoins.constant.enums.BusinessStatus;
@@ -33,13 +36,12 @@ import java.util.Map;
 /**
  * 系统日志记录处理
  *
- *
  * @author Administrator
  */
 @Aspect
 @Component
 @Slf4j
-public class LogProduce{
+public class LogProduce {
     @Autowired
     private AmqpTemplate amqpTemplate;
 
@@ -47,7 +49,8 @@ public class LogProduce{
      * 配置织入点
      */
     @Pointcut("@annotation(com.ezcoins.aspectj.lang.annotation.Log)")
-    public void logPointCut(){}
+    public void logPointCut() {
+    }
 
     /**
      * 处理完请求后执行
@@ -55,45 +58,58 @@ public class LogProduce{
      * @param joinPoint 切点
      */
     @AfterReturning(pointcut = "logPointCut()", returning = "jsonResult")
-    public void doAfterReturning(JoinPoint joinPoint, Object jsonResult){
+    public void doAfterReturning(JoinPoint joinPoint, Object jsonResult) {
         handleLog(joinPoint, null, jsonResult);
     }
 
     /**
      * 拦截异常操作
+     *
      * @param joinPoint 切点
-     * @param e 异常
+     * @param e         异常
      */
     @AfterThrowing(value = "logPointCut()", throwing = "e")
-    public void doAfterThrowing(JoinPoint joinPoint, Exception e){
+    public void doAfterThrowing(JoinPoint joinPoint, Exception e) {
         handleLog(joinPoint, e, null);
     }
 
-    protected void handleLog(final JoinPoint joinPoint, final Exception e, Object jsonResult){
-        try{
+    protected void handleLog(final JoinPoint joinPoint, final Exception e, Object jsonResult) {
+        try {
             // 获得注解
             Log controllerLog = getAnnotationLog(joinPoint);
-            if (controllerLog == null){
+            if (controllerLog == null) {
                 return;
             }
             // 获取当前的用户
             IJWTInfo info = SpringUtils.getBean(JWTHelper.class).jwtInfo(ServletUtils.getRequest());
-
+            String ip = IpUtils.getIpAddr(ServletUtils.getRequest());
+            if (controllerLog.operatorType().equals(OperatorType.MANAGE)) {
+                if (e != null) {
+                    return;
+                }
+                com.ezcoins.project.acl.entity.Log log = new com.ezcoins.project.acl.entity.Log();
+                log.setLogInfo(controllerLog.logInfo());
+                log.setTitle(controllerLog.title());
+                log.setUserId(info.getUserId());
+                log.setUserName(info.getUserName());
+                log.setIpAddress(ip);
+                // 保存数据库
+                AsyncManager.me().execute(AsyncFactory.recordOper(log));
+                return;
+            }
             // *========数据库日志=========* //
             EzSysLog operLog = new EzSysLog();
             operLog.setStatus(String.valueOf(BusinessStatus.SUCCESS.ordinal()));
             // 请求的地址
-            String ip = IpUtils.getIpAddr(ServletUtils.getRequest());
             operLog.setOperLocation(AddressUtils.getRealAddressByIP(ip));
-
             operLog.setOperIp(ip);
             // 返回参数
             operLog.setJsonResult(JSON.toJSONString(jsonResult));
             operLog.setOperUrl(ServletUtils.getRequest().getRequestURI());
-            if (info != null){
+            if (info != null) {
                 operLog.setUserName(info.getUserName());
             }
-            if (e != null){
+            if (e != null) {
                 operLog.setStatus(String.valueOf(BusinessStatus.FAIL.ordinal()));
                 operLog.setErrorMsg(StringUtils.substring(e.getMessage(), 0, 2000));
             }
@@ -110,22 +126,22 @@ public class LogProduce{
             getControllerMethodDescription(joinPoint, controllerLog, operLog);
             // 保存数据库
             amqpTemplate.convertAndSend(RabbitMQConfig.EZCOINS_OPERLOG_QUEUE, "", operLog);
-        }catch (Exception exp){
+        } catch (Exception exp) {
             // 记录本地异常日志
             log.error("==前置通知异常==");
             log.error("异常信息:{}", exp.getMessage());
             exp.printStackTrace();
-      }
+        }
     }
 
     /**
      * 获取注解中对方法的描述信息 用于Controller层注解
      *
-     * @param log 日志
+     * @param log     日志
      * @param operLog 操作日志
      * @throws Exception
      */
-    public void getControllerMethodDescription(JoinPoint joinPoint, Log log, EzSysLog operLog) throws Exception{
+    public void getControllerMethodDescription(JoinPoint joinPoint, Log log, EzSysLog operLog) throws Exception {
         // 设置action动作
         operLog.setBusinessType(String.valueOf(log.businessType().ordinal()));
         // 设置标题
@@ -145,14 +161,12 @@ public class LogProduce{
      * @param operLog 操作日志
      * @throws Exception 异常
      */
-    private void setRequestValue(JoinPoint joinPoint, EzSysLog operLog){
+    private void setRequestValue(JoinPoint joinPoint, EzSysLog operLog) {
         String requestMethod = operLog.getRequestMethod();
-        if (HttpMethod.PUT.name().equals(requestMethod) || HttpMethod.POST.name().equals(requestMethod))
-        {
+        if (HttpMethod.PUT.name().equals(requestMethod) || HttpMethod.POST.name().equals(requestMethod)) {
             String params = argsArrayToString(joinPoint.getArgs());
             operLog.setOperParam(StringUtils.substring(params, 0, 2000));
-        }
-        else{
+        } else {
             Map<?, ?> paramsMap = (Map<?, ?>) ServletUtils.getRequest().getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
             operLog.setOperParam(StringUtils.substring(paramsMap.toString(), 0, 2000));
         }
@@ -161,14 +175,12 @@ public class LogProduce{
     /**
      * 是否存在注解，如果存在就获取
      */
-    private Log getAnnotationLog(JoinPoint joinPoint) throws Exception
-    {
+    private Log getAnnotationLog(JoinPoint joinPoint) throws Exception {
         Signature signature = joinPoint.getSignature();
         MethodSignature methodSignature = (MethodSignature) signature;
         Method method = methodSignature.getMethod();
 
-        if (method != null)
-        {
+        if (method != null) {
             return method.getAnnotation(Log.class);
         }
         return null;
@@ -177,13 +189,11 @@ public class LogProduce{
     /**
      * 参数拼装
      */
-    private String argsArrayToString(Object[] paramsArray)
-    {
+    private String argsArrayToString(Object[] paramsArray) {
         String params = "";
-        if (paramsArray != null && paramsArray.length > 0)
-        {
+        if (paramsArray != null && paramsArray.length > 0) {
             for (int i = 0; i < paramsArray.length; i++) {
-                if (!isFilterObject(paramsArray[i])){
+                if (!isFilterObject(paramsArray[i])) {
                     Object jsonObj = JSON.toJSON(paramsArray[i]);
                     params += jsonObj.toString() + " ";
                 }
@@ -203,18 +213,14 @@ public class LogProduce{
         Class<?> clazz = o.getClass();
         if (clazz.isArray()) {
             return clazz.getComponentType().isAssignableFrom(MultipartFile.class);
-        }
-        else if (Collection.class.isAssignableFrom(clazz)){
+        } else if (Collection.class.isAssignableFrom(clazz)) {
             Collection collection = (Collection) o;
-            for (Iterator iter = collection.iterator(); iter.hasNext();)
-            {
+            for (Iterator iter = collection.iterator(); iter.hasNext(); ) {
                 return iter.next() instanceof MultipartFile;
             }
-        }
-        else if (Map.class.isAssignableFrom(clazz)){
+        } else if (Map.class.isAssignableFrom(clazz)) {
             Map map = (Map) o;
-            for (Iterator iter = map.entrySet().iterator(); iter.hasNext();)
-            {
+            for (Iterator iter = map.entrySet().iterator(); iter.hasNext(); ) {
                 Map.Entry entry = (Map.Entry) iter.next();
                 return entry.getValue() instanceof MultipartFile;
             }

@@ -17,4 +17,8 @@ public class PageQuery {
 
     @ApiModelProperty(value = "页容量")
     private Long limit;
+
+    @ApiModelProperty(value = "未处理订单数量  0:显示未处理订单  1：不显示处理订单")
+    private String isHandle;
+
 }

@@ -94,14 +94,14 @@ spring:
     password: P@ssw0rdEzcoins
     properties:
       mail:
-        smtps:
+        smtp:
           ssl:
             enable: false
           socketFactory:
-            port: 465
+            port: 587
             class: javax.net.ssl.SSLSocketFactory
           # 必须进行授权认证，它的目的就是阻止他人任意乱发邮件
-    protocol: smtps
+    protocol: smtp
     default-encoding: utf-8
 
 

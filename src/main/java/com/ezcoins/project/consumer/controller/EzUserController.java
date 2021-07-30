@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.*;
  * @since 2021-05-26
  */
 @RestController
-@Api(tags = "Admin-用户模块")
+@Api(tags = "Admin-用户中心模块")
 @RequestMapping("/admin/consumer/user")
 public class EzUserController {
 
@@ -47,7 +47,7 @@ public class EzUserController {
     @PostMapping("addUser")
     @AuthToken
     @NoRepeatSubmit
-    @Log(title = "添加用户", businessType = BusinessType.INSERT, operatorType = OperatorType.MANAGE)
+    @Log(title = "用户中心模块", logInfo ="添加用户", operatorType = OperatorType.MANAGE)
     public Response addUser(@RequestBody EzUserReqDto ezUserDto) {
         ezUserService.addUser(ezUserDto,true);
         return Response.success();
@@ -58,7 +58,7 @@ public class EzUserController {
     @PutMapping("updateUser")
     @AuthToken
     @NoRepeatSubmit
-    @Log(title = "修改用户信息", businessType = BusinessType.UPDATE, operatorType = OperatorType.MANAGE)
+    @Log(title = "用户中心模块", logInfo ="修改用户信息", operatorType = OperatorType.MANAGE)
     public Response updateUser(@RequestBody EzUserReqDto ezUserDto) {
         ezUserService.updateUser(ezUserDto);
         return Response.success();
@@ -68,7 +68,7 @@ public class EzUserController {
     @DeleteMapping("deleteUser/{userId}")
     @AuthToken
     @NoRepeatSubmit
-    @Log(title = "逻辑删除用户", businessType = BusinessType.DELETE, operatorType = OperatorType.MANAGE)
+    @Log(title = "用户中心模块", logInfo ="逻辑删除用户", operatorType = OperatorType.MANAGE)
     public Response deleteUser(@PathVariable String userId) {
         ezUserService.getById(userId);
         return Response.success();

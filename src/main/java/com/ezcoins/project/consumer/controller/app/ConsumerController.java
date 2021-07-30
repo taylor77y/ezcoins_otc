@@ -3,25 +3,19 @@ package com.ezcoins.project.consumer.controller.app;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.ezcoins.aspectj.lang.annotation.AuthToken;
-import com.ezcoins.aspectj.lang.annotation.Limit;
 import com.ezcoins.aspectj.lang.annotation.Log;
 import com.ezcoins.aspectj.lang.annotation.NoRepeatSubmit;
 import com.ezcoins.base.BaseController;
-import com.ezcoins.constant.Constants;
 import com.ezcoins.constant.enums.BusinessType;
-import com.ezcoins.constant.enums.LimitType;
 import com.ezcoins.constant.enums.OperatorType;
 import com.ezcoins.constant.enums.user.KycStatus;
-import com.ezcoins.constant.enums.user.UserKycStatus;
 import com.ezcoins.constant.interf.RedisConstants;
 import com.ezcoins.context.ContextHandler;
-import com.ezcoins.exception.CheckException;
 import com.ezcoins.project.config.entity.EzCountryConfig;
 import com.ezcoins.project.config.service.EzCountryConfigService;
 import com.ezcoins.project.consumer.entity.EzAdvertisingApprove;
 import com.ezcoins.project.consumer.entity.EzUser;
 import com.ezcoins.project.consumer.entity.EzUserKyc;
-import com.ezcoins.project.consumer.entity.body.UpdateUserBody;
 import com.ezcoins.project.consumer.entity.req.*;
 import com.ezcoins.project.consumer.entity.resp.SidebarInfoRespDto;
 import com.ezcoins.project.consumer.entity.resp.VerifiedInfoRespDto;
@@ -32,7 +26,6 @@ import com.ezcoins.redis.RedisCache;
 import com.ezcoins.project.acl.entity.req.JwtAuthenticationRequest;
 import com.ezcoins.project.consumer.service.EzUserKycService;
 import com.ezcoins.project.consumer.service.EzUserService;
-import com.ezcoins.response.Response;
 import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponseList;
 import com.ezcoins.utils.EncoderUtil;
@@ -46,8 +39,6 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
 /**

@@ -48,7 +48,7 @@ public class EzAdvertisingApproveController {
     @ApiOperation(value = "审核高级认证")
     @PutMapping("checkAdvertising")
     @AuthToken
-    @Log(title = "审核实名认证", businessType = BusinessType.GRANT, operatorType = OperatorType.MANAGE)
+    @Log(title = "用户中心模块", logInfo ="审核实名认证", operatorType = OperatorType.MANAGE)
     public Response checkAdvertising(@RequestBody @Validated CheckAdvertisingReqDto checkAdvertisingReqDto) {
         advertisingApproveService.checkAdvertising(checkAdvertisingReqDto);
         return Response.success();

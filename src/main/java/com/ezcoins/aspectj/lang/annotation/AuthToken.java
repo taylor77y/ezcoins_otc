@@ -1,5 +1,7 @@
 package com.ezcoins.aspectj.lang.annotation;
 
+import com.ezcoins.constant.enums.LimitType;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -14,5 +16,8 @@ public @interface AuthToken {
     boolean kyc() default false;
     //是否验证用户状态
     boolean status() default true;
-
+    /**
+     * 验证类型
+     */
+    public LimitType LIMIT_TYPE() default LimitType.NOLIMIT;
 }

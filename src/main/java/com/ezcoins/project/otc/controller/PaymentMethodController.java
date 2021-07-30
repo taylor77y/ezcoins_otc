@@ -54,7 +54,7 @@ public class PaymentMethodController {
     @ApiOperation(value = "添加/修改  收款类型")
     @PostMapping("addOrUpdatePaymentMethod")
     @AuthToken
-    @Log(title = "添加/修改  收款方式", businessType = BusinessType.INSERT, operatorType = OperatorType.MANAGE)
+    @Log(title = "OTC模块", logInfo ="修改收款方式", operatorType = OperatorType.MANAGE)
     public Response addOrUpdatePaymentMethod(@RequestBody PaymentMethodReqDto paymentMethodReqDto) {
         methodService.addOrUpdatePaymentMethod(paymentMethodReqDto);
         return Response.success();

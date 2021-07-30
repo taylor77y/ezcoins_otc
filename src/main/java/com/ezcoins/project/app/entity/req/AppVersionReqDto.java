@@ -21,42 +21,42 @@ public class AppVersionReqDto  implements Serializable {
     private String id;
 
     @ApiModelProperty(value = "产品名",required = true)
-    @NotBlank(message = "{产品名不能为空}")
+    @NotBlank(message = "产品名不能为空")
     private String name;
 
     @ApiModelProperty(value = "当前版本",required = true)
-    @NotBlank(message = "{版本不能为空}")
+    @NotBlank(message = "版本不能为空")
     private String thisVersion;
 
     @ApiModelProperty(value = "平台(0:Android 1:IOS)",required = true)
-    @NotBlank(message = "{平台不能为空}")
+    @NotBlank(message = "平台不能为空")
     private String platform;
 
     @ApiModelProperty(value = "允许最低版本",required = true)
-    @NotBlank(message = "{允许最低版本不能为空}")
+    @NotBlank(message = "允许最低版本不能为空")
     private String minVersion;
 
     @ApiModelProperty(value = "下载地址",required = true)
-    @NotBlank(message = "{下载地址不能为空}")
+    @NotBlank(message = "下载地址不能为空")
     private String addr;
 
     @ApiModelProperty(value = "中文标题")
-    @NotBlank(message = "{中文标题不能为空}")
+    @NotBlank(message = "中文标题不能为空")
     private String title;
 
     @ApiModelProperty(value = "英文标题")
-    @NotBlank(message = "{英文标题不能为空}")
+    @NotBlank(message = "英文标题不能为空")
     private String titleEn;
 
     @ApiModelProperty(value = "中文描述",required = true)
-    @NotBlank(message = "{中文描述不能为空}")
+    @NotBlank(message = "中文描述不能为空")
     private String content;
 
     @ApiModelProperty(value = "英文描述",required = true)
-    @NotBlank(message = "{英文描述不能为空}")
+    @NotBlank(message = "英文描述不能为空")
     private String contentEn;
 
     @ApiModelProperty(value = "创建者",required = true)
-    @NotBlank(message = "{创建者不能为空}")
+    @NotBlank(message = "创建者不能为空")
     private String createBy;
 }

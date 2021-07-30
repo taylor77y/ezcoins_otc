@@ -6,6 +6,7 @@ import com.ezcoins.constant.RecordSonType;
 import com.ezcoins.constant.enums.coin.CoinConstants;
 import com.ezcoins.constant.enums.coin.CoinConstants.MainType;
 import com.ezcoins.constant.enums.user.KycStatus;
+import com.ezcoins.project.otc.task.ToUsdtPrice;
 import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
@@ -47,10 +48,10 @@ public class WebSocketHandle {
             }
         }
     }
-    public static void price(HashMap hashMap){
+    public static void price(List<ToUsdtPrice> priceList){
         SendMessage sendMessage = new SendMessage();
         sendMessage.setTopic(TopicSocket.PRICE);
-        sendMessage.setData(hashMap);
+        sendMessage.setData(priceList);
         WebSocketFactory.sendMessageAll(JSON.toJSONString(sendMessage));
     }
 

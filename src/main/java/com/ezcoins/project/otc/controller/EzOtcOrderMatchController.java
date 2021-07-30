@@ -71,7 +71,7 @@ public class EzOtcOrderMatchController {
     @NoRepeatSubmit
     @ApiOperation(value = "后台一键卖币确认付款")
     @PostMapping("confirmPayment/{matchOrderNo}/{status}")
-    @Log(title = "一键卖币确认付款", businessType = BusinessType.UPDATE, operatorType = OperatorType.MOBILE)
+    @Log(title = "OTC模块", logInfo ="后台一键卖币确认付款", operatorType = OperatorType.MANAGE)
     public Response confirmPayment(@PathVariable String matchOrderNo, @PathVariable String status) {
         //根据订单号查询到订单
         EzOtcOrderMatch orderMatch = orderMatchService.getById(matchOrderNo);

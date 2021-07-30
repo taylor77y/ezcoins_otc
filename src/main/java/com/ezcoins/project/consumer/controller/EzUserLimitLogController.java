@@ -27,11 +27,13 @@ import java.util.List;
  * @since 2021-06-10
  */
 @RestController
-@Api(tags = "Admin-用户封禁模块")
+@Api(tags = "Admin-用户中心模块")
 @RequestMapping("/admin/consumer/userLimitLog")
 public class EzUserLimitLogController {
     @Autowired
     private EzUserLimitLogService limitLogService;
+
+
     @ApiOperation(value = "封号记录列表")
     @PostMapping("userLimitLogList")
     @AuthToken

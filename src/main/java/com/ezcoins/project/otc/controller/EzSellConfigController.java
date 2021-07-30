@@ -53,10 +53,10 @@ public class EzSellConfigController {
     }
 
     @NoRepeatSubmit
-    @ApiOperation(value = "修改/添加 一键卖币配置")
+    @ApiOperation(value = "修改/添加一键卖币配置")
     @PostMapping("updateOrAddSellConfig")
     @AuthToken
-    @Log(title = "修改一键卖币配置", businessType = BusinessType.UPDATE, operatorType = OperatorType.MANAGE)
+    @Log(title = "OTC模块", logInfo ="修改/添加一键卖币配置", operatorType = OperatorType.MANAGE)
     public Response updateOrAddSellConfig(@RequestBody SellConfigReqDto sellConfigReqDto) {
         return sellConfigService.updateOrAddSellConfig(sellConfigReqDto);
     }
@@ -65,7 +65,7 @@ public class EzSellConfigController {
     @ApiOperation(value = "修改一键卖币配置状态")
     @PostMapping("updateSellConfigStatus")
     @AuthToken
-    @Log(title = "修改一键卖币配置状态", businessType = BusinessType.UPDATE, operatorType = OperatorType.MANAGE)
+    @Log(title = "OTC模块", logInfo ="修改一键卖币配置状态", operatorType = OperatorType.MANAGE)
     public Response updateSellConfigStatus(@RequestBody StatusReqDto statusReqDto) {
         LambdaQueryWrapper<EzOneSellConfig> lambdaQueryWrapper=new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(EzOneSellConfig::getId,statusReqDto.getId());

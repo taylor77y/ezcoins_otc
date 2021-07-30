@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.*;
  * @since 2021-05-27
  */
 @RestController
-@Api(tags = "Admin-用户kyc认证模块")
+@Api(tags = "Admin-用户中心模块")
 @RequestMapping("/admin/consumer/userKyc")
 public class EzUserKycController {
     @Autowired
@@ -50,7 +50,7 @@ public class EzUserKycController {
     @ApiOperation(value = "审核实名认证")
     @PutMapping("checkKyc")
     @AuthToken
-    @Log(title = "审核实名认证", businessType = BusinessType.GRANT, operatorType = OperatorType.MANAGE)
+    @Log(title = "用户中心模块", logInfo ="审核实名认证", operatorType = OperatorType.MANAGE)
     public Response checkKyc(@RequestBody @Validated CheckKycReqDto kycReqDto) {
         kycService.checkKyc(kycReqDto);
         return Response.success();

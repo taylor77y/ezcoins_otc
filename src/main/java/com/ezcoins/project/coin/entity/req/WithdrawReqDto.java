@@ -1,6 +1,5 @@
 package com.ezcoins.project.coin.entity.req;
 
-import com.ezcoins.aspectj.lang.annotation.Excel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 

@@ -39,7 +39,7 @@ import java.util.HashMap;
  * @since 2021-06-30
  */
 @RestController
-@Api(tags = "Admin-高级认证配置")
+@Api(tags = "Admin-用户中心模块")
 @RequestMapping("/admin/consumer/ezAdvertisingConfig")
 public class EzAdvertisingConfigController {
 
@@ -59,7 +59,7 @@ public class EzAdvertisingConfigController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "minMargin", value = "最低保证金", required = true),
     })
-    @Log(title = "修改高级认证配置",businessType = BusinessType.UPDATE,operatorType= OperatorType.MANAGE)
+    @Log(title = "用户中心模块", logInfo ="修改高级认证配置", operatorType = OperatorType.MANAGE)
     public Response update(@RequestBody HashMap<String,Object> params) {
         String minMargin1 = (String) params.get("minMargin");
         if (StringUtils.isEmpty(minMargin1)){

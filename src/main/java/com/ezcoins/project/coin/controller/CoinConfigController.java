@@ -61,10 +61,10 @@ public class CoinConfigController {
     }
 
     @NoRepeatSubmit
-    @ApiOperation(value = "添加/修改  提币配置")
+    @ApiOperation(value = "添加/修改提币配置")
     @PostMapping("addOrUpdate")
     @AuthToken
-    @Log(title = "添加/修改  提币配置", businessType = BusinessType.INSERT, operatorType = OperatorType.MANAGE)
+    @Log(title = "资产币种模块", logInfo ="添加/修改提币配置", operatorType = OperatorType.MANAGE)
     public Response addOrUpdate(@RequestBody WithdrewConfigReqDto withdrewConfigReqDto) {
         withdrawConfigService.addOrUpdate(withdrewConfigReqDto);
         return Response.success();
@@ -74,7 +74,7 @@ public class CoinConfigController {
     @ApiOperation(value = "更改提币状态")
     @PutMapping("withdrewSwitch")
     @AuthToken
-    @Log(title = "更改提币状态", businessType = BusinessType.UPDATE, operatorType = OperatorType.MANAGE)
+    @Log(title = "资产币种模块", logInfo ="更改提币状态", operatorType = OperatorType.MANAGE)
     public Response withdrewSwitch(@RequestBody @Validated RwStatusReqDto rwStatusReqDto) {
         LambdaUpdateWrapper<WithdrawConfig> queryWrapper=new LambdaUpdateWrapper<>();
         queryWrapper.eq(WithdrawConfig::getId,rwStatusReqDto.getId());
@@ -88,7 +88,7 @@ public class CoinConfigController {
     @ApiOperation(value = "更改冲币状态")
     @PutMapping("rechargeSwitch")
     @AuthToken
-    @Log(title = "更改冲币状态", businessType = BusinessType.UPDATE, operatorType = OperatorType.MANAGE)
+    @Log(title = "资产币种模块", logInfo ="更改冲币状态", operatorType = OperatorType.MANAGE)
     public Response rechargeSwitch(@RequestBody @Validated RwStatusReqDto rwStatusReqDto) {
         LambdaUpdateWrapper<RechargeConfig> queryWrapper=new LambdaUpdateWrapper<>();
         queryWrapper.eq(RechargeConfig::getId,rwStatusReqDto.getId());
@@ -99,10 +99,10 @@ public class CoinConfigController {
 
 
     @NoRepeatSubmit
-    @ApiOperation(value = "添加/修改 冲币配置")
+    @ApiOperation(value = "添加/修改冲币配置")
     @PostMapping("addOrUpdateRecharge")
     @AuthToken
-    @Log(title = "添加/修改  冲币配置", businessType = BusinessType.INSERT, operatorType = OperatorType.MANAGE)
+    @Log(title = "资产币种模块", logInfo ="添加/修改冲币配置", operatorType = OperatorType.MANAGE)
     public Response addOrUpdateRecharge(@RequestBody RechargeConfigReqDto rechargeConfigReqDto) {
         rechargeConfigService.addOrUpdate(rechargeConfigReqDto);
         return Response.success();

@@ -47,7 +47,7 @@ public class AccountController {
     @PutMapping("revise")
     @NoRepeatSubmit
     @AuthToken
-    @Log(title = "修改资产", businessType = BusinessType.INSERT, operatorType = OperatorType.MANAGE)
+    @Log(title = "资产币种模块", logInfo ="修改资产", operatorType = OperatorType.MANAGE)
     public Response revise(@RequestBody ReviseAccountReqDto reviseAccountReqDto) {
         return accountService.revise(reviseAccountReqDto);
     }

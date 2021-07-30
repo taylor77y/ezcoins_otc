@@ -49,7 +49,7 @@ public class TypeController {
     @ApiOperation(value = "修改币种配置")
     @PostMapping("updateCoinTypeConfig")
     @AuthToken
-    @Log(title = "修改币种配置", businessType = BusinessType.UPDATE, operatorType = OperatorType.MANAGE)
+    @Log(title = "资产币种模块", logInfo ="币种模块", operatorType = OperatorType.MANAGE)
     public Response updateOtcConfig(@RequestBody Type type) {
         typeService.updateById(type);
         return Response.success();

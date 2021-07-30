@@ -49,7 +49,7 @@ public class EzAppAnnouncementController {
     @ApiOperation(value = "发布公告")
     @AuthToken
     @NoRepeatSubmit
-    @Log(title = "发布公告",businessType = BusinessType.INSERT,operatorType= OperatorType.MANAGE)
+    @Log(title = "公告模块", logInfo ="发布公告", operatorType = OperatorType.MANAGE)
     public Response announce(@RequestBody @Validated AnnouncementReqDto announcementReqDto){
         announcementService.announce(announcementReqDto);
         return Response.success();
@@ -60,7 +60,7 @@ public class EzAppAnnouncementController {
     @ApiOperation(value = "撤销公告")
     @AuthToken
     @NoRepeatSubmit
-    @Log(title = "撤销公告",businessType = BusinessType.UPDATE,operatorType= OperatorType.MANAGE)
+    @Log(title = "公告模块", logInfo ="撤销公告", operatorType = OperatorType.MANAGE)
     public Response cancelAnnouncement(@PathVariable String id){
         LambdaUpdateWrapper<EzAppAnnouncement> updateWrapper=new LambdaUpdateWrapper<>();
         updateWrapper.eq(EzAppAnnouncement::getId,id).set(EzAppAnnouncement::getIfCancel,"1")
@@ -74,7 +74,7 @@ public class EzAppAnnouncementController {
     @ApiOperation(value = "根据id批量删除公告")
     @AuthToken
     @NoRepeatSubmit
-    @Log(title = "批量删除封号记录",businessType = BusinessType.DELETE,operatorType= OperatorType.MANAGE)
+    @Log(title = "公告模块", logInfo ="批量删除封号记录", operatorType = OperatorType.MANAGE)
     public Response removeAnnouncement(@RequestBody List<String> idList){
         announcementService.removeByIds(idList);
         return Response.success();

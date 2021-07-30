@@ -27,7 +27,7 @@ import java.util.List;
  * @since 2021-06-05
  */
 @RestController
-@Api(tags = "Admin-日志模块")
+@Api(tags = "Admin-系统模块")
 @RequestMapping("/admin/system/SysLogininfor")
 public class EzSysLogininforController {
 
@@ -45,7 +45,7 @@ public class EzSysLogininforController {
     @ApiOperation(value = "根据id批量删除登录日志")
     @AuthToken
     @NoRepeatSubmit
-    @Log(title = "批量删除登录日志",businessType = BusinessType.CLEAN,operatorType= OperatorType.MANAGE)
+    @Log(title = "系统模块", logInfo ="根据id批量删除登录日志", operatorType = OperatorType.MANAGE)
     public Response removeSysLogininfor(@RequestBody List<String> idList){
         ezSysLogininforService.removeByIds(idList);
         return Response.success();

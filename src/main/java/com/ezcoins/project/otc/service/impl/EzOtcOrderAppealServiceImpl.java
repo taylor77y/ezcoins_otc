@@ -136,7 +136,6 @@ public class EzOtcOrderAppealServiceImpl extends ServiceImpl<EzOtcOrderAppealMap
         }
         if ("0".equals(orderReqDto.getStatus())){//放行
             matchService.sellerPut(orderMatchNo,true);
-            //修改完成率
         }else {//订单取消
             matchService.paymentFail(orderMatchNo);
         }

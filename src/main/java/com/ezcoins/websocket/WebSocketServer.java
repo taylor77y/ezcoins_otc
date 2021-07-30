@@ -52,7 +52,6 @@ public class WebSocketServer {
      */
     @OnMessage
     public void onMessage(String message, Session session) {
-        System.out.println(message);
         WebSocketMessage webSocketMessage = JSONObject.parseObject(message, WebSocketMessage.class);
         String type = webSocketMessage.getType();
         if (type.equals("subscribe")) {//订阅

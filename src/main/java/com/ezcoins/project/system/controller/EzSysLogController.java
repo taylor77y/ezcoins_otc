@@ -29,7 +29,7 @@ import java.util.List;
  * @since 2021-06-05
  */
 @RestController
-@Api(tags = "Admin-日志模块")
+@Api(tags = "Admin-系统模块")
 @RequestMapping("/admin/system/SysLog")
 public class EzSysLogController {
 
@@ -47,7 +47,7 @@ public class EzSysLogController {
     @ApiOperation(value = "根据id批量删除系统日志")
     @AuthToken
     @NoRepeatSubmit
-    @Log(title = "批量删除系统日志",businessType = BusinessType.DELETE,operatorType= OperatorType.MANAGE)
+    @Log(title = "系统模块", logInfo ="批量删除系统日志", operatorType = OperatorType.MANAGE)
     public Response removeSysLogs(@RequestBody List<String> idList){
         ezSysLogService.removeByIds(idList);
         return Response.success();

@@ -46,7 +46,7 @@ public class WithdrawOrderController {
     @ApiOperation(value = "审核提币订单")
     @PutMapping("reviewWithdrawOrder")
     @AuthToken
-    @Log(title = "审核提币订单", businessType = BusinessType.INSERT, operatorType = OperatorType.MANAGE)
+    @Log(title = "资产币种模块", logInfo ="审核提币订单", operatorType = OperatorType.MANAGE)
     public Response reviewWithdrawOrder(@RequestBody CheckWithdrewOrderReqDto checkWithdrewOrderReqDto) {
         withdrawOrderService.reviewWithdrawOrder(checkWithdrewOrderReqDto);
         return Response.success();

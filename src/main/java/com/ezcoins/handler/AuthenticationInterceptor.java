@@ -3,9 +3,7 @@ package com.ezcoins.handler;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.ezcoins.aspectj.lang.annotation.AuthToken;
-import com.ezcoins.aspectj.lang.annotation.Limit;
 import com.ezcoins.base.BaseException;
-import com.ezcoins.constant.UserConstants;
 import com.ezcoins.constant.enums.LimitType;
 import com.ezcoins.constant.enums.LoginType;
 import com.ezcoins.context.ContextHandler;
@@ -109,12 +107,11 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
                         log.error("请先完成实名认证");
                     });
                 }
-                Limit limitAnnotation = handlerMethod.getBeanType().getAnnotation(Limit.class);
-                if (limitAnnotation != null) {
+                if (!authToken.LIMIT_TYPE().equals(LimitType.NOLIMIT) ) {
                     LambdaQueryWrapper<EzUserLimitLog> lambdaQueryWrapper = new LambdaQueryWrapper<>();
                     lambdaQueryWrapper.eq(EzUserLimitLog::getIsExpire, "0");
                     lambdaQueryWrapper.eq(EzUserLimitLog::getUserId, fromToken.getUserId());
-                    lambdaQueryWrapper.eq(EzUserLimitLog::getType, limitAnnotation.LIMIT_TYPE().getCode());
+                    lambdaQueryWrapper.eq(EzUserLimitLog::getType, authToken.LIMIT_TYPE().getCode());
                     EzUserLimitLog one = limitLogService.getOne(lambdaQueryWrapper);
                     if (one != null) {
                         if (one.getBanTime() != null && one.getBanTime().getTime() < DateUtils.getNowDate().getTime()) {
@@ -122,13 +119,15 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
                             limitLogService.updateById(one);
                             LambdaUpdateWrapper<EzUserLimit> queryWrapper = new LambdaUpdateWrapper<>();
                             queryWrapper.eq(EzUserLimit::getUserId, fromToken.getUserId());
-                            if (limitAnnotation.LIMIT_TYPE().equals(LimitType.LOGINLIMIT)) {
+                            if (authToken.LIMIT_TYPE().equals(LimitType.LOGINLIMIT)) {
                                 queryWrapper.eq(EzUserLimit::getLogin, 0);
-                            } else if (limitAnnotation.LIMIT_TYPE().equals(LimitType.WITHDRAWLIMIT)) {
+                                user.setStatus("0");
+                                userService.updateById(user);
+                            } else if (authToken.LIMIT_TYPE().equals(LimitType.WITHDRAWLIMIT)) {
                                 queryWrapper.eq(EzUserLimit::getWithdraw, 0);
-                            } else if (limitAnnotation.LIMIT_TYPE().equals(LimitType.ORDERLIMIT)) {
+                            } else if (authToken.LIMIT_TYPE().equals(LimitType.ORDERLIMIT)) {
                                 queryWrapper.eq(EzUserLimit::getOrder, 0);
-                            } else if (limitAnnotation.LIMIT_TYPE().equals(LimitType.BUSINESSLIMIT)) {
+                            } else if (authToken.LIMIT_TYPE().equals(LimitType.BUSINESSLIMIT)) {
                                 queryWrapper.eq(EzUserLimit::getBusiness, 0);
                             }
                             limitService.update(queryWrapper);

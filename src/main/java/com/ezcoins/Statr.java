@@ -4,6 +4,7 @@ import com.ezcoins.aspectj.lang.annotation.Log;
 import com.ezcoins.handler.AuthenticationInterceptor;
 import com.ezcoins.project.common.service.EmailService;
 import com.ezcoins.project.otc.task.ScheduledTasks;
+import com.ezcoins.project.otc.task.ToUsdtPrice;
 import com.ezcoins.utils.MoneyChangeUtils;
 import com.ezcoins.websocket.WebSocketHandle;
 import lombok.SneakyThrows;
@@ -53,10 +54,13 @@ public class Statr implements CommandLineRunner {
             public void run() {
                 while (true) {
                     try {
-                        HashMap<String, BigDecimal> price = ScheduledTasks.getPrice();
-                        price.put("usdtrmb",ScheduledTasks.rmbPrice);
-                        WebSocketHandle.price(price);
-                        Thread.sleep(10000);
+                        List<ToUsdtPrice> list = ScheduledTasks.getPrice();
+                        ToUsdtPrice toUsdtPrice = new ToUsdtPrice();
+                        toUsdtPrice.setPrice(ScheduledTasks.rmbPrice);
+                        toUsdtPrice.setName("usdt");
+                        list.add(toUsdtPrice);
+                        WebSocketHandle.price(list);
+                        Thread.sleep(3000);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

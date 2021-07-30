@@ -27,8 +27,8 @@ public class RecordQuery {
     @ApiModelProperty(value = "币种名")
     private String coinName;
 
-    @ApiModelProperty(value = "类型 1:普通提币 2:普通冲币 ")
-    private String type;
+    @ApiModelProperty(value = "子类型")
+    private String sonType;
 
     @ApiModelProperty(value = "页码")
     private Long page;

@@ -47,7 +47,6 @@ public class HttpUtils
         try
         {
             String urlNameString = url + "?" + param;
-            log.info("sendGet - {}", urlNameString);
             URL realUrl = new URL(urlNameString);
             URLConnection connection = realUrl.openConnection();
             connection.setRequestProperty("accept", "*/*");

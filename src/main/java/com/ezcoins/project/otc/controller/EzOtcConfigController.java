@@ -52,7 +52,7 @@ public class EzOtcConfigController {
     @ApiOperation(value = "修改OTC基本配置")
     @PostMapping("updateOtcConfig")
     @AuthToken
-    @Log(title = "修改OTC基本配置", businessType = BusinessType.UPDATE, operatorType = OperatorType.MANAGE)
+    @Log(title = "OTC模块", logInfo ="修改OTC基本配置", operatorType = OperatorType.MANAGE)
     public Response updateOtcConfig(@RequestBody EzOtcConfig ezOtcConfig) {
         otcConfigService.updateById(ezOtcConfig);
         return Response.success();

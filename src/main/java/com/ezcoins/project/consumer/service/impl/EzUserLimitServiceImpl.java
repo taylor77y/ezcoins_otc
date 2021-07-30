@@ -126,6 +126,7 @@ public class EzUserLimitServiceImpl extends ServiceImpl<EzUserLimitMapper, EzUse
         baseMapper.updateById(ezUserLimit);
         LambdaUpdateWrapper<EzUserLimitLog> lambdaUpdateWrapper=new LambdaUpdateWrapper<>();
         lambdaUpdateWrapper.eq(EzUserLimitLog::getUserId,userId);
+        lambdaUpdateWrapper.eq(EzUserLimitLog::getIsExpire,"0");
         lambdaUpdateWrapper.set(EzUserLimitLog::getIsExpire,"1");
         limitLogService.update(lambdaUpdateWrapper);
         return Response.success();

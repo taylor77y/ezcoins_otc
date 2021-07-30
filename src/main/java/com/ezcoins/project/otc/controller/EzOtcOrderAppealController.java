@@ -43,7 +43,7 @@ public class EzOtcOrderAppealController {
     public ResponseList<EzOtcOrderAppeal> appealBy(@PathVariable String orderMatchNo) {
         LambdaQueryWrapper<EzOtcOrderAppeal> queryWrapper=new LambdaQueryWrapper<>();
         queryWrapper.eq(EzOtcOrderAppeal::getOrderMatchNo,orderMatchNo);
-        queryWrapper.eq(EzOtcOrderAppeal::getStatus,"1");
+        queryWrapper.ne(EzOtcOrderAppeal::getStatus,"2");
         return ResponseList.success(appealService.list(queryWrapper));
     }
 
@@ -54,11 +54,10 @@ public class EzOtcOrderAppealController {
         return ResponsePageList.success(appealService.page(searchModel.getPage(), searchModel.getQueryModel()));
     }
 
-
     @ApiOperation(value = "处理投诉")
     @PostMapping("doAppeal")
     @AuthToken
-    @Log(title = "处理投诉", businessType = BusinessType.UPDATE, operatorType = OperatorType.MANAGE)
+    @Log(title = "OTC模块", logInfo ="处理投诉", operatorType = OperatorType.MANAGE)
     public Response doAppeal(@RequestBody @Validated DoAppealReqDto doAppealReqDto) {
         return appealService.doAppeal(doAppealReqDto);
     }
@@ -66,7 +65,7 @@ public class EzOtcOrderAppealController {
     @ApiOperation(value = "处理投诉后修改订单状态")
     @PutMapping("doOrder")
     @AuthToken
-    @Log(title = "处理投诉后修改订单状态", businessType = BusinessType.UPDATE, operatorType = OperatorType.MANAGE)
+    @Log(title = "OTC模块", logInfo ="处理投诉后修改订单状态", operatorType = OperatorType.MANAGE)
     public Response doOrder(@RequestBody @Validated DoOrderReqDto orderReqDto) {
         return appealService.doOrder(orderReqDto);
     }

@@ -54,7 +54,7 @@ public class EzSmsConfigController {
     @ApiOperation(value = "修改短信配置")
     @PutMapping("/updateConfig")
     @AuthToken
-    @Log(title = "修改短信配置", businessType = BusinessType.UPDATE, operatorType = OperatorType.MANAGE)
+    @Log(title = "配置模块", logInfo ="修改短信配置", operatorType = OperatorType.MANAGE)
     public Response updateConfig(@RequestBody SmsReqDto smsReqDto){
         EzSmsConfig ezcoinsSmsConfig = new EzSmsConfig();
         BeanUtils.copyBeanProp(ezcoinsSmsConfig,smsReqDto);

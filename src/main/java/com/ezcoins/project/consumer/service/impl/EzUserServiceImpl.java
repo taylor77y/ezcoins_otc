@@ -230,9 +230,8 @@ public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> impleme
             ezUser.setPhoneArea(phoneArea);
             ezUser.setUserName(phone);
             ezUser.setCreateBy(phone);
-//            redisCode=redisCache.getCacheObject(RedisConstants.PHONE_REGISTER_SMS_KEY + phone);
-
-            rmKey = null;
+            redisCode=redisCache.getCacheObject(RedisConstants.PHONE_REGISTER_SMS_KEY + phone);
+            rmKey = RedisConstants.PHONE_REGISTER_SMS_KEY + phone;
         } else if (type.equals(VerificationCodeReqDto.Type.EMAIL.getType())) {
             //判断手机号用户名是否重复，表里面存在相同手机号不进行添加
             if (!checkUserUnique(null, null, null, email, null)) {

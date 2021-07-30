@@ -164,9 +164,10 @@ public class WithdrawOrderServiceImpl extends ServiceImpl<WithdrawOrderMapper, W
         c.setFrozen(total); //设置冻结金额
         c.setCoinName(one.getCoinName());
         c.setIncomeType(CoinConstants.IncomeType.PAYOUT.getType());
-        c.setMainType(CoinConstants.MainType.FROZEN.getType());
+        c.setMainType(CoinConstants.MainType.NORECORD.getType());
         c.setUserId(userId);
         cList.add(c);
+
         Record cr = new Record();
         // 插入记录
         cr.setIncomeType(CoinConstants.IncomeType.PAYOUT.getType());
@@ -179,8 +180,8 @@ public class WithdrawOrderServiceImpl extends ServiceImpl<WithdrawOrderMapper, W
         cr.setToAddress(withdrawReqDto.getToAddress());
         cr.setUserId(userId);
         cr.setCreateBy(ContextHandler.getUserName());
-
         recordService.save(cr);
+
         withdrawOrder.setCoinRecordId(cr.getId());
         baseMapper.insert(withdrawOrder);
         if (!accountService.balanceChangeSYNC(cList)) {// 资产变更异常

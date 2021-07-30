@@ -38,7 +38,7 @@
         and user_name = #{userName}
       </if>
       <if test="phone != null and phone != '' and phoneArea!=null and phoneArea!=''">
-        and phone = #{phone} and phone_area#{phoneArea}
+        and phone = #{phone} and phone_area=#{phoneArea}
       </if>
       <if test="email != null and email != ''">
         and email = #{email}

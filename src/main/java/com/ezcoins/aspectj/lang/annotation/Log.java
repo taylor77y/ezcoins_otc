@@ -19,7 +19,6 @@ public @interface Log{
      * 模块 
      */
     public String title() default "";
-
     /**
      * 功能
      */
@@ -34,4 +33,10 @@ public @interface Log{
      * 是否保存请求的参数
      */
     public boolean isSaveRequestData() default true;
+    /**
+     * 管理员操作详情
+     * @return
+     */
+    public String logInfo() default "";
+
 }

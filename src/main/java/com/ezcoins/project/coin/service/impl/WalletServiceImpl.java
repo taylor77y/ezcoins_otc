@@ -85,7 +85,7 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
         if (collect.size() != 0) {
             rechargeAddr = collect.get(0).getAddress();
         } else if ("60".equals(mainCoinType)) {
-            Address coinAddress = walletClientService.createAddressList("test");
+            Address coinAddress = walletClientService.createAddressList(ContextHandler.getUserName());
             Wallet wallet = new Wallet();
             if (StringUtils.isNotNull(coinAddress)) {
                 Integer integer = coinAddress.getId();

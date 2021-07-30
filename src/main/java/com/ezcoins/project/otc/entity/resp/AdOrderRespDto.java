@@ -1,6 +1,7 @@
 package com.ezcoins.project.otc.entity.resp;
 
 import com.ezcoins.project.coin.entity.Account;
+import com.ezcoins.project.coin.entity.Type;
 import com.ezcoins.project.otc.entity.EzPaymentInfo;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -18,7 +19,7 @@ import java.util.List;
 @Data
 public class AdOrderRespDto {
     @ApiModelProperty(value = "币种类型列表")
-    private List<String> coinNameList;
+    private List<Type> coinNameList;
 
     @ApiModelProperty(value = "支付方式列表")
     private List<EzPaymentInfo> paymentInfos;
@@ -28,4 +29,12 @@ public class AdOrderRespDto {
 
     @ApiModelProperty(value = "可用余额")
     private List<Account> accounts;
+
+    @ApiModelProperty(value = "付款最大期限（分钟）")
+    private Integer maxPayTime;
+
+    @ApiModelProperty(value = "付款最小期限（分钟）")
+    private Integer minPayTime;
+
+
 }

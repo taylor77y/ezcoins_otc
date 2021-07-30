@@ -1,10 +1,8 @@
 package com.ezcoins.project.coin.controller.app;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ezcoins.aspectj.lang.annotation.AuthToken;
-import com.ezcoins.aspectj.lang.annotation.Limit;
 import com.ezcoins.aspectj.lang.annotation.Log;
 import com.ezcoins.base.BaseController;
 import com.ezcoins.constant.enums.BusinessType;
@@ -21,19 +19,16 @@ import com.ezcoins.project.common.service.mapper.Field;
 import com.ezcoins.project.common.service.mapper.QueryMethod;
 import com.ezcoins.project.common.service.mapper.SearchModel;
 import com.ezcoins.response.Response;
-import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponseList;
 import com.ezcoins.response.ResponsePageList;
 import com.ezcoins.utils.StringUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 
 /**
  * @Author: WangLei
@@ -82,7 +77,7 @@ public class CoinController extends BaseController {
     @ApiOperation(value = "删除提币地址")
     @AuthToken
     @DeleteMapping("deleteWithdrawalAddr/{id}")
-    @Log(title = "添加/修改 提币地址", businessType = BusinessType.DELETE, operatorType = OperatorType.MOBILE)
+    @Log(title = "删除提币地址", businessType = BusinessType.DELETE, operatorType = OperatorType.MOBILE)
     public Response deleteWithdrawalAddr(@PathVariable String id){
         walletAddrService.removeById(id);
         return Response.success();
@@ -147,28 +142,27 @@ public class CoinController extends BaseController {
         return walletService.rechargeAddress(getUserId(),id);
     }
 
-
-
-
     @ApiOperation(value = "发起提现")
-    @AuthToken
+    @AuthToken(LIMIT_TYPE = LimitType.WITHDRAWLIMIT)
     @PostMapping("withdraw")
-    @Limit(LIMIT_TYPE = LimitType.WITHDRAWLIMIT)
     @Log(title = "发起提现", businessType = BusinessType.INSERT, operatorType = OperatorType.MOBILE)
     public Response withdraw(@RequestBody WithdrawReqDto withdrawReqDto) {
         return withdrawOrderService.withdraw(withdrawReqDto);
     }
 
-    @ApiOperation(value = "提现/充值 记录")
+
+    @ApiOperation(value = "账户记录")
     @AuthToken
-    @PostMapping("withdrawOrRechargeRecord")
-    public ResponsePageList<Record> withdrawOrRechargeRecord(@RequestBody RecordQuery record) {
+    @PostMapping("accountRecord")
+    public ResponsePageList<Record> accountRecord(@RequestBody RecordQuery record) {
         Page<Record> page=new Page<>(record.getPage(),record.getLimit());
         LambdaQueryWrapper<Record> lambdaQueryWrapper=new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(Record::getUserId,ContextHandler.getUserId());
+
         Date statTime = record.getStatTime();
         Date endTime = record.getEndTime();
         String coinName = record.getCoinName();
-        String type = record.getType();
+        String sonType = record.getSonType();
         if (StringUtils.isNotNull(statTime)){
             lambdaQueryWrapper.ge(Record::getCreateTime,statTime);
         }
@@ -178,24 +172,12 @@ public class CoinController extends BaseController {
         if (StringUtils.isNotEmpty(coinName)){
             lambdaQueryWrapper.eq(Record::getCoinName,coinName);
         }
-        lambdaQueryWrapper.eq(Record::getSonType,type);
-        lambdaQueryWrapper.eq(Record::getUserId,ContextHandler.getUserId());
+        if (StringUtils.isNotEmpty(sonType)){
+            lambdaQueryWrapper.eq(Record::getSonType,sonType);
+        }
+
         lambdaQueryWrapper.orderByDesc(Record::getCreateTime);
         Page<Record> p = recordService.page(page, lambdaQueryWrapper);
         return ResponsePageList.success(p);
-    }
-
-
-
-    @ApiOperation(value = "账户记录")
-    @AuthToken
-    @PostMapping("accountRecord")
-    public ResponsePageList<Record> accountRecord(@RequestBody SearchModel<Record> searchModel) {
-        Field field=new Field();
-        field.setName("user_id");
-        field.setValue(ContextHandler.getUserId());
-        field.setQueryMethod(QueryMethod.eq);
-        searchModel.getFields().add(field);
-        return ResponsePageList.success(recordService.page(searchModel.getPage(), searchModel.getQueryModel()));
     }
 }

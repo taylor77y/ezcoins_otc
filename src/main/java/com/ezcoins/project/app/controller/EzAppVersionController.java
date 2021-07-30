@@ -53,7 +53,7 @@ public class EzAppVersionController {
     @ApiOperation(value = "上传app最新版本")
     @PostMapping("addAppVersion")
     @AuthToken
-    @Log(title = "上传app最新版本", businessType = BusinessType.INSERT, operatorType = OperatorType.MANAGE)
+    @Log(title = "app版本模块", logInfo ="上传app最新版本", operatorType = OperatorType.MANAGE)
     public Response addAppVersion(
             @ApiParam(name = "ezcoinsAppVersion", value = "上传对象", required = true)
             @RequestBody @Validated AppVersionReqDto appVersionReqDto) {
@@ -67,6 +67,7 @@ public class EzAppVersionController {
     @ApiOperation(value = "上传App安装包")
     @PostMapping({"uploadAppInstallPackage/{platform}/{id}","uploadAppInstallPackage/{platform}"})
     @AuthToken
+    @Log(title = "app版本模块", logInfo ="上传App安装包", operatorType = OperatorType.MANAGE)
     public Response uploadAppInstallPackage(
             @ApiParam(name = "file", value = "上传文件", required = true)
             @RequestParam("file") MultipartFile file,
@@ -87,7 +88,7 @@ public class EzAppVersionController {
     @ApiOperation(value = "修改app上下架状态")
     @PostMapping("updateAppStatus")
     @AuthToken
-    @Log(title = "修改app状态", businessType = BusinessType.UPDATE, operatorType = OperatorType.MANAGE)
+    @Log(title = "app版本模块", logInfo ="修改app上下架状态", operatorType = OperatorType.MANAGE)
     public Response updateAppStatus(@RequestBody @Validated AppStatusReqDto statusReqDto) {
         ezAppVersionService.updateAppStatus(statusReqDto);
         return Response.success();
@@ -99,7 +100,7 @@ public class EzAppVersionController {
     @PostMapping("updateStableApp/{platform}/{id}")
     @AuthToken
     @NoRepeatSubmit
-    @Log(title = "updateStableApp", businessType = BusinessType.INSERT, operatorType = OperatorType.MANAGE)
+    @Log(title = "app版本模块", logInfo ="修改稳定版app", operatorType = OperatorType.MANAGE)
     public Response updateStableApp(
             @ApiParam(name = "platform", value = "app平台", required = true)
             @PathVariable("platform") String platform,
@@ -113,7 +114,7 @@ public class EzAppVersionController {
     @ApiOperation(value = "修改app版本信息")
     @PutMapping("updateById")
     @AuthToken
-    @Log(title = "修改app版本信息", businessType = BusinessType.UPDATE, operatorType = OperatorType.MANAGE)
+    @Log(title = "app版本模块", logInfo ="修改app版本信息", operatorType = OperatorType.MANAGE)
     public Response updateById(@RequestBody @Validated AppVersionReqDto appVersionReqDto) {
         if (StringUtils.isEmpty(appVersionReqDto.getId())){
             return Response.error("版本编号不能为空");
@@ -129,7 +130,7 @@ public class EzAppVersionController {
     @ApiOperation(value = "删除app版本信息")
     @DeleteMapping("deleteById/{id}")
     @AuthToken
-    @Log(title = "删除app版本信息", businessType = BusinessType.DELETE, operatorType = OperatorType.MANAGE)
+    @Log(title = "app版本模块", logInfo ="删除app版本信息", operatorType = OperatorType.MANAGE)
     public Response deleteById(@PathVariable String id) {
         EzAppVersion ezcoinsAppVersion = ezAppVersionService.getById(id);
         if (ezcoinsAppVersion.getIsRacking().equals(AppUpdateType.ONSHELF.getCode()) || "0".equals(ezcoinsAppVersion.getIsDefault())){

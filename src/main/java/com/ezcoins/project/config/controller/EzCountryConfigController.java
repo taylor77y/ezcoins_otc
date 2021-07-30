@@ -49,7 +49,7 @@ public class EzCountryConfigController {
     @ApiOperation(value = "添加国家编号配置")
     @PostMapping("/addCountryConfigs")
     @AuthToken
-    @Log(title = "添加国家编号配置", businessType = BusinessType.INSERT, operatorType = OperatorType.MANAGE)
+    @Log(title = "配置模块", logInfo ="添加国家编号配置", operatorType = OperatorType.MANAGE)
     public Response addCountryConfigs(@RequestBody CountryReqDto countryReqDto){
         //判断配置是否存在
         LambdaQueryWrapper<EzCountryConfig> queryWrapper=new LambdaQueryWrapper<>();
@@ -71,7 +71,7 @@ public class EzCountryConfigController {
     @ApiOperation(value = "批量删除国家编号配置")
     @DeleteMapping("/removeCountryConfigs")
     @AuthToken
-    @Log(title = "批量删除国家编号配置", businessType = BusinessType.DELETE, operatorType = OperatorType.MANAGE)
+    @Log(title = "配置模块", logInfo ="批量删除国家编号配置", operatorType = OperatorType.MANAGE)
     public Response removeCountryConfigs(@RequestBody List<String> idList){
         countryConfigService.removeByIds(idList);
         return Response.success();

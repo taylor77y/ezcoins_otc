@@ -94,12 +94,11 @@ public class AclRoleMenuController extends BaseController {
     @ApiOperation(value = "添加角色")
     @PostMapping("/addAclRole")
     @AuthToken
-    @Log(title = "添加角色", businessType = BusinessType.INSERT, operatorType = OperatorType.MANAGE)
+    @Log(title = "管理员模块", logInfo ="添加角色", operatorType = OperatorType.MANAGE)
     public Response addAclRole(@RequestBody @Validated AclRoleReqDto aclRoleReqDto) {
         roleService.addAclRole(aclRoleReqDto);
         return Response.success();
     }
-
     /**
      * 删除角色
      *
@@ -108,7 +107,7 @@ public class AclRoleMenuController extends BaseController {
     @ApiOperation(value = "根据id列表删除角色")
     @DeleteMapping("/delAclRole/{id}")
     @AuthToken
-    @Log(title = "删除角色", businessType = BusinessType.DELETE, operatorType = OperatorType.MANAGE)
+    @Log(title = "管理员模块", logInfo ="删除角色", operatorType = OperatorType.MANAGE)
     public Response delAuthRole(@PathVariable String id) {
         //删除角色权限关联表
         LambdaQueryWrapper<RoleMenu> lambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -117,8 +116,6 @@ public class AclRoleMenuController extends BaseController {
         roleService.removeById(id);
         return Response.success();
     }
-
-
     /**
      * 修改角色
      *
@@ -127,7 +124,7 @@ public class AclRoleMenuController extends BaseController {
     @ApiOperation(value = "修改角色")
     @PostMapping("/updateAclRole")
     @AuthToken
-    @Log(title = "修改角色", businessType = BusinessType.UPDATE, operatorType = OperatorType.MANAGE)
+    @Log(title = "管理员模块", logInfo ="修改角色", operatorType = OperatorType.MANAGE)
     public Response updateAclRole(@RequestBody @Validated AclRoleReqDto aclRoleReqDto) {
         roleService.updateAclRole(aclRoleReqDto);
         return Response.success();
@@ -143,7 +140,7 @@ public class AclRoleMenuController extends BaseController {
     @ApiOperation(value = "添加权限")
     @PostMapping("/addAuthMenu")
     @AuthToken
-    @Log(title = "添加权限", businessType = BusinessType.INSERT, operatorType = OperatorType.MANAGE)
+    @Log(title = "管理员模块", logInfo ="添加权限", operatorType = OperatorType.MANAGE)
     public Response addAuthMenu(@RequestBody @Validated AclMenuReqDto aclMenuReqDto) {
         menuService.addAclMenu(aclMenuReqDto);
         return Response.success();
@@ -157,7 +154,7 @@ public class AclRoleMenuController extends BaseController {
     @ApiOperation(value = "删除权限")
     @DeleteMapping("/delAclMenu/{id}")
     @AuthToken
-    @Log(title = "删除权限", businessType = BusinessType.DELETE, operatorType = OperatorType.MANAGE)
+    @Log(title = "管理员模块", logInfo ="删除权限", operatorType = OperatorType.MANAGE)
     public Response delAclMenu(@PathVariable Integer id) {
         menuService.delAclMenu(id);
         return Response.success();
@@ -171,7 +168,7 @@ public class AclRoleMenuController extends BaseController {
     @ApiOperation(value = "修改权限")
     @PostMapping("/updateAclMenu")
     @AuthToken
-    @Log(title = "删除权限", businessType = BusinessType.DELETE, operatorType = OperatorType.MANAGE)
+    @Log(title = "管理员模块", logInfo ="修改权限", operatorType = OperatorType.MANAGE)
     public Response updateAuthMenu(@RequestBody @Validated AclMenuReqDto aclMenuReqDto) {
         menuService.updateAclMenu(aclMenuReqDto);
         return Response.success();

@@ -61,7 +61,6 @@ public class EzAppController extends BaseController {
             queryWrapper1.eq(EzAppVersion::getPlatform, versionReqDto.getPlatform());
             queryWrapper1.eq(EzAppVersion::getIsDefault,0);
             EzAppVersion defaultVersion = ezAppVersionService.getOne(queryWrapper1);
-
             appVersionRespDto.setThisVersion(defaultVersion.getThisVersion());
             appVersionRespDto.setAddr(defaultVersion.getAddr());
             if ("zh_CN".equals(locale)) {

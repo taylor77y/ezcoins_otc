@@ -3,11 +3,7 @@ package com.ezcoins.project.otc.service;
 import com.ezcoins.project.otc.entity.EzOtcOrder;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ezcoins.project.otc.entity.req.*;
-import com.ezcoins.project.otc.entity.req.NewOrderRespDto;
-import com.ezcoins.project.otc.entity.resp.OrderInfo;
-import com.ezcoins.project.otc.entity.resp.OtcOrderRespDto;
-import com.ezcoins.project.otc.entity.resp.PaymentDetails;
-import com.ezcoins.response.Response;
+import com.ezcoins.project.otc.entity.resp.*;
 import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponseList;
 
@@ -59,22 +55,24 @@ public interface EzOtcOrderService extends IService<EzOtcOrder> {
     ResponseList<OtcOrderRespDto> otcOrderList(OtcOrderQueryReqDto orderQueryReqDto);
 
 
-    /***
-    * @Description: 新订单
-    * @Param: []
-    * @return: com.ezcoins.response.ResponseList<com.ezcoins.project.otc.entity.resp.OtcOrderRespDto>
-    * @Author: Wanglei
-    * @Date: 2021/6/22
-    */
+
     ResponseList<NewOrderRespDto> nowOrderList(PageQuery pageQuery);
 
     
     /*** 
     * @Description: 购买查询订单详情
     * @Param: [otcOrderNo]
-    * @return: com.ezcoins.response.Response<com.ezcoins.project.otc.entity.req.NewOrderRespDto>
+    * @return: com.ezcoins.response.Response<com.ezcoins.project.otc.entity.resp.NewOrderRespDto>
     * @Author: Wanglei
     * @Date: 2021/6/22
     */
+
+    /***
+     * @Description: 新订单
+     * @Param: []
+     * @return: com.ezcoins.response.ResponseList<com.ezcoins.project.otc.entity.resp.OtcOrderRespDto>
+     * @Author: Wanglei
+     * @Date: 2021/6/22
+     */
     Response<OrderInfo> orderInfo(String otcOrderNo);
 }

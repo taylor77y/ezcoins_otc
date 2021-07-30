@@ -16,11 +16,13 @@ import com.ezcoins.project.common.service.mapper.SearchModel;
 import com.ezcoins.project.config.entity.EzCountryConfig;
 import com.ezcoins.project.config.service.EzCountryConfigService;
 import com.ezcoins.project.otc.entity.EzAdvertisingBusiness;
+import com.ezcoins.project.otc.entity.EzOtcConfig;
 import com.ezcoins.project.otc.entity.EzOtcOrder;
 import com.ezcoins.project.otc.entity.EzPaymentInfo;
 import com.ezcoins.project.otc.entity.req.OtcOrderReqDto;
 import com.ezcoins.project.otc.entity.req.PaymentQrcodeTypeReqDto;
 import com.ezcoins.project.otc.entity.resp.AdOrderRespDto;
+import com.ezcoins.project.otc.service.EzOtcConfigService;
 import com.ezcoins.project.otc.service.EzOtcOrderMatchService;
 import com.ezcoins.project.otc.service.EzOtcOrderService;
 import com.ezcoins.project.otc.service.EzPaymentInfoService;
@@ -64,6 +66,9 @@ public class EzOtcOrderController {
     @Autowired
     private AccountService accountService;
 
+    @Autowired
+    private EzOtcConfigService configService;
+
     @AuthToken
     @ApiOperation(value = "OTC 订单列表")
     @PostMapping("otcOrderList")
@@ -87,10 +92,7 @@ public class EzOtcOrderController {
     @GetMapping("releaseOrderInfo/{userId}")
     public Response<AdOrderRespDto> releaseOrder(@PathVariable String userId){
         AdOrderRespDto adOrderRespDto=new AdOrderRespDto();
-        LambdaQueryWrapper<Type> typeLambdaQueryWrapper=new LambdaQueryWrapper<>();
-        typeLambdaQueryWrapper.select(Type::getCoinName);
-        adOrderRespDto.setCoinNameList(typeService.listObjs(typeLambdaQueryWrapper).stream().map(o ->  (String) o).collect(Collectors.toList()));
-
+        adOrderRespDto.setCoinNameList(typeService.list());
         LambdaQueryWrapper<EzCountryConfig> lambdaQueryWrapper=new LambdaQueryWrapper<>();
         lambdaQueryWrapper.select(EzCountryConfig::getCurrencyCode);
         lambdaQueryWrapper.isNotNull(EzCountryConfig::getCurrencyCode);
@@ -103,6 +105,10 @@ public class EzOtcOrderController {
         LambdaQueryWrapper<Account> accountLambdaQueryWrapper=new LambdaQueryWrapper<>();
         accountLambdaQueryWrapper.eq(Account::getUserId, userId);
         adOrderRespDto.setAccounts(accountService.list(accountLambdaQueryWrapper));
+
+        EzOtcConfig config = configService.getById(1);
+        adOrderRespDto.setMaxPayTime(config.getMaxPayTime());
+        adOrderRespDto.setMinPayTime(config.getMinPayTime());
         return Response.success(adOrderRespDto);
     }
 

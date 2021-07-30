@@ -10,6 +10,7 @@ import javax.ws.rs.DELETE;
  * @Version:1.0
  */
 public enum LimitType {
+    NOLIMIT("-1", "无验证"),
     LOGINLIMIT("0", "登录封禁"),
     WITHDRAWLIMIT("1", "提现封禁"),
     ORDERLIMIT("2", "发布广告封禁"),
