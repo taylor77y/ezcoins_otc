@@ -47,6 +47,9 @@ public class EzCountryConfig implements Serializable {
     @ApiModelProperty(value = "国旗地址")
     private String nationalFlagAddr;
 
+    @ApiModelProperty(value = "排序")
+    private Integer sort;
+
     @ApiModelProperty(value = "逻辑删除 1（true）已删除，0（false）未删除")
     @TableLogic(value = "0",delval = "1")
     private String isDeleted;

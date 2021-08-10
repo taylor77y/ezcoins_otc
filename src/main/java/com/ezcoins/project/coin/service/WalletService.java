@@ -33,8 +33,6 @@ public interface WalletService extends IService<Wallet> {
     boolean handleThirdpartyWithdrawal(Trade trade);
 
 
-
-
     /**
      * 处理第三方冲币审核结果 [审核通过][审核拒绝][到账返回Txid]
      */

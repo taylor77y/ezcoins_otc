@@ -18,9 +18,6 @@ public class UserLimitReqDto {
     @ApiModelProperty(value = "用户id")
     private String userId;
 
-    @ApiModelProperty(value = "用户名")
-    private String userName;
-
     @ApiModelProperty(value = "封号原因")
     @NotBlank(message = "请输入封号原因")
     private String detailed;

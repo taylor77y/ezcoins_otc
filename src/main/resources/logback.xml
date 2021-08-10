@@ -52,13 +52,11 @@
         </encoder>
     </appender>
 	
-	<logger name="com.ht" level="info" />
+	<logger name="com.ezcoins" level="info" />
 	<logger name="org.springframework" level="warn" />
-
 	<root level="info">
 		<appender-ref ref="console" />
 	</root>
-	
     <root level="info">
         <appender-ref ref="file_info" />
         <appender-ref ref="file_error" />

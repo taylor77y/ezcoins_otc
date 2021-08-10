@@ -43,11 +43,13 @@ public class Wallet implements Serializable {
     @ApiModelProperty(value = "钱包地址")
     private String address;
 
+    @ApiModelProperty(value = "创建者")
+    private String createBy;
+
     @ApiModelProperty(value = "创建时间")
     @TableField(fill = FieldFill.INSERT)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
-
 
     @ApiModelProperty(value = "更新时间")
     @TableField(fill = FieldFill.INSERT_UPDATE)

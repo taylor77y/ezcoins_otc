@@ -20,6 +20,7 @@ import com.ezcoins.utils.MessageUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -50,7 +51,7 @@ public class EzCountryConfigController {
     @PostMapping("/addCountryConfigs")
     @AuthToken
     @Log(title = "配置模块", logInfo ="添加国家编号配置", operatorType = OperatorType.MANAGE)
-    public Response addCountryConfigs(@RequestBody CountryReqDto countryReqDto){
+    public Response addCountryConfigs(@RequestBody @Validated CountryReqDto countryReqDto){
         //判断配置是否存在
         LambdaQueryWrapper<EzCountryConfig> queryWrapper=new LambdaQueryWrapper<>();
         queryWrapper.eq(EzCountryConfig::getCountryName,countryReqDto.getCountryName())

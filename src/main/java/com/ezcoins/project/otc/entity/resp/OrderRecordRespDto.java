@@ -63,6 +63,10 @@ public class OrderRecordRespDto {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date dueTime;
 
+    @ApiModelProperty(value = "当前时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date nowTime;
+
     @ApiModelProperty(value = "是否为接单广告(0:是 1：否)")
     private String isAdvertising;
 

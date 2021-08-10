@@ -15,7 +15,7 @@ import javax.validation.constraints.NotBlank;
 @Data
 public class AppealReqDto {
     @ApiModelProperty(value = "申诉理由")
-    @NotBlank(message = "请输入申诉理由")
+    @NotBlank(message = "{reason.not}")
     private String reason;
 
     @ApiModelProperty(value = "匹配订单号")
@@ -25,7 +25,7 @@ public class AppealReqDto {
     private String type;
 
     @ApiModelProperty(value = "凭证地址")
-    @NotBlank(message = "请先上传凭证")
+    @NotBlank(message = "{voucher.not}")
     private String voucher;
 
 }

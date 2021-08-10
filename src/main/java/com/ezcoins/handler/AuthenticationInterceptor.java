@@ -2,19 +2,23 @@ package com.ezcoins.handler;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.extension.api.R;
 import com.ezcoins.aspectj.lang.annotation.AuthToken;
 import com.ezcoins.base.BaseException;
 import com.ezcoins.constant.enums.LimitType;
 import com.ezcoins.constant.enums.LoginType;
+import com.ezcoins.constant.interf.RedisConstants;
 import com.ezcoins.context.ContextHandler;
 import com.ezcoins.exception.CheckException;
 import com.ezcoins.exception.jwt.TokenException;
+import com.ezcoins.exception.user.UserException;
 import com.ezcoins.project.consumer.entity.EzUser;
 import com.ezcoins.project.consumer.entity.EzUserLimit;
 import com.ezcoins.project.consumer.entity.EzUserLimitLog;
 import com.ezcoins.project.consumer.service.EzUserLimitLogService;
 import com.ezcoins.project.consumer.service.EzUserLimitService;
 import com.ezcoins.project.consumer.service.EzUserService;
+import com.ezcoins.redis.RedisCache;
 import com.ezcoins.security.util.IJWTInfo;
 import com.ezcoins.security.util.JWTHelper;
 import com.ezcoins.utils.DateUtils;
@@ -29,6 +33,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Method;
+import java.util.List;
 
 /**
  * token注意点：
@@ -42,7 +47,6 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
     @Autowired
     private JWTHelper jwtHelper;
 
-
     @Resource
     private EzUserService userService;
     @Resource
@@ -50,6 +54,9 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
 
     @Resource
     private EzUserLimitLogService limitLogService;
+
+    @Resource
+    private RedisCache redisCache;
 
 
     public static boolean flag = false;
@@ -92,22 +99,19 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
                 if (null == user) {
                     throw new TokenException();
                 }
-                if (authToken.status()) {
-                    CheckException.check("1".equals(user.getStatus()), "用户被禁止", () -> {
-                        log.error("用户被禁止");
-                    });
+                if (authToken.status() && "1".equals(user.getStatus())) {
+                    redisCache.deleteObject(RedisConstants.LOGIN_USER_KEY + user.getUserId() + "_" + LoginType.APP.getType());
+                    throw new BaseException("用户被禁止");
                 }
                 if (authToken.advertisingStatus()) {
                     CheckException.check("1".equals(user.getLevel()), "请先进行高级认证", () -> {
                         log.error("请先进行高级认证");
                     });
                 }
-                if (authToken.kyc()) {
-                    CheckException.check("1".equals(user.getKycStatus()), "请先完成实名认证",() -> {
-                        log.error("请先完成实名认证");
-                    });
+                if (authToken.kyc() && "1".equals(user.getKycStatus())) {
+                    throw new BaseException(null,"700","请先完成实名认证",null);
                 }
-                if (!authToken.LIMIT_TYPE().equals(LimitType.NOLIMIT) ) {
+                if (!authToken.LIMIT_TYPE().equals(LimitType.NOLIMIT)) {
                     LambdaQueryWrapper<EzUserLimitLog> lambdaQueryWrapper = new LambdaQueryWrapper<>();
                     lambdaQueryWrapper.eq(EzUserLimitLog::getIsExpire, "0");
                     lambdaQueryWrapper.eq(EzUserLimitLog::getUserId, fromToken.getUserId());
@@ -120,22 +124,28 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
                             LambdaUpdateWrapper<EzUserLimit> queryWrapper = new LambdaUpdateWrapper<>();
                             queryWrapper.eq(EzUserLimit::getUserId, fromToken.getUserId());
                             if (authToken.LIMIT_TYPE().equals(LimitType.LOGINLIMIT)) {
-                                queryWrapper.eq(EzUserLimit::getLogin, 0);
+                                queryWrapper.set(EzUserLimit::getLogin, 0);
                                 user.setStatus("0");
                                 userService.updateById(user);
                             } else if (authToken.LIMIT_TYPE().equals(LimitType.WITHDRAWLIMIT)) {
-                                queryWrapper.eq(EzUserLimit::getWithdraw, 0);
+                                queryWrapper.set(EzUserLimit::getWithdraw, 0);
                             } else if (authToken.LIMIT_TYPE().equals(LimitType.ORDERLIMIT)) {
-                                queryWrapper.eq(EzUserLimit::getOrder, 0);
+                                queryWrapper.set(EzUserLimit::getOrders, 0);
                             } else if (authToken.LIMIT_TYPE().equals(LimitType.BUSINESSLIMIT)) {
-                                queryWrapper.eq(EzUserLimit::getBusiness, 0);
+                                queryWrapper.set(EzUserLimit::getBusiness, 0);
                             }
                             limitService.update(queryWrapper);
                             return true;
                         }
                         throw new BaseException("用户行为已被限制");
                     }
-                } else if (fromToken.getUserType().equals(LoginType.WEB.getType())) {
+                }
+            } else if (fromToken.getUserType().equals(LoginType.WEB.getType())) {
+                if (!"-1".equals(authToken.CODE()) && !"admin".equals(fromToken.getUserName())) {
+                    List<String> list = redisCache.getCacheObject(RedisConstants.LOGIN_MENU_CODE + fromToken.getUserName());
+                    if (!hasPermissions(list, authToken.CODE())) {
+                        throw new BaseException("管理员没有操作权限");
+                    }
                 }
             }
         }
@@ -147,5 +157,9 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
             ex) throws Exception {
         ContextHandler.remove();
         super.afterCompletion(request, response, handler, ex);
+    }
+
+    private boolean hasPermissions(List<String> permissions, String permission) {
+        return permissions.contains(permission);
     }
 }

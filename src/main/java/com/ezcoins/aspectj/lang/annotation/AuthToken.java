@@ -17,7 +17,11 @@ public @interface AuthToken {
     //是否验证用户状态
     boolean status() default true;
     /**
-     * 验证类型
+     * 验证禁用类型
      */
     public LimitType LIMIT_TYPE() default LimitType.NOLIMIT;
+    /**
+     * 验证管理员code码
+     */
+    public String CODE() default "-1";
 }

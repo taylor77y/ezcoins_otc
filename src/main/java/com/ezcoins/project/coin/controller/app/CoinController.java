@@ -27,7 +27,9 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 
 /**
@@ -150,7 +152,6 @@ public class CoinController extends BaseController {
         return withdrawOrderService.withdraw(withdrawReqDto);
     }
 
-
     @ApiOperation(value = "账户记录")
     @AuthToken
     @PostMapping("accountRecord")
@@ -159,15 +160,20 @@ public class CoinController extends BaseController {
         LambdaQueryWrapper<Record> lambdaQueryWrapper=new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(Record::getUserId,ContextHandler.getUserId());
 
-        Date statTime = record.getStatTime();
+        Date statTime = record.getStartTime();
         Date endTime = record.getEndTime();
+
+
         String coinName = record.getCoinName();
         String sonType = record.getSonType();
         if (StringUtils.isNotNull(statTime)){
             lambdaQueryWrapper.ge(Record::getCreateTime,statTime);
         }
         if (StringUtils.isNotNull(endTime)){
-            lambdaQueryWrapper.le(Record::getCreateTime,endTime);
+            GregorianCalendar calendar = new GregorianCalendar();
+            calendar.setTime(endTime);
+            calendar.add(Calendar.DATE,1);
+            lambdaQueryWrapper.le(Record::getCreateTime,calendar.getTime());
         }
         if (StringUtils.isNotEmpty(coinName)){
             lambdaQueryWrapper.eq(Record::getCoinName,coinName);

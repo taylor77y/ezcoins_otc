@@ -12,12 +12,11 @@ import javax.validation.constraints.NotBlank;
  */
 @Data
 public class VerificationCodeReqDto {
-    @NotBlank(message ="{验证方式为空}")
     @ApiModelProperty(value = "验证方式  1：手机验证  2：邮箱验证",required = true)
     private String type;
 
 
-    @NotBlank(message ="{号码不能为空}")
+    @NotBlank(message ="{verificationNumber.not}")
     @ApiModelProperty(value = "手机号/邮箱" ,required = true)
     private String verificationNumber;
 
@@ -27,8 +26,7 @@ public class VerificationCodeReqDto {
 
 
     /** 验证码用于类型  1：注册 2：找回密码*/
-    @ApiModelProperty(value = "验证码用于类型 1：注册 2：找回密码",required = true)
-    @NotBlank(message ="{验证码用于类型不能为空}")
+    @ApiModelProperty(value = "验证码用于类型 1：注册 2：找回密码  3：绑定安全信息 4：修改安全密码 ",required = true)
     private String captchaType;
 
     /**
@@ -69,7 +67,11 @@ public class VerificationCodeReqDto {
         RETRIEVE_PASSWORD("2"),
 
         /** 绑定信息 **/
-        BIND_INFO("3");
+        BIND_INFO("3"),
+        /**
+         * 找回安全密码
+         */
+        RETRIEVE_SECURITY_PASSWORD("4");
 
         private final String type;
 

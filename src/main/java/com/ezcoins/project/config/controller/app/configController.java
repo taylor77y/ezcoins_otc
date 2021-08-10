@@ -36,6 +36,7 @@ public class configController {
         LambdaQueryWrapper<EzCountryConfig> lambdaQueryWrapper=new LambdaQueryWrapper<>();
         lambdaQueryWrapper.select(EzCountryConfig::getCurrencyCode);
         lambdaQueryWrapper.isNotNull(EzCountryConfig::getCurrencyCode);
+        lambdaQueryWrapper.orderByAsc(EzCountryConfig::getSort);
         return ResponseList.success(countryConfigService.listObjs(lambdaQueryWrapper).stream().map(o ->  (String) o).collect(Collectors.toList()));
     }
 

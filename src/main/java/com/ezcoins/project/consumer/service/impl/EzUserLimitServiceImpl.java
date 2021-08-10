@@ -63,10 +63,10 @@ public class EzUserLimitServiceImpl extends ServiceImpl<EzUserLimitMapper, EzUse
             }
             ezUserLimit.setWithdraw("1");
         }else if (LimitType.ORDERLIMIT.getCode().equals(type)){
-            if (!f && "1".equals(ezUserLimit.getOrder()) ){
+            if (!f && "1".equals(ezUserLimit.getOrders()) ){
                 return Response.error("用户发布订单已被封禁");
             }
-            ezUserLimit.setOrder("1");
+            ezUserLimit.setOrders("1");
         }else if (LimitType.BUSINESSLIMIT.getCode().equals(type)){
             if (!f && "1".equals(ezUserLimit.getBusiness()) ){
                 return Response.error("用户买卖已被封禁");
@@ -77,6 +77,7 @@ public class EzUserLimitServiceImpl extends ServiceImpl<EzUserLimitMapper, EzUse
         ezUserLimitLog.setUserId(user.getUserId());
         ezUserLimitLog.setUserName(user.getUserName());
         ezUserLimitLog.setType(type);
+        ezUserLimitLog.setIsExpire("0");
         ezUserLimitLog.setCreateBy(ContextHandler.getUserName());
         ezUserLimitLog.setDetailed(userLimitReqDto.getDetailed());
         if (StringUtils.isNotNull(userLimitReqDto.getDay())){
@@ -113,10 +114,10 @@ public class EzUserLimitServiceImpl extends ServiceImpl<EzUserLimitMapper, EzUse
             }
             ezUserLimit.setWithdraw("0");
         }else if (LimitType.ORDERLIMIT.getCode().equals(type)){
-            if ("0".equals(ezUserLimit.getOrder()) ){
+            if ("0".equals(ezUserLimit.getOrders()) ){
                 return Response.error("用户发布订单未被封禁");
             }
-            ezUserLimit.setOrder("0");
+            ezUserLimit.setOrders("0");
         }else if (LimitType.BUSINESSLIMIT.getCode().equals(type)){
             if ( "0".equals(ezUserLimit.getBusiness()) ){
                 return Response.error("用户买卖未被封禁");

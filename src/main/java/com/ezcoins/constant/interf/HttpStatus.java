@@ -10,7 +10,6 @@ public interface HttpStatus{
     String HTTP_RES_CODE_200_VALUE = "success";
     // 系统错误
     String HTTP_RES_CODE_500_VALUE = "fail";
-
     
     public static final int CREATED = 201;
 
@@ -41,7 +40,8 @@ public interface HttpStatus{
     
     public static final int NOT_FOUND = 404;
 
-    
+
+
     public static final int BAD_METHOD = 405;
 
     
@@ -50,8 +50,5 @@ public interface HttpStatus{
     
     public static final int UNSUPPORTED_TYPE = 415;
 
-
-
-    
     public static final int NOT_IMPLEMENTED = 501;
 }

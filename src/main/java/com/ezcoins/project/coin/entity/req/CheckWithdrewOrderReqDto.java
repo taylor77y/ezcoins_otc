@@ -16,13 +16,18 @@ import javax.validation.constraints.NotBlank;
 public class CheckWithdrewOrderReqDto {
 
     @ApiModelProperty(value = "提币订单id",required = true)
-    @NotBlank(message = "{提币订单编号不能为空}")
+    @NotBlank(message = "提币订单编号不能为空")
     private String id;
 
     @ApiModelProperty(value = "操作 (2：审核通过 3：提币拒绝)",required = true)
-    @NotBlank(message = "{操作类型不能为空}")
+    @NotBlank(message = "操作类型不能为空")
     private String operate;
 
     @ApiModelProperty(value = "失败原因")
     private String reason;
+
+    @ApiModelProperty(value = "自动回调")
+    @NotBlank(message = "请选择是否自动回调")
+    private String auto;
+
 }

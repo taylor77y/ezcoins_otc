@@ -3,6 +3,7 @@ package com.ezcoins.project.consumer.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ezcoins.project.acl.entity.req.JwtAuthenticationRequest;
 import com.ezcoins.project.consumer.entity.EzUser;
+import com.ezcoins.project.consumer.entity.req.CheckCodeReqDto;
 import com.ezcoins.project.consumer.entity.req.EzUserReqDto;
 import com.ezcoins.project.consumer.entity.req.UserLimitReqDto;
 import com.ezcoins.project.consumer.entity.req.VerificationCodeReqDto;
@@ -71,6 +72,10 @@ public interface EzUserService extends IService<EzUser> {
      * @return
      */
     void updateUser(EzUserReqDto ezUserDto);
+
+
+
+    void checkCode(CheckCodeReqDto checkCodeReqDto);
 
 
 //    /**

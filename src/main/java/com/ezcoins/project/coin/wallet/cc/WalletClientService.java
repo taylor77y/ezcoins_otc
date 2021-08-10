@@ -83,13 +83,14 @@ public class WalletClientService {
      * 转账
      *
      */
-    public Integer transfer(String coin_type, String chain, String request_id, String address, String account, BigDecimal num) {
+    public Integer transfer(String coin_type, String chain, String request_id, String address, String account, BigDecimal num,String auto) {
         HashMap<String, String> map = new HashMap<>(6);
         map.put("account", account);
         map.put("address", address);
         map.put("num", String.valueOf(num));
         map.put("coin_type", coin_type);
         map.put("request_id", request_id);
+        map.put("auto", auto);
         map.put("chain", chain);
         String data = JSONObject.toJSONString(map);
         log.debug("transfer-body[{}]", data);
@@ -138,6 +139,8 @@ public class WalletClientService {
         String coinType = CoinTypeUtils.getCoinType(trade.getChain(), trade.getChain());
         return walletService.handleRecharge(trade.getTid(), trade.getAddr(), trade.getAmt(), mainCoinType,coinType);
     }
+
+
 
     public boolean withdrawCallback(Trade trade) {
         //金额为最小单位，需要转换,包括amount和fee字段

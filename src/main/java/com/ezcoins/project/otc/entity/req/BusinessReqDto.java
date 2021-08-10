@@ -1,9 +1,14 @@
 package com.ezcoins.project.otc.entity.req;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+
+import java.util.Date;
 
 /**
  * @Author: WangLei
@@ -32,10 +37,11 @@ public class BusinessReqDto {
     @ApiModelProperty(value = "买总完成率")
     private Double finishBuyRate;
 
-    @ApiModelProperty(value = "平均放行时间 分钟")
+    @ApiModelProperty(value = "平均放行时间分钟")
     private Double averagePass;
 
-    @ApiModelProperty(value = "卖家昵称")
-    private String advertisingName;
+    @ApiModelProperty(value = "注册时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date createTime;
 
 }

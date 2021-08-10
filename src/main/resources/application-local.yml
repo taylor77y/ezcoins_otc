@@ -3,6 +3,7 @@ ezcoins:
   profile: E:/taskezcoins/uploadPath
   addressEnabled: false
   captchaType: math
+  emailLog: emailLogo.png
 
 wallet:
    cc:
@@ -93,6 +94,7 @@ spring:
     password: P@ssw0rdEzcoins
     properties:
       mail:
+        debug: true
         smtp:
           ssl:
             enable: false
@@ -102,6 +104,7 @@ spring:
           # 必须进行授权认证，它的目的就是阻止他人任意乱发邮件
     protocol: smtp
     default-encoding: utf-8
+    port: 587
 #          auth: true
 #          starttls:
 #            enable: true

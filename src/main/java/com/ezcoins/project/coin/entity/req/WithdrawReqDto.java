@@ -17,7 +17,7 @@ import java.math.BigDecimal;
 public class WithdrawReqDto {
 
     @ApiModelProperty(value = "提币地址",required = true)
-    @NotBlank(message = "{提币地址不能为空}")
+    @NotBlank(message = "{addr.not}")
     private String toAddress;
 
     @ApiModelProperty(value = "主币种类型")

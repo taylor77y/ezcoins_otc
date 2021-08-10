@@ -51,13 +51,12 @@ public class EzSysBoomServiceImpl extends ServiceImpl<EzSysBoomMapper, EzSysBoom
         if ("0".equals(pageQuery.getIsHandle())) {
             LambdaQueryWrapper<EzOtcOrderMatch> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(EzOtcOrderMatch::getOtcOrderUserId, userId).and(we -> we.eq(
-                    EzOtcOrderMatch::getStatus, MatchOrderStatus.WAITFORPAYMENT).or()
-                    .eq(EzOtcOrderMatch::getStatus, MatchOrderStatus.PAID).or()
-                    .eq(EzOtcOrderMatch::getStatus, MatchOrderStatus.PENDINGORDER));
+                    EzOtcOrderMatch::getStatus, MatchOrderStatus.WAITFORPAYMENT.getCode()).or()
+                    .eq(EzOtcOrderMatch::getStatus, MatchOrderStatus.PAID.getCode()).or()
+                    .eq(EzOtcOrderMatch::getStatus, MatchOrderStatus.PENDINGORDER.getCode()));
             //查询未处理订单
             int count = orderMatchService.count(queryWrapper);
             info.setNoHandleNum(count == 0 ? null : count);
-            info.setNoHandleNum(5);
         }
         LambdaQueryWrapper<EzSysTips> tipsqueryWrapper = new LambdaQueryWrapper<>();
         //未读消息数量
@@ -67,5 +66,4 @@ public class EzSysBoomServiceImpl extends ServiceImpl<EzSysBoomMapper, EzSysBoom
         info.setBoomAddrList(this.list().stream().map(EzSysBoom::getUrl).collect(Collectors.toList()));
         return Response.success(info);
     }
-
 }

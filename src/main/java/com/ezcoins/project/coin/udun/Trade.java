@@ -26,6 +26,7 @@ public class Trade {
 //        return "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t".equalsIgnoreCase(this.coinType) &&
 //                this.mainCoinType.equalsIgnoreCase(CoinType.TRX.getCode());
 //    }
+
     /**
      * ETH代币-ERC20
      * @return

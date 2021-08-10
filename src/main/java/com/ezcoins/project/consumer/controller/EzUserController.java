@@ -1,6 +1,7 @@
 package com.ezcoins.project.consumer.controller;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.ezcoins.aspectj.lang.annotation.AuthToken;
 import com.ezcoins.aspectj.lang.annotation.Log;
 import com.ezcoins.aspectj.lang.annotation.NoRepeatSubmit;
@@ -8,8 +9,10 @@ import com.ezcoins.constant.enums.BusinessType;
 import com.ezcoins.constant.enums.OperatorType;
 import com.ezcoins.project.common.service.mapper.SearchModel;
 import com.ezcoins.project.consumer.entity.EzUser;
+import com.ezcoins.project.consumer.entity.EzUserLimit;
 import com.ezcoins.project.consumer.entity.req.EzUserReqDto;
 import com.ezcoins.project.consumer.entity.req.UserLimitReqDto;
+import com.ezcoins.project.consumer.service.EzUserLimitService;
 import com.ezcoins.project.consumer.service.EzUserService;
 import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponsePageList;
@@ -17,6 +20,11 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -34,12 +42,28 @@ public class EzUserController {
     @Autowired
     private EzUserService ezUserService;
 
+    @Autowired
+    private EzUserLimitService limitService;
+
 
     @ApiOperation(value = "用户列表")
     @PostMapping("userList")
     @AuthToken
     public ResponsePageList<EzUser> userList(@RequestBody SearchModel<EzUser> searchModel) {
-        return ResponsePageList.success(ezUserService.page(searchModel.getPage(), searchModel.getQueryModel()));
+        List<EzUser> records = ezUserService.page(searchModel.getPage(), searchModel.getQueryModel()).getRecords();
+        List<String> idList = records.stream().map(EzUser::getUserId).collect(Collectors.toList());
+        LambdaQueryWrapper<EzUserLimit> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(EzUserLimit::getUserId, idList);
+        List<EzUserLimit> list = limitService.list(queryWrapper);
+        Map<String, EzUserLimit> collect = list.stream().collect(Collectors.toMap(EzUserLimit::getUserId, Function.identity()));
+        records.forEach(e -> {
+            EzUserLimit limit = collect.get(e.getUserId());
+            e.setLogin(limit == null ? "0" : limit.getLogin());
+            e.setOrders(limit == null ? "0" : limit.getOrders());
+            e.setWithdraw(limit == null ? "0" : limit.getWithdraw());
+            e.setBusiness(limit == null ? "0" : limit.getBusiness());
+        });
+        return ResponsePageList.success(ezUserService.page(searchModel.getPage(), searchModel.getQueryModel()).setRecords(records));
     }
 
 
@@ -47,9 +71,9 @@ public class EzUserController {
     @PostMapping("addUser")
     @AuthToken
     @NoRepeatSubmit
-    @Log(title = "用户中心模块", logInfo ="添加用户", operatorType = OperatorType.MANAGE)
+    @Log(title = "用户中心模块", logInfo = "添加用户", operatorType = OperatorType.MANAGE)
     public Response addUser(@RequestBody EzUserReqDto ezUserDto) {
-        ezUserService.addUser(ezUserDto,true);
+        ezUserService.addUser(ezUserDto, true);
         return Response.success();
     }
 
@@ -58,7 +82,7 @@ public class EzUserController {
     @PutMapping("updateUser")
     @AuthToken
     @NoRepeatSubmit
-    @Log(title = "用户中心模块", logInfo ="修改用户信息", operatorType = OperatorType.MANAGE)
+    @Log(title = "用户中心模块", logInfo = "修改用户信息", operatorType = OperatorType.MANAGE)
     public Response updateUser(@RequestBody EzUserReqDto ezUserDto) {
         ezUserService.updateUser(ezUserDto);
         return Response.success();
@@ -68,14 +92,11 @@ public class EzUserController {
     @DeleteMapping("deleteUser/{userId}")
     @AuthToken
     @NoRepeatSubmit
-    @Log(title = "用户中心模块", logInfo ="逻辑删除用户", operatorType = OperatorType.MANAGE)
+    @Log(title = "用户中心模块", logInfo = "逻辑删除用户", operatorType = OperatorType.MANAGE)
     public Response deleteUser(@PathVariable String userId) {
         ezUserService.getById(userId);
         return Response.success();
     }
-
-
-
 
 
 }

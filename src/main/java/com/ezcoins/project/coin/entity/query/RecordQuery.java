@@ -18,7 +18,7 @@ public class RecordQuery {
 
     @ApiModelProperty(value = "开始时间")
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private Date statTime;
+    private Date startTime;
 
     @ApiModelProperty(value = "结束时间")
     @JsonFormat(pattern = "yyyy-MM-dd")

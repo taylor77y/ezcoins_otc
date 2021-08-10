@@ -87,7 +87,7 @@ public class WithdrawOrderServiceImpl extends ServiceImpl<WithdrawOrderMapper, W
             if (chainCoinType == null) {
                 throw new BaseException("未获取到coinType");
             }
-            Integer code = clientService.transfer(chainCoinType.getCoin_type(), chainCoinType.getChain(), withdrawOrder.getId(), withdrawOrder.getAddress(), "test", withdrawOrder.getAmount());
+           clientService.transfer(chainCoinType.getCoin_type(), chainCoinType.getChain(), withdrawOrder.getId(), withdrawOrder.getAddress(),withdrawOrder.getUserId(), withdrawOrder.getAmount(),checkWithdrewOrderReqDto.getAuto());
             withdrawOrder.setStatus(WithdrawOrderStatus.BYADMIN.getCode());
         } else if (checkWithdrewOrderReqDto.getOperate().equals(WithdrawOrderStatus.REFUSE.getCode())) {
             //修改订单状态
@@ -101,14 +101,12 @@ public class WithdrawOrderServiceImpl extends ServiceImpl<WithdrawOrderMapper, W
             c.setFrozen(total.negate()); //设置冻结金额
             c.setCoinName(withdrawOrder.getCoinName());
             c.setIncomeType(CoinConstants.IncomeType.INCOME.getType());
-            c.setMainType(CoinConstants.MainType.UNFREEZE.getType());
+            c.setMainType(CoinConstants.MainType.NORECORD.getType());
             c.setUserId(withdrawOrder.getUserId());
             cList.add(c);
-
             if (!accountService.balanceChangeSYNC(cList)) {// 资产变更异常
                 throw new AccountOperationBusyException();
             }
-
             String coinRecordId = withdrawOrder.getCoinRecordId();
             LambdaUpdateWrapper<Record> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
             lambdaUpdateWrapper.eq(Record::getId, coinRecordId);
@@ -130,7 +128,6 @@ public class WithdrawOrderServiceImpl extends ServiceImpl<WithdrawOrderMapper, W
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public Response withdraw(WithdrawReqDto withdrawReqDto) {
         String userId = ContextHandler.getUserId();
-
         LambdaQueryWrapper<WithdrawConfig> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(WithdrawConfig::getMainCoinType, withdrawReqDto.getMainCoinType());
         lambdaQueryWrapper.eq(WithdrawConfig::getCoinType, withdrawReqDto.getCoinType());
@@ -144,9 +141,13 @@ public class WithdrawOrderServiceImpl extends ServiceImpl<WithdrawOrderMapper, W
         }
         //计算手续费
         BigDecimal fee = amount.multiply(one.getFeeRate()).add(one.getFee());
+
+        //到账数量
+        BigDecimal total = amount.subtract(fee);
+
         WithdrawOrder withdrawOrder = new WithdrawOrder();
         withdrawOrder.setAddress(withdrawReqDto.getToAddress());
-        withdrawOrder.setAmount(amount);
+        withdrawOrder.setAmount(total);
         withdrawOrder.setCoinName(one.getCoinName());
         withdrawOrder.setFee(fee);
         withdrawOrder.setCoinType(one.getCoinType());
@@ -157,11 +158,10 @@ public class WithdrawOrderServiceImpl extends ServiceImpl<WithdrawOrderMapper, W
         withdrawOrder.setUserId(userId);
 
         //冻结提取数量+手续费
-        BigDecimal total = amount.add(fee);
         List<BalanceChange> cList = new ArrayList<BalanceChange>();
         BalanceChange c = new BalanceChange();
-        c.setAvailable(total.negate());// 扣除金额包括 提现数量+固定额度+比例额度
-        c.setFrozen(total); //设置冻结金额
+        c.setAvailable(amount.negate());// 扣除金额包括 提现数量+固定额度+比例额度
+        c.setFrozen(amount); //设置冻结金额
         c.setCoinName(one.getCoinName());
         c.setIncomeType(CoinConstants.IncomeType.PAYOUT.getType());
         c.setMainType(CoinConstants.MainType.NORECORD.getType());
@@ -175,7 +175,7 @@ public class WithdrawOrderServiceImpl extends ServiceImpl<WithdrawOrderMapper, W
         cr.setStatus(CoinConstants.RecordStatus.WAIT.getStatus());
         cr.setCoinName(withdrawOrder.getCoinName());
         cr.setMainType(CoinConstants.MainType.WITHDRAWAL.getType());
-        cr.setAmount(amount);
+        cr.setAmount(total);
         cr.setFee(fee);
         cr.setToAddress(withdrawReqDto.getToAddress());
         cr.setUserId(userId);

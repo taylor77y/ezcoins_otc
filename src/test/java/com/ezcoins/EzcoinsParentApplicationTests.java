@@ -29,8 +29,8 @@ class EzcoinsParentApplicationTests {
 
     @Test
     void contextLoads() throws Exception {
-        emailService.sendComplexMail("111","1044508403@qq.com","true","1313136156");
-        Thread.sleep(5000);
+        emailService.sendComplexMail("111","qq2899036630@gmail.com","永锋.三大不留的扛","1313136156");
+        Thread.sleep(100000);
 //        Address address = walletClient.createAddressList("test");
 //        walletClient.transfer("1","1","1","0x58d9e6d57ce65ef5dcfc1b22022c7a866573e99b","test", BigDecimal.ONE);
 //        System.out.println(address);

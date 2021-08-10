@@ -3,7 +3,10 @@ server:
   servlet:
     context-path: /api-ezcoins
   tomcat:
+    accesslog:
+      encoding: UTF-8
     uri-encoding: UTF-8
+
 
 spring:
   application:

@@ -1,7 +1,5 @@
 package com.ezcoins.project.otc.mq;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.ezcoins.constant.RecordSonType;
 import com.ezcoins.constant.SystemOrderTips;
 import com.ezcoins.constant.enums.coin.CoinConstants;
@@ -30,6 +28,7 @@ import org.springframework.messaging.handler.annotation.Headers;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -74,25 +73,28 @@ public class OrderFailureListener {
         }
         //截取字符串
         String otcOrderMatchNo = splitContent[0];
-        String status = splitContent[1];
         EzOtcOrderMatch match = matchService.getById(otcOrderMatchNo);
-        if (match==null){
+        if (match == null) {
             return;
         }
         //取消订单
         if (match.getStatus().equals(MatchOrderStatus.WAITFORPAYMENT.getCode())) {
-            //将订单匹配数量增加回去
-            EzOtcOrder ezOtcOrder = otcOrderService.getById(match.getOrderNo());
-            if (ezOtcOrder==null){
-                return;
+            //查询当前用户取消订单数量
+            int count = 1;
+            Object object = redisCache.getCacheObject(RedisConstants.CANCEL_ORDER_COUNT_KEY + match.getUserId());
+            if (null != object) {
+                count = (Integer) object + 1;
             }
-            ezOtcOrder.setQuotaAmount(ezOtcOrder.getQuotaAmount().subtract(match.getAmount()));
-            if (ezOtcOrder.getType().equals("0")){//买
+            redisCache.setCacheObject(RedisConstants.CANCEL_ORDER_COUNT_KEY + match.getUserId(), count, Math.toIntExact(DateUtils.getSecondsNextEarlyMorning()), TimeUnit.SECONDS);
+            match.setStatus(MatchOrderStatus.CANCELLED.getCode());
+            //将订单匹配数量增加回去
+            if ("2".equals(match.getOrderType())) {//一键卖币
                 List<BalanceChange> cList = new ArrayList<>();
                 BalanceChange b = new BalanceChange();
+                BigDecimal add = match.getAmount().add(match.getFee());
                 b.setCoinName(match.getCoinName());
-                b.setAvailable(match.getAmount());
-                b.setFrozen(match.getAmount().negate());
+                b.setAvailable(add);
+                b.setFrozen(add.negate());
                 b.setIncomeType(CoinConstants.IncomeType.INCOME.getType());
                 b.setMainType(CoinConstants.MainType.UNFREEZE.getType());
                 b.setSonType(RecordSonType.TRANSACTION_UNFREEZE);
@@ -101,37 +103,54 @@ public class OrderFailureListener {
                 if (!accountService.balanceChangeSYNC(cList)) {// 资产变更异常
                     throw new AccountOperationBusyException();
                 }
+                List<EzOtcChatMsg> list = new ArrayList<>();
+                EzOtcChatMsg ezOtcChatMsg1 = new EzOtcChatMsg();
+                ezOtcChatMsg1.setOrderMatchNo(match.getOrderMatchNo());
+                ezOtcChatMsg1.setReceiveUserId(match.getUserId());
+                ezOtcChatMsg1.setSendText(SystemOrderTips.SYSTEM_CANCEL);
+                list.add(ezOtcChatMsg1);
+                matchService.updateById(match);
+                otcChatMsgService.sendSysChat(list, MatchOrderStatus.COMPLETED.getCode());
+            } else {
+                EzOtcOrder ezOtcOrder = otcOrderService.getById(match.getOrderNo());
+                ezOtcOrder.setQuotaAmount(ezOtcOrder.getQuotaAmount().subtract(match.getAmount()));
+                if (ezOtcOrder.getType().equals("0")) {//买
+                    List<BalanceChange> cList = new ArrayList<>();
+                    BalanceChange b = new BalanceChange();
+                    BigDecimal add = match.getAmount().add(match.getFee());
+                    b.setCoinName(match.getCoinName());
+                    b.setAvailable(add);
+                    b.setFrozen(add.negate());
+                    b.setIncomeType(CoinConstants.IncomeType.INCOME.getType());
+                    b.setMainType(CoinConstants.MainType.UNFREEZE.getType());
+                    b.setSonType(RecordSonType.TRANSACTION_UNFREEZE);
+                    b.setUserId(match.getUserId());
+                    cList.add(b);
+                    if (!accountService.balanceChangeSYNC(cList)) {// 资产变更异常
+                        throw new AccountOperationBusyException();
+                    }
+                }
+                List<EzOtcChatMsg> list = new ArrayList<>();
+                EzOtcChatMsg ezOtcChatMsg1 = new EzOtcChatMsg();
+                EzOtcChatMsg ezOtcChatMsg2 = new EzOtcChatMsg();
+                ezOtcChatMsg1.setOrderMatchNo(match.getOrderMatchNo());
+                ezOtcChatMsg1.setReceiveUserId(match.getUserId());
+                ezOtcChatMsg1.setSendText(SystemOrderTips.SYSTEM_CANCEL);
+                ezOtcChatMsg2.setOrderMatchNo(match.getOrderMatchNo());
+                ezOtcChatMsg2.setReceiveUserId(match.getOtcOrderUserId());
+                ezOtcChatMsg2.setSendText(SystemOrderTips.SYSTEM_CANCEL_2);
+                list.add(ezOtcChatMsg1);
+                list.add(ezOtcChatMsg2);
+                otcChatMsgService.sendSysChat(list, MatchOrderStatus.COMPLETED.getCode());
+                matchService.updateById(match);
+                otcOrderService.updateById(ezOtcOrder);
             }
-            //查询当前用户取消订单数量
-            int count = 1;
-            Object object = redisCache.getCacheObject(RedisConstants.CANCEL_ORDER_COUNT_KEY + match.getUserId());
-            if (null != object) {
-                count = (Integer) object + 1;
-            }
-            redisCache.setCacheObject(RedisConstants.CANCEL_ORDER_COUNT_KEY + match.getUserId(), count, Math.toIntExact(DateUtils.getSecondsNextEarlyMorning()), TimeUnit.SECONDS);
-
-            List<EzOtcChatMsg> list=new ArrayList<>();
-            EzOtcChatMsg ezOtcChatMsg1 = new EzOtcChatMsg();
-            EzOtcChatMsg ezOtcChatMsg2 = new EzOtcChatMsg();
-            ezOtcChatMsg1.setOrderMatchNo(match.getOrderMatchNo());
-            ezOtcChatMsg1.setReceiveUserId(match.getUserId());
-            ezOtcChatMsg1.setSendText(SystemOrderTips.SYSTEM_CANCEL);
-            ezOtcChatMsg2.setOrderMatchNo(match.getOrderMatchNo());
-            ezOtcChatMsg2.setReceiveUserId(match.getOtcOrderUserId());
-            ezOtcChatMsg2.setSendText(SystemOrderTips.SYSTEM_CANCEL_2);
-            list.add(ezOtcChatMsg1);
-            list.add(ezOtcChatMsg2);
-            otcChatMsgService.sendSysChat(list, MatchOrderStatus.COMPLETED.getCode());
-            match.setStatus(MatchOrderStatus.CANCELLED.getCode());
-            matchService.updateById(match);
-            otcOrderService.updateById(ezOtcOrder);
-
         }
         //接单广告取消
         if (match.getStatus().equals(MatchOrderStatus.PENDINGORDER.getCode())) {
             match.setStatus(MatchOrderStatus.ORDERBEENCANCELLED.getCode());
             matchService.updateById(match);
-            List<EzOtcChatMsg> list=new ArrayList<>();
+            List<EzOtcChatMsg> list = new ArrayList<>();
             EzOtcChatMsg ezOtcChatMsg1 = new EzOtcChatMsg();
             EzOtcChatMsg ezOtcChatMsg2 = new EzOtcChatMsg();
             ezOtcChatMsg1.setOrderMatchNo(match.getOrderMatchNo());

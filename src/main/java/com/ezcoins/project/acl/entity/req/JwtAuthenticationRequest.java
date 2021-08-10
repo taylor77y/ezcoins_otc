@@ -10,11 +10,11 @@ public class JwtAuthenticationRequest implements Serializable {
     private static final long serialVersionUID = -8445943548965154778L;
 
     @ApiModelProperty(value = "用户名",required = true)
-    @NotBlank(message = "{用户名不能为空}")
+    @NotBlank(message = "{username.not}")
     private String username;
 
     @ApiModelProperty(value = "菜单id",required = true)
-    @NotBlank(message = "{密码不能为空}")
+    @NotBlank(message = "{password.not}")
     private String password;
 
 

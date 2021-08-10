@@ -6,6 +6,7 @@ import com.ezcoins.aspectj.lang.annotation.AuthToken;
 import com.ezcoins.aspectj.lang.annotation.Log;
 import com.ezcoins.aspectj.lang.annotation.NoRepeatSubmit;
 import com.ezcoins.base.BaseController;
+import com.ezcoins.base.BaseException;
 import com.ezcoins.constant.enums.BusinessType;
 import com.ezcoins.constant.enums.OperatorType;
 import com.ezcoins.constant.enums.user.KycStatus;
@@ -78,7 +79,7 @@ public class ConsumerController extends BaseController {
     @NoRepeatSubmit
     public Response sendMsm(@RequestBody @Validated VerificationCodeReqDto codeReqDto) {
         if ("1".equals(codeReqDto.getType())) {
-            return Response.error("手机验证尚未开启，请先使用邮箱验证");
+            return Response.error(MessageUtils.message("手机验证尚未开启，请先使用邮箱验证"));
         }
         ezUserService.sendMsm(codeReqDto);
         return Response.success();
@@ -91,12 +92,19 @@ public class ConsumerController extends BaseController {
         ezUserService.addUser(ezUserDto,false);
         return Response.success();
     }
+    @ApiOperation(value = "判断验证码是否正确")
+    @PostMapping("checkCode")
+    @NoRepeatSubmit
+    public Response checkCode(@RequestBody @Validated CheckCodeReqDto checkCodeReqDto) {
+        ezUserService.checkCode(checkCodeReqDto);
+        return Response.success();
+    }
 
     @ApiOperation(value = "用户登录")
     @PostMapping("login")
     @NoRepeatSubmit
     public Response<Map<String,String>> login(@RequestBody @Validated JwtAuthenticationRequest jwtAuthenticationRequest) {
-        return Response.success(ezUserService.login(jwtAuthenticationRequest)).message("登录成功");
+        return Response.success(ezUserService.login(jwtAuthenticationRequest)).message(MessageUtils.message("登录成功"));
     }
 
     @ApiOperation(value = "国家列表")
@@ -163,7 +171,6 @@ public class ConsumerController extends BaseController {
         return Response.success();
     }
 
-
     @ApiOperation(value = "认证详情")
     @PostMapping("verifiedInfo")
     @AuthToken
@@ -227,20 +234,16 @@ public class ConsumerController extends BaseController {
         return Response.success(verifiedInfoRespDto);
     }
 
-
     @ApiOperation(value = "侧边栏信息")
     @GetMapping("sidebarInfo")
     @AuthToken
     public Response<SidebarInfoRespDto> sidebarInfo() {
         SidebarInfoRespDto infoRespDto = new SidebarInfoRespDto();
-
         String userId = ContextHandler.getUserId();
         EzUser ezUser = ezUserService.getById(userId);
-
         LambdaQueryWrapper<EzUserKyc> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(EzUserKyc::getUserId, userId);
         EzUserKyc one = kycService.getOne(queryWrapper);
-
         //0:待审核 1：通过  2：未通过 3：未认证
         if (one != null && one.getStatus().equals(KycStatus.BY.getCode())) {
             infoRespDto.setFirstName(one.getFirstName());
@@ -305,23 +308,42 @@ public class ConsumerController extends BaseController {
     @PostMapping("updateSecurityPassword")
     @AuthToken
     @Log(title = "修改安全密码", businessType = BusinessType.UPDATE, operatorType = OperatorType.MOBILE)
-    public Response updateSecurityPassword(@RequestBody @Validated PasswordUpdateReqDto passwordUpdateReqDto) {
+    public Response updateSecurityPassword(@RequestBody @Validated SePasswordReqDto sePasswordReqDto) {
         LambdaQueryWrapper<EzAdvertisingBusiness> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(EzAdvertisingBusiness::getUserId, ContextHandler.getUserId());
         EzAdvertisingBusiness one = businessService.getOne(queryWrapper);
         if (StringUtils.isEmpty(one.getSecurityPassword())){
             return Response.error(MessageUtils.message("请先设置安全密码"));
         }
-        boolean matches = EncoderUtil.matches(passwordUpdateReqDto.getPassword(), one.getSecurityPassword());
-        if (matches) {
-            if (EncoderUtil.matches(passwordUpdateReqDto.getNewPassword(), one.getSecurityPassword())) {
-                return Response.error(MessageUtils.message("旧密码与新密码相同"));
+        String key=null;
+        String code=null;
+        EzUser ez = ezUserService.getById(ContextHandler.getUserId());
+
+        if ("1".equals(sePasswordReqDto.getType())){//1：手机 2：邮箱号
+            String phoneArea = ez.getPhoneArea();
+            String phone = ez.getPhone();
+            if (StringUtils.isEmpty(phoneArea) || StringUtils.isEmpty(phone)){
+                return Response.error(MessageUtils.message("请输入绑定手机号"));
             }
-            one.setSecurityPassword(EncoderUtil.encode(passwordUpdateReqDto.getNewPassword()));
-            businessService.updateById(one);
-        } else {
-            return Response.error(MessageUtils.message("旧密码输入错误"));
+            key = RedisConstants.PHONE_RETRIEVE_SECURITY_PWD+phoneArea+ phone;
+            code = redisCache.getCacheObject(key );
+        }else {
+            String email = ez.getEmail();
+            if (StringUtils.isEmpty(email) ){
+                return Response.error(MessageUtils.message("请输入绑定邮箱"));
+            }
+            key = RedisConstants.EMAIL_RETRIEVE_SECURITY_PWD+email;
+            code = redisCache.getCacheObject(key);
         }
+        if (StringUtils.isEmpty(code)){
+            return Response.error(MessageUtils.message("验证码已过期"));
+        }
+        if (!code.equals(sePasswordReqDto.getCode())){
+            return Response.error(MessageUtils.message("验证码错误"));
+        }
+        one.setSecurityPassword(EncoderUtil.encode(sePasswordReqDto.getNewPassword()));
+        businessService.updateById(one);
+        redisCache.deleteObject(key);
         return Response.success();
     }
 

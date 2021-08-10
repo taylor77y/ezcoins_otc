@@ -8,13 +8,14 @@ package com.ezcoins.constant.enums.otc;
  * @Version:1.0
  */
 public enum MatchOrderStatus {
-    ORDERBEENCANCELLED("1", "接单已取消"),
+    ORDERBEENCANCELLED("1", "接单取消"),
     PENDINGORDER("2", "待接单"),
     CANCELLED("3", "已取消"),
     WAITFORPAYMENT("4", "等待支付"),
     PAID("5", "等待确认到款"),
     COMPLETED("6", "已完成"),
-    REFUSE("7", "接单拒绝");
+    REFUSE("7", "接单拒绝"),
+    APPEALING("8", "申诉中");
     private final String code;
     private final String info;
     MatchOrderStatus(String code, String info){

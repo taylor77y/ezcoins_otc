@@ -73,8 +73,8 @@ public class EzOtcChatMsgServiceImpl extends ServiceImpl<EzOtcChatMsgMapper, EzO
      */
     @Override
     public void sendSysChat(List<EzOtcChatMsg> chatMsgList, String status) {
+        this.saveBatch(chatMsgList);
         for (EzOtcChatMsg ezOtcChatMsg:chatMsgList){
-            baseMapper.insert(ezOtcChatMsg);
             String receiveUserId = ezOtcChatMsg.getReceiveUserId();
             //给用户一个信号
             WebSocketHandle.orderStatusChange(receiveUserId, status);
@@ -94,21 +94,22 @@ public class EzOtcChatMsgServiceImpl extends ServiceImpl<EzOtcChatMsgMapper, EzO
         //查询订单
         EzOtcOrderMatch match = orderMatchService.getById(orderMatchNo);
         String userId = match.getUserId();
-        String otcOrderUserId = match.getOtcOrderUserId();
+        String otcOrderUserId = match.getOtcOrderUserId();//商户
+
         String userId1 = ContextHandler.getUserId();
+
+        String sendName =null;
+        String receiveName =null;
         String u = null;
         if (otcOrderUserId.equals(userId1)) {
             u = userId;
+            sendName=match.getAdvertisingName();
+            receiveName=match.getMatchAdvertisingName();
         } else {
             u = otcOrderUserId;
+            receiveName=match.getAdvertisingName();
+            sendName=match.getMatchAdvertisingName();
         }
-        LambdaQueryWrapper<EzAdvertisingBusiness> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(EzAdvertisingBusiness::getUserId, userId1);
-        String sendName = businessService.getOne(lambdaQueryWrapper).getAdvertisingName();//自己的名字
-
-        LambdaQueryWrapper<EzAdvertisingBusiness> lambdaQueryWrapper2 = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper2.eq(EzAdvertisingBusiness::getUserId, u);
-        String receiveName = businessService.getOne(lambdaQueryWrapper2).getAdvertisingName();//对面的名字
         //查询双方的
         LambdaQueryWrapper<EzOtcChatMsg> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(EzOtcChatMsg::getOrderMatchNo, orderMatchNo);
@@ -117,6 +118,8 @@ public class EzOtcChatMsgServiceImpl extends ServiceImpl<EzOtcChatMsgMapper, EzO
 
         List<ChatMsgRespDto> list1 = new ArrayList<>();
         String finalU = u;
+        String finalSendName = sendName;
+        String finalReceiveName = receiveName;
         list.forEach(e -> {
             if (!e.getReceiveUserId().equals(userId1) && "0".equals(e.getIsSystem())) {
             } else {
@@ -129,8 +132,8 @@ public class EzOtcChatMsgServiceImpl extends ServiceImpl<EzOtcChatMsgMapper, EzO
                     chatMsgReqDto.setSendUserId(finalU);
                     chatMsgReqDto.setReceiveUserId(chatMsgReqDto.getSendUserId());
                 }
-                chatMsgReqDto.setSendName(sendName);//我的名
-                chatMsgReqDto.setReceiveName(receiveName);//对面的名
+                chatMsgReqDto.setSendName(finalSendName);//我的名
+                chatMsgReqDto.setReceiveName(finalReceiveName);//对面的名
                 list1.add(chatMsgReqDto);
             }
         });

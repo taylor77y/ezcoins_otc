@@ -5,6 +5,7 @@ import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
 
+
 /**
  * @Author: WangLei
  * @Email: 1044508403@qq.com
@@ -15,11 +16,11 @@ import javax.validation.constraints.NotBlank;
 @Data
 public class OtcSettingReqDto {
     @ApiModelProperty(value = "卖家昵称",required = true)
-    @NotBlank(message = "{昵称不能为空}")
+    @NotBlank(message = "{advertising.name.not}")
     private String advertisingName;
 
 
     @ApiModelProperty(value = "资金密码",required = true)
-    @NotBlank(message = "{资金密码不能为空}")
+    @NotBlank(message = "{security.password.not}")
     private String securityPassword;
 }

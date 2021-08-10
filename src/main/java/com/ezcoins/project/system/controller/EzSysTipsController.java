@@ -1,6 +1,7 @@
 package com.ezcoins.project.system.controller;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.api.R;
 import com.ezcoins.aspectj.lang.annotation.AuthToken;
 import com.ezcoins.aspectj.lang.annotation.Log;
@@ -8,6 +9,7 @@ import com.ezcoins.constant.enums.OperatorType;
 import com.ezcoins.project.common.service.mapper.SearchModel;
 import com.ezcoins.project.consumer.entity.EzUser;
 import com.ezcoins.project.consumer.service.EzUserService;
+import com.ezcoins.project.system.entity.EzSysBoom;
 import com.ezcoins.project.system.entity.EzSysLog;
 import com.ezcoins.project.system.entity.EzSysTips;
 import com.ezcoins.project.system.entity.req.SysTipsReqDto;
@@ -16,15 +18,13 @@ import com.ezcoins.project.system.service.EzSysTipsService;
 import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponsePageList;
 import com.ezcoins.utils.BeanUtils;
+import com.ezcoins.utils.DateUtils;
 import com.ezcoins.utils.StringUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,12 +48,31 @@ public class EzSysTipsController {
     @Autowired
     private EzUserService userService;
 
+
+    @PostMapping("getSysTipList")
+    @ApiOperation(value = "站内信发送列表")
+    @AuthToken
+    public ResponsePageList<EzSysTips> getBoomList(@RequestBody SearchModel<EzSysTips> searchModel){
+        return ResponsePageList.success(tipsService.page(searchModel.getPage(), searchModel.getQueryModel()));
+    }
+
+    @DeleteMapping("clean")
+    @ApiOperation(value = "清除系统一周之外的站内信")
+    @AuthToken
+    public Response clean(){
+        LambdaQueryWrapper<EzSysTips> queryWrapper=new LambdaQueryWrapper<>();
+        queryWrapper.lt(EzSysTips::getCreateTime,DateUtils.getNdayStart(-7));
+        tipsService.remove(queryWrapper);
+        return Response.success();
+    }
+
+
     @PostMapping("sendSysTip")
     @ApiOperation(value = "发送站内信到用户")
-    @AuthToken
+    @AuthToken(CODE = "39")
     @Log(title = "系统模块", logInfo ="发送站内信到用户", operatorType = OperatorType.MANAGE)
     public Response sendSysTip(@RequestBody SysTipsReqDto sysTipsReqDto){
-        if (StringUtils.isEmpty(sysTipsReqDto.getUserId())){
+        if (StringUtils.isNotEmpty(sysTipsReqDto.getUserId())){
             EzSysTips ezSysTips = new EzSysTips();
             BeanUtils.copyBeanProp(ezSysTips,sysTipsReqDto);
             tipsService.save(ezSysTips);

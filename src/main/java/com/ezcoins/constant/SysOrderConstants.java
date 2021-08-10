@@ -19,6 +19,12 @@ public class SysOrderConstants{
         /** 成功(买单)聊天消息 **/
         RELEASE_SUCCESS(SystemOrderTips.RELEASE_SELL,SystemOrderTips.RELEASE_BUY),
 
+        /**申诉提示**/
+        APPEALING(SystemOrderTips.APPEALING_ID,SystemOrderTips.APPEALING_TO_ID),
+
+        /**申诉取消状态提示**/
+        APPEAL_OFF(SystemOrderTips.APPEAL_OFF,SystemOrderTips.APPEAL_OFF),
+
         /**申诉放行**/
         APPEAL_PUT(SystemOrderTips.APPEAL_PUT,SystemOrderTips.APPEAL_PUT),
 

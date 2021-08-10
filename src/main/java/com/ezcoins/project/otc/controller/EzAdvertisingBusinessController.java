@@ -13,6 +13,7 @@ import com.ezcoins.project.otc.service.EzAdvertisingBusinessService;
 import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponsePageList;
 import com.ezcoins.utils.BeanUtils;
+import com.ezcoins.utils.EncoderUtil;
 import com.ezcoins.utils.StringUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -50,11 +51,11 @@ public class EzAdvertisingBusinessController {
     @AuthToken
     @Log(title = "OTC模块", logInfo ="修改商户信息", operatorType = OperatorType.MANAGE)
     public Response updateAdvertisingBusiness(@RequestBody BusinessReqDto businessReqDto){
-        if (StringUtils.isNotEmpty(businessReqDto.getAdvertisingName()) && !advertisingBusinessService.isUpdateBy(businessReqDto.getId())) {
-            return Response.error("商户名不能再进行修改了");
-        }
         EzAdvertisingBusiness advertisingBusiness = new EzAdvertisingBusiness();
         BeanUtils.copyBeanProp(advertisingBusiness, businessReqDto);
+        if (StringUtils.isNotEmpty(businessReqDto.getSecurityPassword())){
+            advertisingBusiness.setSecurityPassword(EncoderUtil.encode(businessReqDto.getSecurityPassword()));
+        }
         advertisingBusiness.setUpdateBy(ContextHandler.getUserName());
         advertisingBusinessService.updateById(advertisingBusiness);
         return Response.success();

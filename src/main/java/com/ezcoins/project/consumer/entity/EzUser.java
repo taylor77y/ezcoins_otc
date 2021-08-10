@@ -95,5 +95,21 @@ public class EzUser implements Serializable {
     @ApiModelProperty(value = "备注")
     private String remark;
 
+    @ApiModelProperty(value = "登录状态  0：未封号 1：已封号")
+    @TableField(exist = false)
+    private String login;
+
+    @ApiModelProperty(value = "提现状态  0：未封号 1：已封号")
+    @TableField(exist = false)
+    private String withdraw;
+
+    @ApiModelProperty(value = "发布广告封禁 提现状态  0：未封号 1：已封号")
+    @TableField(exist = false)
+    private String orders;
+
+    @ApiModelProperty(value = "买卖封禁 提现状态  0：未封号 1：已封号")
+    @TableField(exist = false)
+    private String business;
+
 
 }

@@ -31,8 +31,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class EzPaymentInfoServiceImpl extends ServiceImpl<EzPaymentInfoMapper, EzPaymentInfo> implements EzPaymentInfoService {
 
-    @Autowired
-    private EzUserKycService kycService;
 
     /**
      * @param qrcodeTypeReqDto
@@ -47,9 +45,6 @@ public class EzPaymentInfoServiceImpl extends ServiceImpl<EzPaymentInfoMapper, E
         if (qrcodeTypeReqDto.getPaymentMethodId() == PaymentMethod.BANK.getCode()) {
             if (StringUtils.isEmpty(qrcodeTypeReqDto.getBankName())) {
                 return Response.error(MessageUtils.message("请输入银行名称"));
-            }
-            if (StringUtils.isEmpty(qrcodeTypeReqDto.getOptional())) {
-                return Response.error(MessageUtils.message("请输入银行地址"));
             }
         } else {
             if (StringUtils.isEmpty(qrcodeTypeReqDto.getPaymentQrCode())) {

@@ -1,6 +1,7 @@
 package com.ezcoins.response;
 
 import com.ezcoins.constant.interf.HttpStatus;
+import com.ezcoins.utils.MessageUtils;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -37,7 +38,7 @@ public class Response<T>{
         Response<T> r = new Response<T>();
         r.setSuccess(true);
         r.setCode(HttpStatus.HTTP_RES_CODE_200);
-        r.setMessage(HttpStatus.HTTP_RES_CODE_200_VALUE);
+        r.setMessage(MessageUtils.message(HttpStatus.HTTP_RES_CODE_200_VALUE));
         r.data= t;
         return r;
     }
@@ -46,7 +47,7 @@ public class Response<T>{
         Response<T> r = new Response<T>();
         r.setSuccess(true);
         r.setCode(HttpStatus.HTTP_RES_CODE_200);
-        r.setMessage(HttpStatus.HTTP_RES_CODE_200_VALUE);
+        r.setMessage(MessageUtils.message(HttpStatus.HTTP_RES_CODE_200_VALUE));
         return r;
     }
 

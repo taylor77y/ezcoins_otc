@@ -56,6 +56,11 @@ public class EzOneSellConfig implements Serializable {
     @ApiModelProperty(value = "0:开启  1：关闭")
     private String status;
 
+
+    @ApiModelProperty(value = "付款期限(分钟)")
+    private Integer prompt;
+
+
     @ApiModelProperty(value = "创建时间")
     @TableField(fill = FieldFill.INSERT)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")

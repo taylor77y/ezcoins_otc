@@ -9,6 +9,6 @@ public class TokenException extends BaseException {
     }
 
     public TokenException() {
-        super(null,"401120","token失效，请重新登录",null);
+        super(null,"401120","登录已失效，请重新登录",null);
     }
 }

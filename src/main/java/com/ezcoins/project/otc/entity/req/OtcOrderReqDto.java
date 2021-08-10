@@ -24,26 +24,25 @@ public class OtcOrderReqDto {
     private String userId;
 
     @ApiModelProperty(value = "单价",required = true)
-    @NotNull(message = "{价格不能为空}")
+    @NotNull(message = "{price.not}")
     private BigDecimal price;
 
     @ApiModelProperty(value = "总数量")
-    @NotNull(message = "{数量不能为空}")
+    @NotNull(message = "{totalAmount.not}")
     private BigDecimal totalAmount;
 
     @ApiModelProperty(value = "国际货币")
-    @NotNull(message = "{国际货币不能为空}")
     private String currencyCode;
 
     @ApiModelProperty(value = "币种类型")
     private String coinName;
 
     @ApiModelProperty(value = "最小限额")
-    @NotNull(message = "{最小限额不能为空}")
+    @NotNull(message = "{minimumLimit.not}")
     private BigDecimal minimumLimit;
 
     @ApiModelProperty(value = "最大限额")
-    @NotNull(message = "{最大限额不能为空}")
+    @NotNull(message = "{maximumLimit.not}")
     private BigDecimal maximumLimit;
 
     @ApiModelProperty(value = "订单类型(0:买  1：卖)")
@@ -62,9 +61,10 @@ public class OtcOrderReqDto {
     private Integer paymentMethod3;
 
     @ApiModelProperty(value = "付款期限(分钟)")
-    @NotNull(message = "{付款期限不能为空}")
+    @NotNull(message = "{prompt.not}")
     private Integer prompt;
 
     @ApiModelProperty(value = "交易备注")
+    @NotNull(message = "{tradingTips.not}")
     private String tradingTips;
 }

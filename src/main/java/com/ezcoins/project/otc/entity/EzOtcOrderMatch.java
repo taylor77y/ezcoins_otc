@@ -35,6 +35,12 @@ public class EzOtcOrderMatch implements Serializable {
     @ApiModelProperty(value = "用户id")
     private String userId;
 
+    @ApiModelProperty(value = "用户OTC昵称")
+    private String matchAdvertisingName;
+
+    @ApiModelProperty(value = "手续费")
+    private BigDecimal fee;
+
     @ApiModelProperty(value = "匹配到的发布订单号")
     private String orderNo;
 
@@ -54,7 +60,7 @@ public class EzOtcOrderMatch implements Serializable {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date finishTime;
 
-    @ApiModelProperty(value = "接单昵称")
+    @ApiModelProperty(value = "商户OTC昵称")
     private String advertisingName;
 
     @ApiModelProperty(value = "数量")

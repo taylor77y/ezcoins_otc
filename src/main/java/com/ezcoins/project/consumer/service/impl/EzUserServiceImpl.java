@@ -1,9 +1,11 @@
 package com.ezcoins.project.consumer.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ezcoins.base.BaseException;
 import com.ezcoins.constant.UserConstants;
+import com.ezcoins.constant.enums.LimitType;
 import com.ezcoins.constant.enums.LoginType;
 import com.ezcoins.constant.enums.user.UserStatus;
 import com.ezcoins.constant.interf.RedisConstants;
@@ -18,12 +20,15 @@ import com.ezcoins.project.common.service.EmailService;
 import com.ezcoins.project.common.service.MailBean;
 import com.ezcoins.project.common.service.PhoneService;
 import com.ezcoins.project.consumer.entity.EzUser;
+import com.ezcoins.project.consumer.entity.EzUserLimit;
 import com.ezcoins.project.consumer.entity.EzUserLimitLog;
+import com.ezcoins.project.consumer.entity.req.CheckCodeReqDto;
 import com.ezcoins.project.consumer.entity.req.EzUserReqDto;
 import com.ezcoins.project.consumer.entity.req.UserLimitReqDto;
 import com.ezcoins.project.consumer.entity.req.VerificationCodeReqDto;
 import com.ezcoins.project.consumer.mapper.EzUserMapper;
 import com.ezcoins.project.consumer.service.EzUserLimitLogService;
+import com.ezcoins.project.consumer.service.EzUserLimitService;
 import com.ezcoins.project.consumer.service.EzUserService;
 import com.ezcoins.project.otc.entity.EzAdvertisingBusiness;
 import com.ezcoins.project.otc.service.EzAdvertisingBusinessService;
@@ -39,6 +44,8 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -77,6 +84,12 @@ public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> impleme
 
     @Autowired
     private AccountService accountService;
+
+    @Autowired
+    private EzUserLimitLogService limitLogService;
+
+    @Autowired
+    private EzUserLimitService limitService;
 
 
     /**
@@ -138,44 +151,51 @@ public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> impleme
             if (StringUtils.isEmpty(phoneArea)) {
                 throw new BaseException("请选择国际区号");
             }
-            boolean flag = checkUserUnique(null, verificationNumber, phoneArea, null, null);
-            //注册验证吗
-            if (VerificationCodeReqDto.captchaType.REGISTER.getType().equals(captchaType)) {
-                if (!flag) {
-                    throw new BaseException("手机号已被注册");
+            if (VerificationCodeReqDto.captchaType.RETRIEVE_SECURITY_PASSWORD.getType().equals(captchaType)) {
+                key = RedisConstants.PHONE_RETRIEVE_SECURITY_PWD;
+            } else {
+                boolean flag = checkUserUnique(null, verificationNumber, phoneArea, null, null);
+                //注册验证吗
+                if (VerificationCodeReqDto.captchaType.REGISTER.getType().equals(captchaType)) {
+                    if (!flag) {
+                        throw new BaseException("手机号已被注册");
+                    }
+                    key = RedisConstants.PHONE_REGISTER_SMS_KEY;
+                } else if (VerificationCodeReqDto.captchaType.RETRIEVE_PASSWORD.getType().equals(captchaType)) {
+                    if (flag) {
+                        throw new BaseException("手机号尚未绑定");
+                    }
+                    key = RedisConstants.PHONE_RETRIEVE_PASSWORD_SMS_KEY;
+                } else if (VerificationCodeReqDto.captchaType.BIND_INFO.getType().equals(captchaType)) {
+                    if (!flag) {
+                        throw new BaseException("手机号已被注册");
+                    }
+                    key = RedisConstants.PHONE_BIND_INFO_SMS_KEY;
                 }
-                key = RedisConstants.PHONE_REGISTER_SMS_KEY;
-            } else if (VerificationCodeReqDto.captchaType.RETRIEVE_PASSWORD.getType().equals(captchaType)) {
-                if (flag) {
-                    throw new BaseException("手机号尚未绑定");
-                }
-                key = RedisConstants.PHONE_RETRIEVE_PASSWORD_SMS_KEY;
-            } else if (VerificationCodeReqDto.captchaType.BIND_INFO.getType().equals(captchaType)) {
-                if (!flag) {
-                    throw new BaseException("手机号已被注册");
-                }
-                key = RedisConstants.PHONE_BIND_INFO_SMS_KEY;
             }
             code = redisCache.getCacheObject(key + phoneArea + verificationNumber);
-
         } else if (type.equals(VerificationCodeReqDto.Type.EMAIL.getType())) {
-            boolean flag = checkUserUnique(null, null, null, verificationNumber, null);
-            //注册验证吗
-            if (VerificationCodeReqDto.captchaType.REGISTER.getType().equals(captchaType)) {
-                if (!flag) {
-                    throw new BaseException("邮箱已被注册");
+            if (VerificationCodeReqDto.captchaType.RETRIEVE_SECURITY_PASSWORD.getType().equals(captchaType)) {
+                key = RedisConstants.EMAIL_RETRIEVE_SECURITY_PWD;
+            } else {
+                boolean flag = checkUserUnique(null, null, null, verificationNumber, null);
+                //注册验证吗
+                if (VerificationCodeReqDto.captchaType.REGISTER.getType().equals(captchaType)) {
+                    if (!flag) {
+                        throw new BaseException("邮箱已被注册");
+                    }
+                    key = RedisConstants.EMAIL_REGISTER_SMS_KEY;
+                } else if (VerificationCodeReqDto.captchaType.RETRIEVE_PASSWORD.getType().equals(captchaType)) {
+                    if (flag) {
+                        throw new BaseException("邮箱尚未绑定");
+                    }
+                    key = RedisConstants.EMAIL_RETRIEVE_PASSWORD_SMS_KEY;
+                } else if (VerificationCodeReqDto.captchaType.BIND_INFO.getType().equals(captchaType)) {
+                    if (!flag) {
+                        throw new BaseException("邮箱已被注册");
+                    }
+                    key = RedisConstants.EMAIL_BIND_INFO_SMS_KEY;
                 }
-                key = RedisConstants.EMAIL_REGISTER_SMS_KEY;
-            } else if (VerificationCodeReqDto.captchaType.RETRIEVE_PASSWORD.getType().equals(captchaType)) {
-                if (flag) {
-                    throw new BaseException("邮箱尚未绑定");
-                }
-                key = RedisConstants.EMAIL_RETRIEVE_PASSWORD_SMS_KEY;
-            } else if (VerificationCodeReqDto.captchaType.BIND_INFO.getType().equals(captchaType)) {
-                if (!flag) {
-                    throw new BaseException("邮箱已被注册");
-                }
-                key = RedisConstants.EMAIL_BIND_INFO_SMS_KEY;
             }
             code = redisCache.getCacheObject(key + verificationNumber);
         }
@@ -216,47 +236,45 @@ public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> impleme
 
         EzUser ezUser = new EzUser();
         //获取redis验证码
-        String redisCode = null;
         String rmKey = null;
         if (type.equals(VerificationCodeReqDto.Type.PHONE.getType())) {
             if (StringUtils.isEmpty(phone) || StringUtils.isEmpty(phoneArea)) {
-                throw new BaseException(MessageUtils.message("手机号不能为空"));
+                throw new BaseException("手机号不能为空");
             }
             //判断手机号用户名是否重复，表里面存在相同手机号不进行添加
             if (!checkUserUnique(null, phone, phoneArea, null, null)) {
-                throw new BaseException(MessageUtils.message("手机号码已被注册"));
+                throw new BaseException("手机号码已被注册");
             }
             ezUser.setPhone(phone);
             ezUser.setPhoneArea(phoneArea);
             ezUser.setUserName(phone);
             ezUser.setCreateBy(phone);
-            redisCode=redisCache.getCacheObject(RedisConstants.PHONE_REGISTER_SMS_KEY + phone);
             rmKey = RedisConstants.PHONE_REGISTER_SMS_KEY + phone;
         } else if (type.equals(VerificationCodeReqDto.Type.EMAIL.getType())) {
             //判断手机号用户名是否重复，表里面存在相同手机号不进行添加
             if (!checkUserUnique(null, null, null, email, null)) {
-                throw new BaseException(MessageUtils.message("邮箱已被注册"));
+                throw new BaseException("邮箱已被注册");
             }
             ezUser.setUserName(email);
             ezUser.setEmail(email);
             ezUser.setCreateBy(email);
-            redisCode = redisCache.getCacheObject(RedisConstants.EMAIL_REGISTER_SMS_KEY + email);
             rmKey = RedisConstants.EMAIL_REGISTER_SMS_KEY + email;
         }
+        String redisCode = redisCache.getCacheObject(rmKey);
         if (!isAdmin) {
             if (StringUtils.isEmpty(redisCode)) {
-                throw new BaseException(MessageUtils.message("验证码已过期"));
+                throw new BaseException("验证码已过期");
             }
             String code = ezUserDto.getCode();
             if (!code.equals(redisCode)) {
-                throw new BaseException(MessageUtils.message("验证码错误"));
+                throw new BaseException("验证码错误");
             }
         }
         String parentId = "0";
         if (StringUtils.isNotEmpty(parentInviteCode)) {
             EzUser ezUser1 = baseMapper.selectUserBy(null, null, null, null, parentInviteCode);
             if (ezUser1 == null) {
-                throw new BaseException(MessageUtils.message("邀请码错误"));
+                throw new BaseException("邀请码错误");
             }
             parentId = ezUser1.getParentId();
         }
@@ -270,7 +288,7 @@ public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> impleme
         baseMapper.insert(ezUser);
         //初始化OTC信息
         EzAdvertisingBusiness advertisingBusiness = new EzAdvertisingBusiness();
-        advertisingBusiness.setAdvertisingName(ezUser.getUserId());
+        advertisingBusiness.setAdvertisingName(ezUser.getUserName());
         advertisingBusiness.setUserId(ezUser.getUserId());
         advertisingBusiness.setCreateBy(ezUser.getUserName());
         businessService.save(advertisingBusiness);
@@ -286,6 +304,7 @@ public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> impleme
      * @return
      */
     @Override
+    @Transactional
     public Map<String, String> login(JwtAuthenticationRequest authenticationRequest) {
         //登录的时候 如果绑定了邮箱/电话号码 都可以用来登录
         LambdaQueryWrapper<EzUser> lambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -295,8 +314,24 @@ public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> impleme
         if (ezUser == null) {
             throw new UserException("登录用户不存在", null);
         }
-        if ("1".equals(ezUser.getStatus())) {
-            throw new UserException("用户已被封禁", null);
+        LambdaQueryWrapper<EzUserLimitLog> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(EzUserLimitLog::getIsExpire, "0");
+        queryWrapper.eq(EzUserLimitLog::getUserId, ezUser);
+        queryWrapper.eq(EzUserLimitLog::getType, LimitType.LOGINLIMIT.getCode());
+        EzUserLimitLog one = limitLogService.getOne(queryWrapper);
+        if (one != null) {
+            if (one.getBanTime() != null && one.getBanTime().getTime() < DateUtils.getNowDate().getTime()) {
+                one.setIsExpire("1");
+                limitLogService.updateById(one);
+                ezUser.setStatus("0");
+                baseMapper.updateById(ezUser);
+                LambdaUpdateWrapper<EzUserLimit> ezUserLimitLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+                ezUserLimitLambdaUpdateWrapper.eq(EzUserLimit::getUserId, ezUser.getUserId());
+                ezUserLimitLambdaUpdateWrapper.set(EzUserLimit::getLogin, 0);
+                limitService.update(ezUserLimitLambdaUpdateWrapper);
+            }else {
+                throw new UserException("用户已被封禁", null);
+            }
         }
         //密码错误
         if (!EncoderUtil.matches(authenticationRequest.getPassword(), ezUser.getPassword())) {
@@ -317,25 +352,69 @@ public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> impleme
         map.put("userId", userId);
         return map;
     }
+
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void updateUser(EzUserReqDto ezUserDto) {
         //查询用户
         EzUser ezUser = baseMapper.selectById(ezUserDto.getUserId());
         CheckException.checkNull(ezUser, "用户不存在");
-
         //密码
         String password = ezUserDto.getPassword();
         CheckException.checkNotEmpty(password, () -> {
             ezUser.setPassword(EncoderUtil.encode(password));
         });
-        //手机
-        String phone = ezUserDto.getPhone();
-        CheckException.checkNotEmpty(phone, () -> {
-            ezUser.setPhone(phone);
+        //创建时间
+        Date createTime = ezUserDto.getCreateTime();
+        CheckException.checkNotNull(createTime, () -> {
+            ezUser.setCreateTime(createTime);
         });
         ezUser.setUpdateBy(SecurityUtils.getUsername());
         ezUser.setUpdateTime(DateUtils.getNowDate());
         CheckException.checkDb(baseMapper.updateById(ezUser), "用户更新失败");
+    }
+
+    @Override
+    public void checkCode(CheckCodeReqDto checkCodeReqDto) {
+        String phone = checkCodeReqDto.getPhone();
+        String phoneArea = checkCodeReqDto.getPhoneArea();
+        String email = checkCodeReqDto.getEmail();
+        String type = checkCodeReqDto.getType();
+        String captchaType = checkCodeReqDto.getCaptchaType();
+
+        String redisCode = null;
+        String key=null;
+        if (type.equals(VerificationCodeReqDto.Type.PHONE.getType())) {
+            if (StringUtils.isEmpty(phone) || StringUtils.isEmpty(phoneArea)) {
+                throw new BaseException("手机号不能为空");
+            }
+            //判断手机号用户名是否重复，表里面存在相同手机号不进行添加
+            if (!checkUserUnique(null, phone, phoneArea, null, null)) {
+                throw new BaseException("手机号码已被注册");
+            }
+            key=RedisConstants.PHONE_REGISTER_SMS_KEY+phoneArea + phone;
+        } else if (type.equals(VerificationCodeReqDto.Type.EMAIL.getType())) {
+            boolean flag = checkUserUnique(null, null, null, email, null);
+            if (captchaType.equals(VerificationCodeReqDto.captchaType.REGISTER.getType())){
+                if (!flag){
+                    throw new BaseException("邮箱已被注册");
+                }
+                key=RedisConstants.EMAIL_REGISTER_SMS_KEY+email;
+            }else if (captchaType.equals(VerificationCodeReqDto.captchaType.RETRIEVE_PASSWORD.getType())){
+                //判断手机号用户名是否重复，表里面存在相同手机号不进行添加
+                if (flag) {
+                    throw new BaseException("用户不存在");
+                }
+                key=RedisConstants.EMAIL_RETRIEVE_PASSWORD_SMS_KEY+email;
+            }
+        }
+        redisCode = redisCache.getCacheObject(key);
+        if (StringUtils.isEmpty(redisCode)) {
+            throw new BaseException("验证码已过期");
+        }
+        String code = checkCodeReqDto.getCode();
+        if (!code.equals(redisCode)) {
+            throw new BaseException("验证码错误");
+        }
     }
 }

@@ -25,6 +25,9 @@ public class SellConfigReqDto {
     @ApiModelProperty(value = "手续费【比例】")
     private BigDecimal feeRatio;
 
+    @ApiModelProperty(value = "付款期限(分钟)")
+    private Integer prompt;
+
     @ApiModelProperty(value = "最少数量")
     private BigDecimal minAmount;
 

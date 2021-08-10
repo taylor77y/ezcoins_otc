@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.NotBlank;
+
 /**
  * @Author: WangLei
  * @Email: 1044508403@qq.com
@@ -20,8 +22,8 @@ public class UserAddrReqDto {
     @ApiModelProperty(value = "提现配置id")
     private String withdrawalConfigId;
 
-
     @ApiModelProperty(value = "提币地址")
+    @NotBlank(message = "{addr.not}")
     private String addr;
 
     @ApiModelProperty(value = "备注")

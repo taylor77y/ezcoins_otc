@@ -38,12 +38,16 @@ public class PaymentDetails {
     @ApiModelProperty(value = "币种类型")
     private String coinName;
 
-    @ApiModelProperty(value = "卖家昵称")
+    @ApiModelProperty(value = "商家昵称")
     private String advertisingName;
 
     @ApiModelProperty(value = "订单到期时间")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date dueTime;
+
+    @ApiModelProperty(value = "当前时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date nowTime;
 
     @ApiModelProperty(value = "收款方式")
     private List<EzOtcOrderPayment> ezOtcOrderPayments;

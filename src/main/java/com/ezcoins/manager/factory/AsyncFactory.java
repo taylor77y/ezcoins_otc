@@ -112,12 +112,12 @@ public class AsyncFactory
         };
     }
 
-    private static final EzSysTips ezSysTips=new EzSysTips();
 
     /**
      * 站内信
      */
-    public static TimerTask StationLetter(String userId, SysTipsConstants.TipsType tipsType,Object ... args){
+    public static  TimerTask StationLetter(String userId, SysTipsConstants.TipsType tipsType,Object ... args){
+        EzSysTips ezSysTips=new EzSysTips();
         ezSysTips.setUserId(userId);
         ezSysTips.setTitle("系统信息");
         ezSysTips.setContent(String.format(tipsType.getRemark(),args));
@@ -142,12 +142,13 @@ public class AsyncFactory
         };
     }
 
-    private static final EzOtcChatMsg EZ_OTC_CHAT_MSG_SELL = new EzOtcChatMsg();
-    private static final EzOtcChatMsg EZ_OTC_CHAT_MSG_BUY = new EzOtcChatMsg();
+
     /**
      * 发送信息
      */
     public static TimerTask sendSysChat(String sellUserId, String buyUserId,String orderMatchNo, SysOrderConstants.SysChatMsg chatMsg, MatchOrderStatus status){
+        EzOtcChatMsg EZ_OTC_CHAT_MSG_SELL = new EzOtcChatMsg();
+        EzOtcChatMsg EZ_OTC_CHAT_MSG_BUY = new EzOtcChatMsg();
         EZ_OTC_CHAT_MSG_SELL.setReceiveUserId(sellUserId);
         EZ_OTC_CHAT_MSG_SELL.setOrderMatchNo(orderMatchNo);
         EZ_OTC_CHAT_MSG_SELL.setSendText(chatMsg.getSellTips());

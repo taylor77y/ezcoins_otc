@@ -33,12 +33,14 @@ public class EzUserLimitController {
 
     @Autowired
     private EzUserLimitService limitService;
+
     @ApiOperation(value = "封号列表")
     @PostMapping("userLimitList")
     @AuthToken
     public ResponsePageList<EzUserLimit> userLimitList(@RequestBody SearchModel<EzUserLimit> searchModel) {
         return ResponsePageList.success(limitService.page(searchModel.getPage(), searchModel.getQueryModel()));
     }
+
     @ApiOperation(value = "封号")
     @PostMapping("title")
     @AuthToken
@@ -47,7 +49,8 @@ public class EzUserLimitController {
         return limitService.title(userLimitReqDto);
     }
 
-    @ApiOperation(value = "")
+
+    @ApiOperation(value = "解封")
     @PutMapping("unblock/{userId}/{type}")
     @AuthToken
     @Log(title = "用户中心模块", logInfo ="解封", operatorType = OperatorType.MANAGE)

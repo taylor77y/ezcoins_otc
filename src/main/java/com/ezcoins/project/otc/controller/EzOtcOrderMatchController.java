@@ -6,14 +6,19 @@ import com.ezcoins.aspectj.lang.annotation.AuthToken;
 import com.ezcoins.aspectj.lang.annotation.Log;
 import com.ezcoins.aspectj.lang.annotation.NoRepeatSubmit;
 import com.ezcoins.constant.RecordSonType;
+import com.ezcoins.constant.SysTipsConstants;
 import com.ezcoins.constant.SystemOrderTips;
 import com.ezcoins.constant.enums.BusinessType;
 import com.ezcoins.constant.enums.OperatorType;
 import com.ezcoins.constant.enums.coin.CoinConstants;
 import com.ezcoins.constant.enums.otc.MatchOrderStatus;
 import com.ezcoins.exception.coin.AccountOperationBusyException;
+import com.ezcoins.manager.AsyncManager;
+import com.ezcoins.manager.factory.AsyncFactory;
+import com.ezcoins.project.coin.entity.Record;
 import com.ezcoins.project.coin.entity.vo.BalanceChange;
 import com.ezcoins.project.coin.service.AccountService;
+import com.ezcoins.project.coin.service.RecordService;
 import com.ezcoins.project.common.service.mapper.SearchModel;
 import com.ezcoins.project.otc.entity.*;
 import com.ezcoins.project.otc.service.EzOtcChatMsgService;
@@ -25,6 +30,7 @@ import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponsePageList;
 import com.ezcoins.utils.DateUtils;
 import com.ezcoins.utils.MessageUtils;
+import com.ezcoins.websocket.WebSocketHandle;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +39,7 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -51,14 +58,13 @@ public class EzOtcOrderMatchController {
     @Autowired
     private EzOtcOrderMatchService orderMatchService;
 
-    @Autowired
-    private EzOtcChatMsgService otcChatMsgService;
 
-    @Autowired
-    private EzSellConfigService sellConfigService;
 
     @Autowired
     private AccountService accountService;
+
+    @Autowired
+    private RecordService recordService;
 
     @AuthToken
     @ApiOperation(value = "OTC 匹配订单列表")
@@ -79,49 +85,69 @@ public class EzOtcOrderMatchController {
         if (!orderMatch.getStatus().equals(MatchOrderStatus.WAITFORPAYMENT.getCode())) {
             return Response.error("订单状态已发生变化");
         }
-        List<EzOtcChatMsg> list = new ArrayList<>();
-        EzOtcChatMsg ezOtcChatMsg1 = new EzOtcChatMsg();
-        ezOtcChatMsg1.setOrderMatchNo(orderMatch.getOrderMatchNo());
-        ezOtcChatMsg1.setReceiveUserId(orderMatch.getUserId());
-        String n = null;
+        BigDecimal amount =orderMatch.getAmount();
+        BigDecimal totalAmount = amount.add(orderMatch.getFee());
 
-        if ("0".equals(status)) { //确认付款
-            orderMatch.setPaymentTime(DateUtils.getNowDate());
-            n = MatchOrderStatus.PAID.getCode();
-            orderMatch.setStatus(n);
-            ezOtcChatMsg1.setSendText(SystemOrderTips.PAYMENT_SELL);
-        } else {
-            n = MatchOrderStatus.CANCELLED.getCode();
-            ezOtcChatMsg1.setSendText(n);
-            orderMatch.setStatus(MatchOrderStatus.CANCELLED.getCode());
-            //冻结用户卖出 数量
-            List<BalanceChange> cList = new ArrayList<>();
-            LambdaQueryWrapper<EzOneSellConfig> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.eq(EzOneSellConfig::getCoinName, orderMatch.getCoinName());
-            EzOneSellConfig ezSellConfig = sellConfigService.getOne(queryWrapper);
-            BigDecimal amount = orderMatch.getAmount();
+        String ss=null;
+        SysTipsConstants.TipsType tip=null;
+        BigDecimal num=null;
+
+        List<BalanceChange> cList = new ArrayList<>();
+        BalanceChange b1 = new BalanceChange();
+        b1.setCoinName(orderMatch.getCoinName());
+        b1.setUserId(orderMatch.getUserId());
+
+        if ("0".equals(status)) { //确认付款   自己放款
             //手续费计算
-            BigDecimal fee = amount.multiply(ezSellConfig.getFeeRatio()).setScale(8, RoundingMode.FLOOR).add(ezSellConfig.getFee());
-            BigDecimal add = orderMatch.getAmount().add(fee);
-            BalanceChange b1 = new BalanceChange();
-            b1.setAvailable(add);
-            b1.setCoinName(orderMatch.getCoinName());
-            b1.setFrozen(add.negate());
+            b1.setFrozen(totalAmount.negate());
             b1.setIncomeType(CoinConstants.IncomeType.PAYOUT.getType());
+            b1.setMainType(CoinConstants.MainType.NORECORD.getType());
+            cList.add(b1);
+
+            Record rec = new Record();
+            rec.setUserId(orderMatch.getUserId());
+            rec.setCoinName(orderMatch.getCoinName());
+            rec.setFee(BigDecimal.ZERO);
+            rec.setIncomeType(CoinConstants.IncomeType.PAYOUT.getType());
+            rec.setMainType(CoinConstants.MainType.TRANSFEROUT.getType());
+            rec.setSonType(RecordSonType.TRANSFER_OUT);
+            rec.setStatus(CoinConstants.RecordStatus.OK.getStatus());
+            rec.setAmount(totalAmount.negate());
+            recordService.save(rec);
+            WebSocketHandle.accountChange(orderMatch.getUserId(), orderMatch.getCoinName(), amount, RecordSonType.TRANSFER_OUT);
+
+            Date nowDate = DateUtils.getNowDate();
+            orderMatch.setPaymentTime(nowDate);
+            orderMatch.setFinishTime(nowDate);
+            //给用户一个信号
+            ss=MatchOrderStatus.COMPLETED.getCode();
+            tip=SysTipsConstants.TipsType.SELL_SUCCESS;
+            num=amount;
+        } else {
+            //解冻用户卖出 数量
+            b1.setAvailable(totalAmount);
+            b1.setFrozen(totalAmount.negate());
+            b1.setIncomeType(CoinConstants.IncomeType.INCOME.getType());
             b1.setMainType(CoinConstants.MainType.UNFREEZE.getType());
             b1.setFee(BigDecimal.ZERO);
             b1.setSonType(RecordSonType.TRANSACTION_UNFREEZE);
-            b1.setUserId(orderMatch.getUserId());
             cList.add(b1);
-            if (!accountService.balanceChangeSYNC(cList)) {// 资产变更异常
-               throw new AccountOperationBusyException();
-            }
+            ss=MatchOrderStatus.CANCELLED.getCode();
+            tip=SysTipsConstants.TipsType.SELL_FAIL;
+            num=totalAmount;
         }
-        list.add(ezOtcChatMsg1);
+        AsyncManager.me().execute(AsyncFactory.StationLetter(orderMatch.getUserId(),
+                tip, orderMatch.getOrderMatchNo(),num.toString()+orderMatch.getCoinName()));
+        //给用户一个信号
+        WebSocketHandle.orderStatusChange(orderMatch.getUserId(),ss);
+        if (!accountService.balanceChangeSYNC(cList)) {// 资产变更异常
+            throw new AccountOperationBusyException();
+        }
+        orderMatch.setStatus(ss);
         orderMatchService.updateById(orderMatch);
-        otcChatMsgService.sendSysChat(list, n);
         return Response.success();
     }
+
 
     @Autowired
     private EzOtcOrderPaymentService orderPaymentService;

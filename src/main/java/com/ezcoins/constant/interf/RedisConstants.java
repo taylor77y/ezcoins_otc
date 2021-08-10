@@ -48,11 +48,7 @@ public interface RedisConstants {
     public static final String PHONE_BIND_INFO_SMS_KEY = "phone_bind_info_sms_key:";//绑定手机
     public static final String EMAIL_BIND_INFO_SMS_KEY = "email_bind_info_sms_key:";//绑定邮箱
 
-
-
-
-
-
-
+    public static final String PHONE_RETRIEVE_SECURITY_PWD = "phone_retrieve_security_pwd:";//手机找回安全密码
+    public static final String EMAIL_RETRIEVE_SECURITY_PWD = "email_retrieve_security_pwd:";//邮箱找回安全密码
 
 }

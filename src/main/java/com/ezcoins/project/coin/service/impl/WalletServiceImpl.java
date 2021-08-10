@@ -85,7 +85,7 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
         if (collect.size() != 0) {
             rechargeAddr = collect.get(0).getAddress();
         } else if ("60".equals(mainCoinType)) {
-            Address coinAddress = walletClientService.createAddressList(ContextHandler.getUserName());
+            Address coinAddress = walletClientService.createAddressList(ContextHandler.getUserId());
             Wallet wallet = new Wallet();
             if (StringUtils.isNotNull(coinAddress)) {
                 Integer integer = coinAddress.getId();
@@ -94,6 +94,7 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
                     wallet.setAddress(coinAddress.getAddress());
                     wallet.setMainCoinType(mainCoinType);
                     wallet.setUserId(userId);
+                    wallet.setCreateBy(ContextHandler.getUserName());
                     wallet.setWalletType("thirdparty");
                     baseMapper.insert(wallet);
                 }
@@ -145,20 +146,35 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
         if (trade.getTt() != 2) {
             return false;
         }
+        BigDecimal total = withdrawOrder.getAmount().add(withdrawOrder.getFee());
         // [审核通过]判断是否审核中 扣除冻结
         if (trade.getS() == 2 && CoinConstants.RecordStatus.WAIT.getStatus().equals(cr.getStatus())) {
             cr.setStatus(CoinConstants.RecordStatus.PASS.getStatus());
+            cr.setTxid(trade.getTid());
+
             List<BalanceChange> cList = new ArrayList<BalanceChange>();
             BalanceChange c = new BalanceChange();
-            c.setFrozen(cr.getAmount().add(cr.getFee()).negate());
+            c.setFrozen(total.negate());
             c.setUserId(cr.getUserId());
             c.setIncomeType(CoinConstants.IncomeType.PAYOUT.getType());
-            c.setMainType(CoinConstants.MainType.WITHDRAWAL.getType());
+            c.setMainType(CoinConstants.MainType.NORECORD.getType());
             c.setSonType(RecordSonType.ORDINARY_WITHDRAWAL);
+            c.setCoinName(cr.getCoinName());
             cList.add(c);
             if (!accountService.balanceChangeSYNC(cList)) {// 资产变更异常
                 throw new AccountOperationBusyException();
             }
+            Record record = new Record();
+            // 插入记录
+            record.setIncomeType(CoinConstants.IncomeType.PAYOUT.getType());
+            record.setSonType(RecordSonType.HANDLING_FEE);
+            record.setStatus(CoinConstants.RecordStatus.OK.getStatus());
+            record.setCoinName(cr.getCoinName());
+            record.setMainType(CoinConstants.MainType.FREE.getType());
+            record.setAmount(withdrawOrder.getFee().negate());
+            record.setUserId(cr.getUserId());
+            record.setCreateBy(ContextHandler.getUserName());
+            recordService.save(cr);
             withdrawOrder.setStatus(WithdrawOrderStatus.BYWALLET.getCode());
         }
         // [审核拒绝]判断是否审核中 解冻返回余额 返回Txid
@@ -167,11 +183,11 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
             cr.setTxid(trade.getTid());
             List<BalanceChange> cList = new ArrayList<BalanceChange>();
             BalanceChange c = new BalanceChange();
-            c.setAvailable(cr.getAmount().add(cr.getFee()));
-            c.setFrozen(cr.getAmount().negate());
+            c.setAvailable(total);
+            c.setFrozen(total.negate());
             c.setUserId(cr.getUserId());
             c.setIncomeType(CoinConstants.IncomeType.PAYOUT.getType());
-            c.setMainType(CoinConstants.MainType.WITHDRAWAL.getType());
+            c.setMainType(CoinConstants.MainType.NORECORD.getType());
             c.setSonType(RecordSonType.ORDINARY_WITHDRAWAL);
             cList.add(c);
             if (!accountService.balanceChangeSYNC(cList)) {// 资产变更异常
@@ -245,6 +261,7 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
         Record rec = new Record(); //添加流水记录
         rec.setUserId(c.getUserId());
         rec.setCoinName(c.getCoinName());
+        rec.setCreateBy(wallet.getCreateBy());
         rec.setCreateTime(DateUtils.getNowDate());
         rec.setFee(BigDecimal.ZERO);
         rec.setIncomeType(c.getIncomeType());
