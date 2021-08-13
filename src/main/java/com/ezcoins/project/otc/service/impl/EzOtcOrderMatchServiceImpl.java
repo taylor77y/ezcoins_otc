@@ -129,12 +129,10 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
             orderMatch.setStatus(MatchOrderStatus.CANCELLED.getCode());
             //将订单匹配数量增加回去
             otcOrder.setQuotaAmount(otcOrder.getQuotaAmount().subtract(orderMatch.getAmount()));
-
             //判断是谁取消的订单
             if (otcOrder.getUserId().equals(userId)) {//商户取消的订单
                 sellUserId = userId;
                 buyUserId = orderMatch.getUserId();
-
                 if ("1".equals(otcOrder.getType())) {//卖单
                     //退后用户冻结的订单
                 }
@@ -322,7 +320,12 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
             buyUserId = ezOtcOrder.getUserId();
             //otc订单冻结币的剩余
             BigDecimal subtract = ezOtcOrder.getTotalAmount().subtract(ezOtcOrder.getQuotaAmount());
-            flag1= ezOtcOrder.getMinimumLimit().compareTo(subtract)>0;
+            if(ezOtcOrder.getMinimumLimit().compareTo(subtract) > 0){
+                flag1 = true;
+                ezOtcOrder.setStatus("1");
+                ezOtcOrder.setEndTime(DateUtils.getNowDate());
+                otcOrderService.updateById(ezOtcOrder);
+            }
         } else if ("1".equals(ezOtcOrder.getType())) {  //卖单 需要广告商户进行放币
             if (isAdmin) {
                 userId = ezOtcOrder.getUserId();
@@ -454,7 +457,6 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
                 SysOrderConstants.SysChatMsg.APPEAL_CANCEL, MatchOrderStatus.CANCELLED));
         //降低买单完成率
         AsyncManager.me().execute(AsyncFactory.updateCount(sellUserId, buyUserId, orderMatch.getPaymentTime(), nowDate, true, "1"));
-
     }
 
 
@@ -507,13 +509,14 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
             details.setEzOtcOrderPayments(paymentService.list(paymentLambdaQueryWrapper));
             return Response.success(MessageUtils.message("请先完成当前未完成的订单"), details);//将订单返回
         }
+
+
         LambdaQueryWrapper<EzOneSellConfig> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(EzOneSellConfig::getCoinName, sellOneKeyReqDto.getCoinName());
 
         EzOneSellConfig ezSellConfig = sellConfigService.getOne(queryWrapper);
-
         if ("1".equals(ezSellConfig.getStatus())) {
-            return Response.error(MessageUtils.message("当前币种一键卖币已关闭"));
+            return Response.error(MessageUtils.message("此币种尚未开放交易"));
         }
 
         EzOtcConfig otcConfig = otcConfigService.getById(1);
@@ -529,9 +532,22 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
         queryWrapper1.eq(EzPaymentInfo::getUserId, userId);
         queryWrapper1.eq(EzPaymentInfo::getPaymentMethodId, sellOneKeyReqDto.getPaymentInfoId());
         EzPaymentInfo paymentInfo = paymentInfoService.getOne(queryWrapper1);
+
         if (paymentInfo == null) {
             throw new BaseException(null, "801", "未匹配到支付方式", null);
         }
+
+        if(1!=paymentInfo.getPaymentMethodId()){
+            throw new BaseException(null, "801", "只支持银行支付", null);
+        }
+
+        LambdaQueryWrapper<EzAdvertisingBusiness> businessLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        businessLambdaQueryWrapper.eq(EzAdvertisingBusiness::getUserId, userId);
+        EzAdvertisingBusiness one = advertisingBusinessService.getOne(businessLambdaQueryWrapper);
+        if (StringUtils.isEmpty(one.getSecurityPassword())) {
+            throw new BaseException(null, "700", "请先完善otc交易信息", null);
+        }
+
         //手续费计算
         BigDecimal fee = amount.multiply(ezSellConfig.getFeeRatio()).add(ezSellConfig.getFee());
 
@@ -591,9 +607,7 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
         match.setType("0");
         match.setFee(fee);
 
-        LambdaQueryWrapper<EzAdvertisingBusiness> businessLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        businessLambdaQueryWrapper.eq(EzAdvertisingBusiness::getUserId, userId);
-        EzAdvertisingBusiness one = advertisingBusinessService.getOne(businessLambdaQueryWrapper);
+
         match.setMatchAdvertisingName(one.getAdvertisingName());
         match.setCreateTime(DateUtils.getNowDate());
         match.setStatus(MatchOrderStatus.WAITFORPAYMENT.getCode());
@@ -665,7 +679,6 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
     @Override
     public ResponseList<OrderRecordRespDto> adMatchOrder(AdMatchOrderQueryReqDto matchOrderQueryReqDto) {
         Date nowDate = DateUtils.getNowDate();
-
         Page<EzOtcOrderMatch> page = new Page<>(matchOrderQueryReqDto.getPage(), matchOrderQueryReqDto.getLimit());
         LambdaQueryWrapper<EzOtcOrderMatch> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(EzOtcOrderMatch::getOtcOrderUserId, ContextHandler.getUserId());

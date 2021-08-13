@@ -12,6 +12,7 @@ import com.ezcoins.project.otc.service.EzOtcChatMsgService;
 import com.ezcoins.project.system.entity.EzSysTips;
 import com.ezcoins.project.system.service.EzSysTipsService;
 import com.ezcoins.utils.*;
+import com.ezcoins.websocket.WebSocketHandle;
 import eu.bitwalker.useragentutils.UserAgent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -158,10 +159,13 @@ public class AsyncFactory
         List<EzOtcChatMsg> list = new ArrayList<>();
         list.add(EZ_OTC_CHAT_MSG_SELL);
         list.add(EZ_OTC_CHAT_MSG_BUY);
+        //给用户一个信号
+        WebSocketHandle.orderStatusChange(sellUserId, status.getCode());
+        WebSocketHandle.orderStatusChange(buyUserId, status.getCode());
         return new TimerTask(){
             @Override
             public void run(){
-                SpringUtils.getBean(EzOtcChatMsgService.class).sendSysChat(list,status.getCode());
+                SpringUtils.getBean(EzOtcChatMsgService.class).sendSysChat(list,null);
             }
         };
     }

@@ -120,7 +120,7 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         queryWrapper.eq(Type::getCoinName, coinName);
         Type coinType = typeService.getOne(queryWrapper);//查询到币种
         if (!typeService.statusService(coinType, CoinConstant.OTC_STATUS)) {
-            throw new BaseException("当前币种OTC交易尚未开");
+            throw new BaseException("此币种尚未开放交易");
         }
         BigDecimal amount = otcOrderReqDto.getTotalAmount();//发布数量
         BigDecimal minimumLimit = otcOrderReqDto.getMinimumLimit();
@@ -284,6 +284,7 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         BeanUtils.copyBeanProp(details, ezOtcOrder);
         details.setAmount(placeOrderReqDto.getAmount());
         details.setOrderMatchNo(orderMatchNo);
+        details.setOrderType("1");
         details.setTotalPrice(totalPrice);
         details.setAdvertisingName(map.get(ezOtcOrder.getUserId()).getAdvertisingName());
 
@@ -359,6 +360,10 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
             AsyncManager.me().execute(AsyncFactory.sendSysChat(sellUserId, buyUserId, orderMatchNo,
                     SysOrderConstants.SysChatMsg.SELL_PLACE_ORDER, MatchOrderStatus.WAITFORPAYMENT));
         }
+        //给用户一个信号
+        WebSocketHandle.otherAuthentication(ezOtcOrder.getUserId(),ezOtcOrder.getType(),
+                placeOrderReqDto.getAmount()+ezOtcOrder.getCoinName());
+
         //返回订单
         return Response.success(MessageUtils.message("下单成功"), details);//将订单返回
     }
@@ -534,13 +539,17 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
      */
     @Override
     public Response<OrderInfo> orderInfo(String otcOrderNo) {
+        LambdaQueryWrapper<EzAdvertisingBusiness> businessLambdaQueryWrapper2 = new LambdaQueryWrapper<>();
+        businessLambdaQueryWrapper2.eq(EzAdvertisingBusiness::getUserId, ContextHandler.getUserId());
+        EzAdvertisingBusiness one1 = advertisingBusinessService.getOne(businessLambdaQueryWrapper2);
+        if (StringUtils.isEmpty(one1.getSecurityPassword())) {
+            throw new BaseException(null, "700", MessageUtils.message("请先完善otc交易信息"), null);
+        }
         EzOtcOrder ezOtcOrder = baseMapper.selectById(otcOrderNo);
         LambdaQueryWrapper<EzAdvertisingBusiness> businessLambdaQueryWrapper = new LambdaQueryWrapper<>();
         businessLambdaQueryWrapper.eq(EzAdvertisingBusiness::getUserId, ezOtcOrder.getUserId());
         EzAdvertisingBusiness one = advertisingBusinessService.getOne(businessLambdaQueryWrapper);
-        if (StringUtils.isEmpty(one.getSecurityPassword())) {
-            throw new BaseException(null, "700", MessageUtils.message("请先完善otc交易信息"), null);
-        }
+
         OrderInfo orderInfo = new OrderInfo();
         BeanUtils.copyBeanProp(orderInfo, ezOtcOrder);
         //查询所有支付方式

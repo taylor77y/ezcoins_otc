@@ -47,7 +47,7 @@ public class ResponsePageList<T> {
         return new ResponsePageList<>(page);
     }
 
-    public static <T> ResponsePageList<T> success( long total, List<T> dataList) {
+    public static <T> ResponsePageList<T> success(long total, List<T> dataList) {
         return new ResponsePageList<>( total, dataList);
     }
 }

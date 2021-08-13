@@ -61,4 +61,7 @@ public class PaymentDetails {
     @ApiModelProperty(value = "订单状态(1:接单已取消 2:待接单 3：已取消 4：等待支付 5：已支付 6：已完成)")
     private String status;
 
+    @ApiModelProperty(value = "订单类型：1：普通 2：一键")
+    private String orderType;
+
 }

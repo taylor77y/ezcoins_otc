@@ -2,8 +2,11 @@ package com.ezcoins.project.consumer.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.ezcoins.constant.SysTipsConstants;
 import com.ezcoins.constant.enums.LimitType;
 import com.ezcoins.context.ContextHandler;
+import com.ezcoins.manager.AsyncManager;
+import com.ezcoins.manager.factory.AsyncFactory;
 import com.ezcoins.project.consumer.entity.EzUser;
 import com.ezcoins.project.consumer.entity.EzUserLimit;
 import com.ezcoins.project.consumer.entity.EzUserLimitLog;
@@ -20,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.RoundingMode;
 import java.util.Date;
 
 /**
@@ -50,6 +54,7 @@ public class EzUserLimitServiceImpl extends ServiceImpl<EzUserLimitMapper, EzUse
             ezUserLimit=new EzUserLimit();
         }
         String type = userLimitReqDto.getType();
+        SysTipsConstants.TipsType tip=null;
         if (LimitType.LOGINLIMIT.getCode().equals(type)){
             if (!f && "1".equals(ezUserLimit.getLogin()) ){
                 return Response.error("用户登录已被封禁");
@@ -61,16 +66,19 @@ public class EzUserLimitServiceImpl extends ServiceImpl<EzUserLimitMapper, EzUse
             if (!f && "1".equals(ezUserLimit.getWithdraw()) ){
                 return Response.error("用户提现已被封禁");
             }
+            tip=SysTipsConstants.TipsType.WITHDRAWLIMIT;
             ezUserLimit.setWithdraw("1");
         }else if (LimitType.ORDERLIMIT.getCode().equals(type)){
             if (!f && "1".equals(ezUserLimit.getOrders()) ){
                 return Response.error("用户发布订单已被封禁");
             }
+            tip=SysTipsConstants.TipsType.ORDERLIMIT;
             ezUserLimit.setOrders("1");
         }else if (LimitType.BUSINESSLIMIT.getCode().equals(type)){
             if (!f && "1".equals(ezUserLimit.getBusiness()) ){
                 return Response.error("用户买卖已被封禁");
             }
+            tip=SysTipsConstants.TipsType.BUSINESSLIMIT;
             ezUserLimit.setBusiness("1");
         }
         EzUserLimitLog ezUserLimitLog = new EzUserLimitLog();
@@ -91,14 +99,21 @@ public class EzUserLimitServiceImpl extends ServiceImpl<EzUserLimitMapper, EzUse
             baseMapper.updateById(ezUserLimit);
         }
         limitLogService.save(ezUserLimitLog);
+
+        if (tip!=null){
+            AsyncManager.me().execute(AsyncFactory.StationLetter(user.getUserId(),
+                    tip, userLimitReqDto.getDetailed(),userLimitReqDto.getDay()));
+
+        }
         return Response.success();
     }
-
 
     @Override
     @Transactional
     public Response unblock(String userId, String type) {
         EzUserLimit ezUserLimit = baseMapper.selectById(userId);
+        SysTipsConstants.TipsType tip=null;
+
         if (LimitType.LOGINLIMIT.getCode().equals(type)){
             if ("0".equals(ezUserLimit.getLogin()) ){
                 return Response.error("用户登录未被封禁");
@@ -107,21 +122,25 @@ public class EzUserLimitServiceImpl extends ServiceImpl<EzUserLimitMapper, EzUse
             updateWrapper.eq(EzUser::getUserId,userId);
             updateWrapper.set(EzUser::getStatus,"0");
             userService.update(updateWrapper);
+            tip=SysTipsConstants.TipsType.LOGINLIMIT_OFF;
             ezUserLimit.setLogin("0");
         }else if (LimitType.WITHDRAWLIMIT.getCode().equals(type)){
             if ("0".equals(ezUserLimit.getWithdraw()) ){
                 return Response.error("用户提现未被封禁");
             }
+            tip=SysTipsConstants.TipsType.WITHDRAWLIMIT_OFF;
             ezUserLimit.setWithdraw("0");
         }else if (LimitType.ORDERLIMIT.getCode().equals(type)){
             if ("0".equals(ezUserLimit.getOrders()) ){
                 return Response.error("用户发布订单未被封禁");
             }
+            tip=SysTipsConstants.TipsType.ORDERLIMIT_OFF;
             ezUserLimit.setOrders("0");
         }else if (LimitType.BUSINESSLIMIT.getCode().equals(type)){
             if ( "0".equals(ezUserLimit.getBusiness()) ){
                 return Response.error("用户买卖未被封禁");
             }
+            tip=SysTipsConstants.TipsType.BUSINESSLIMIT_OFF;
             ezUserLimit.setBusiness("0");
         }
         baseMapper.updateById(ezUserLimit);
@@ -130,6 +149,8 @@ public class EzUserLimitServiceImpl extends ServiceImpl<EzUserLimitMapper, EzUse
         lambdaUpdateWrapper.eq(EzUserLimitLog::getIsExpire,"0");
         lambdaUpdateWrapper.set(EzUserLimitLog::getIsExpire,"1");
         limitLogService.update(lambdaUpdateWrapper);
+        AsyncManager.me().execute(AsyncFactory.StationLetter(userId,
+                tip));
         return Response.success();
     }
 }

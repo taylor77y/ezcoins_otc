@@ -48,9 +48,10 @@ public class SidebarInfoRespDto {
     @ApiModelProperty(value = "国家电话区号")
     private String countryTelCode;
 
-
     @ApiModelProperty(value = "0:待审核 1：通过  2：未通过 3：未认证")
     private String kycStatus;
 
+    @ApiModelProperty(value = "身份证/护照号码")
+    private String identityCard;
 
 }

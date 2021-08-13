@@ -128,6 +128,19 @@ public class WebSocketHandle {
         send(userId, message);
     }
 
+    //其他状态栏通知
+    public static void otherAuthentication(String userId, String status,String s) {
+        String message;
+        if ("0".equals(status)) {//拒绝
+            message = String.format("【ezcoins】 %s。", "用户正在进行出售"+s+"，请前往处理");
+        } else if ("1".equals(status)) {//通过
+            message = String.format("【ezcoins】 %s。", "用户正在进行购买"+s+"，请前往处理");
+        }  else {
+            return;
+        }
+        send(userId, message);
+    }
+
     /**
      * 资产变化
      * @param userId

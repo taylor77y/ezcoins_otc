@@ -56,14 +56,14 @@ public class EzAppAnnouncementController {
     }
 
 
-    @PutMapping("cancelAnnouncement/{id}")
-    @ApiOperation(value = "撤销公告")
+    @PutMapping("cancelAnnouncement/{id}/{status}")
+    @ApiOperation(value = "禁用/打开公告")
     @AuthToken
     @NoRepeatSubmit
-    @Log(title = "公告模块", logInfo ="撤销公告", operatorType = OperatorType.MANAGE)
-    public Response cancelAnnouncement(@PathVariable String id){
+    @Log(title = "公告模块", logInfo ="禁用/打开公告", operatorType = OperatorType.MANAGE)
+    public Response cancelAnnouncement(@PathVariable String id,@PathVariable String status){
         LambdaUpdateWrapper<EzAppAnnouncement> updateWrapper=new LambdaUpdateWrapper<>();
-        updateWrapper.eq(EzAppAnnouncement::getId,id).set(EzAppAnnouncement::getIfCancel,"1")
+        updateWrapper.eq(EzAppAnnouncement::getId,id).set(EzAppAnnouncement::getIfCancel,status)
                 .set(EzAppAnnouncement::getCancelTime, DateUtils.getNowDate());
         announcementService.update(updateWrapper);
         return Response.success();

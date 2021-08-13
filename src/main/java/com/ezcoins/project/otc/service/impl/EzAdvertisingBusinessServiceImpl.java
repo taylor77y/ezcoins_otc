@@ -118,7 +118,7 @@ public class EzAdvertisingBusinessServiceImpl extends ServiceImpl<EzAdvertisingB
         } else {
             Long releaseTime = finishTime.getTime() - payTime.getTime();//放行时间
             var time = Math.floor(releaseTime / 60 % 60);
-            buyInfo.setAveragePass((time + sellInfo.getAveragePass() * sellInfo.getSellCount()) / (sellInfo.getSellCount() + 1));//平均放行时间
+            buyInfo.setAveragePass((time + sellInfo.getAveragePass() * sellInfo.getSellCount()) / (finishSell + 1));//平均放行时间
 
             sellInfo.setFinishRate((finishSell + 1) / (totalSell + 1));//增加降低完成率
             buyInfo.setFinishRate((finishBuy + 1) / (totalBuy + 1));//买家提升完成率

@@ -87,7 +87,7 @@ public class WithdrawOrderServiceImpl extends ServiceImpl<WithdrawOrderMapper, W
             if (chainCoinType == null) {
                 throw new BaseException("未获取到coinType");
             }
-           clientService.transfer(chainCoinType.getCoin_type(), chainCoinType.getChain(), withdrawOrder.getId(), withdrawOrder.getAddress(),withdrawOrder.getUserId(), withdrawOrder.getAmount(),checkWithdrewOrderReqDto.getAuto());
+           clientService.transfer(chainCoinType.getCoin_type(), chainCoinType.getChain(), withdrawOrder.getId(), withdrawOrder.getAddress(),withdrawOrder.getCoinType(), withdrawOrder.getAmount(),checkWithdrewOrderReqDto.getAuto());
             withdrawOrder.setStatus(WithdrawOrderStatus.BYADMIN.getCode());
         } else if (checkWithdrewOrderReqDto.getOperate().equals(WithdrawOrderStatus.REFUSE.getCode())) {
             //修改订单状态

@@ -64,7 +64,6 @@ public class EzAppAnnouncementServiceImpl extends ServiceImpl<EzAppAnnouncementM
         //查询所有没有撤销或删除的公告列表
         LambdaQueryWrapper<EzAppAnnouncement> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(EzAppAnnouncement::getIfCancel, "0");
-        queryWrapper.orderByAsc(EzAppAnnouncement::getPriority);
         List<EzAppAnnouncement> list = baseMapper.selectList(queryWrapper);
         if (list.size() == 0) {
             return respDtoArrayList;
@@ -73,11 +72,8 @@ public class EzAppAnnouncementServiceImpl extends ServiceImpl<EzAppAnnouncementM
         Map<String, List<EzAppAnnouncement>> mapByUserType = list.stream().collect(Collectors.groupingBy(EzAppAnnouncement::getUserType));
         LambdaQueryWrapper<EzAppAnnouncementTag> tagQueryWrapper = new LambdaQueryWrapper<>();
         tagQueryWrapper.eq(EzAppAnnouncementTag::getUserId, userId);
-
         List<EzAppAnnouncementTag> tags = announcementTagMapper.selectList(tagQueryWrapper);
-
         List<String> announcementIdList = tags.stream().map(EzAppAnnouncementTag::getAnnouncementId).collect(Collectors.toList());
-
         mapByUserType.get("0").forEach(e -> {
             AppAnnouncementRespDto appAnnouncementRespDto = new AppAnnouncementRespDto();
             appAnnouncementRespDto.setCreateTime(e.getCreateTime());
@@ -99,6 +95,6 @@ public class EzAppAnnouncementServiceImpl extends ServiceImpl<EzAppAnnouncementM
             respDtoArrayList.add(appAnnouncementRespDto);
         });
 
-        return respDtoArrayList.stream().sorted(Comparator.comparing(AppAnnouncementRespDto::getPriority).reversed().thenComparing(AppAnnouncementRespDto::getCreateTime)).collect(Collectors.toList());
+        return respDtoArrayList.stream().sorted(Comparator.comparing(AppAnnouncementRespDto::getCreateTime).reversed().thenComparing(AppAnnouncementRespDto::getPriority)).collect(Collectors.toList());
     }
 }

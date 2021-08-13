@@ -1,37 +1,31 @@
-package com.ezcoins.project.otc.entity;
+package com.ezcoins.project.otc.entity.resp;
 
-import java.math.BigDecimal;
-
-import com.baomidou.mybatisplus.annotation.*;
-
-import java.util.Date;
-
-import java.io.Serializable;
-import java.util.List;
-
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.Version;
+import com.ezcoins.project.otc.entity.EzOtcOrderPayment;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
+
+import java.math.BigDecimal;
+import java.util.Date;
 
 /**
- * <p>
- * 匹配日OTC订单
- * </p>
- *
- * @author wanglei
- * @since 2021-06-18
+ * @Author: WangLei
+ * @Email: 1044508403@qq.com
+ * @Description:
+ * @Date:2021/8/11 16:35
+ * @Version:1.0
  */
 @Data
-@EqualsAndHashCode(callSuper = false)
-@ApiModel(value="EzOtcOrderMatch对象", description="匹配日OTC订单")
-public class EzOtcOrderMatch implements Serializable {
-    private static final long serialVersionUID = 1L;
-
+public class OneOrderRespDto {
+    @ApiModelProperty(value = "支付方式")
+    @TableField(exist = false)
+    private EzOtcOrderPayment payment;
 
     @ApiModelProperty(value = "匹配订单号")
-    @TableId(value = "order_match_no")
     private String orderMatchNo;
 
     @ApiModelProperty(value = "用户id")
@@ -42,12 +36,6 @@ public class EzOtcOrderMatch implements Serializable {
 
     @ApiModelProperty(value = "手续费")
     private BigDecimal fee;
-
-    @ApiModelProperty(value = "匹配到的发布订单号")
-    private String orderNo;
-
-    @ApiModelProperty(value = "广告发布订单用户id")
-    private String otcOrderUserId;
 
     @ApiModelProperty(value = "创建时间")
     @TableField(fill = FieldFill.INSERT)
@@ -61,9 +49,6 @@ public class EzOtcOrderMatch implements Serializable {
     @ApiModelProperty(value = "完成时间")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date finishTime;
-
-    @ApiModelProperty(value = "商户OTC昵称")
-    private String advertisingName;
 
     @ApiModelProperty(value = "数量")
     private BigDecimal amount;
@@ -87,23 +72,10 @@ public class EzOtcOrderMatch implements Serializable {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date dueTime;
 
-    @ApiModelProperty(value = "乐观锁")
-    @Version
-    private Integer version;
-
-    @ApiModelProperty(value = "订单类型：1：普通 2：一键")
-    private String orderType;
-
-    @ApiModelProperty(value = "交易类型(0:买  1：卖)")
-    private String type;
+    @ApiModelProperty(value = "手机号")
+    private String phoneNum;
 
     @ApiModelProperty(value = "支付详情id")
     private String orderPaymentId;
-
-    @ApiModelProperty(value = "是否为接单广告(0:是 1：否)")
-    private String isAdvertising;
-
-    @ApiModelProperty(value = "是否有申诉 (0:有 1：无)")
-    private String isAppeal;
 
 }

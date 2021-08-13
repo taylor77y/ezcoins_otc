@@ -123,13 +123,13 @@ public class OtcController {
         }
         EzUser user = userService.getById(userId1);
         String kycStatus = user.getKycStatus();
-        Date createTime = user.getCreateTime();
+
         String level = user.getLevel();
         AdvertisingBusinessInfoRespDto advertisingBusinessInfoRespDto = new AdvertisingBusinessInfoRespDto();
         BeanUtils.copyBeanProp(advertisingBusinessInfoRespDto, one);
         advertisingBusinessInfoRespDto.setKycStatus(kycStatus);
         advertisingBusinessInfoRespDto.setAdvertisingStatus(level);
-        advertisingBusinessInfoRespDto.setRegistrationTime(createTime);
+        advertisingBusinessInfoRespDto.setRegistrationTime(one.getCreateTime());
         advertisingBusinessInfoRespDto.setMargin(one.getMargin());
         //三十天成单
         LambdaQueryWrapper<EzOtcOrderMatch> q = new LambdaQueryWrapper<EzOtcOrderMatch>();
@@ -195,8 +195,6 @@ public class OtcController {
         return Response.success(orderLimitRespDto);
     }
 
-
-
    //    -----------------------------------------------------------------------------------------------------------
     @NoRepeatSubmit
     @ApiOperation(value = "发布广告订单")
@@ -251,7 +249,6 @@ public class OtcController {
     }
 
 
-
     @NoRepeatSubmit
     @ApiOperation(value = "用户 取消订单（两个状态可取消订单  1：接单广告（卖家未接受订单）用户免费取消 " +
             "2：接单广告/普通广告（用户未支付状态） 用户取消次数增加）")
@@ -261,8 +258,6 @@ public class OtcController {
     public Response cancelOrder(@PathVariable String matchOrderNo) {
         return orderMatchService.cancelOrder(matchOrderNo);
     }
-
-
 
     @NoRepeatSubmit
     @ApiOperation(value = "买家确认付款")

@@ -74,12 +74,14 @@ public class EzOtcChatMsgServiceImpl extends ServiceImpl<EzOtcChatMsgMapper, EzO
     @Override
     public void sendSysChat(List<EzOtcChatMsg> chatMsgList, String status) {
         this.saveBatch(chatMsgList);
-        for (EzOtcChatMsg ezOtcChatMsg:chatMsgList){
-            String receiveUserId = ezOtcChatMsg.getReceiveUserId();
-            //给用户一个信号
-            WebSocketHandle.orderStatusChange(receiveUserId, status);
-            //给用户一个信号
-            WebSocketHandle.toChatWith(receiveUserId, ezOtcChatMsg.getOrderMatchNo());
+        if (status!=null){
+            for (EzOtcChatMsg ezOtcChatMsg:chatMsgList){
+                String receiveUserId = ezOtcChatMsg.getReceiveUserId();
+                //给用户一个信号
+                WebSocketHandle.orderStatusChange(receiveUserId, status);
+                //给用户一个信号
+                WebSocketHandle.toChatWith(receiveUserId, ezOtcChatMsg.getOrderMatchNo());
+            }
         }
     }
 

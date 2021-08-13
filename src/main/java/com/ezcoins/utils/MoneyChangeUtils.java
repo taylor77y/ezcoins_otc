@@ -44,7 +44,7 @@ public class MoneyChangeUtils {
             Map map = (Map) JSONObject.parse(result);
             Integer code = (Integer) map.get("code");
             if (code != 0) {
-                return null;
+                return BigDecimal.valueOf(6.4);
             }
             JSONObject data =(JSONObject)map.get("data");
             return (BigDecimal)data.get("rate");

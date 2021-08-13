@@ -316,7 +316,7 @@ public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> impleme
         }
         LambdaQueryWrapper<EzUserLimitLog> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(EzUserLimitLog::getIsExpire, "0");
-        queryWrapper.eq(EzUserLimitLog::getUserId, ezUser);
+        queryWrapper.eq(EzUserLimitLog::getUserId, ezUser.getUserId());
         queryWrapper.eq(EzUserLimitLog::getType, LimitType.LOGINLIMIT.getCode());
         EzUserLimitLog one = limitLogService.getOne(queryWrapper);
         if (one != null) {
@@ -330,7 +330,7 @@ public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> impleme
                 ezUserLimitLambdaUpdateWrapper.set(EzUserLimit::getLogin, 0);
                 limitService.update(ezUserLimitLambdaUpdateWrapper);
             }else {
-                throw new UserException("用户已被封禁", null);
+                throw new UserException("此账号已被封锁", null);
             }
         }
         //密码错误

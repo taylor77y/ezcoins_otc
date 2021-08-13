@@ -85,7 +85,7 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
         if (collect.size() != 0) {
             rechargeAddr = collect.get(0).getAddress();
         } else if ("60".equals(mainCoinType)) {
-            Address coinAddress = walletClientService.createAddressList(ContextHandler.getUserId());
+            Address coinAddress = walletClientService.createAddressList(ContextHandler.getUserName());
             Wallet wallet = new Wallet();
             if (StringUtils.isNotNull(coinAddress)) {
                 Integer integer = coinAddress.getId();
@@ -219,8 +219,6 @@ public class WalletServiceImpl extends ServiceImpl<WalletMapper, Wallet> impleme
         List<BalanceChange> cList = new ArrayList<BalanceChange>();
         BalanceChange c = new BalanceChange();
         c.setAvailable(amount); //设置余额
-
-
         LambdaQueryWrapper<RechargeConfig> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(RechargeConfig::getMainCoinType, mainCoinType);
         lambdaQueryWrapper.eq(RechargeConfig::getCoinType, coinType);

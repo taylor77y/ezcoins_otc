@@ -29,6 +29,7 @@ import com.ezcoins.project.consumer.service.EzUserKycService;
 import com.ezcoins.project.consumer.service.EzUserService;
 import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponseList;
+import com.ezcoins.utils.BeanUtils;
 import com.ezcoins.utils.EncoderUtil;
 import com.ezcoins.utils.MessageUtils;
 import com.ezcoins.utils.StringUtils;
@@ -245,12 +246,14 @@ public class ConsumerController extends BaseController {
         queryWrapper.eq(EzUserKyc::getUserId, userId);
         EzUserKyc one = kycService.getOne(queryWrapper);
         //0:待审核 1：通过  2：未通过 3：未认证
-        if (one != null && one.getStatus().equals(KycStatus.BY.getCode())) {
+        if (one != null && (one.getStatus().equals(KycStatus.BY.getCode())
+                || one.getStatus().equals(KycStatus.PENDINGREVIEW.getCode()))) {
             infoRespDto.setFirstName(one.getFirstName());
             infoRespDto.setLastName(one.getLastName());
         }
         if (one!=null){
             infoRespDto.setKycStatus(one.getStatus());
+            infoRespDto.setIdentityCard(one.getIdentityCard());
         }else {
             infoRespDto.setKycStatus("3");
         }
@@ -264,6 +267,7 @@ public class ConsumerController extends BaseController {
         infoRespDto.setUserId(ezUser.getUserId());
         infoRespDto.setPhoneArea(ezUser.getPhoneArea());
         infoRespDto.setIsSetting(isSetting);
+
 
         LambdaQueryWrapper<EzCountryConfig> queryWrapper1 = new LambdaQueryWrapper<>();
         queryWrapper1.eq(EzCountryConfig::getCountryCode, ezUser.getCountryCode());
