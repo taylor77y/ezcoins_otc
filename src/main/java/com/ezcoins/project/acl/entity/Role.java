@@ -1,6 +1,7 @@
 package com.ezcoins.project.acl.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.ezcoins.base.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -22,7 +23,7 @@ import java.util.Date;
 @EqualsAndHashCode(callSuper = false)
 @TableName("acl_role")
 @ApiModel(value="Role对象", description="")
-public class Role implements Serializable {
+public class Role extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -33,7 +34,7 @@ public class Role implements Serializable {
     @ApiModelProperty(value = "角色名称")
     private String name;
 
-    @TableField(fill = FieldFill.INSERT)
+    /*@TableField(fill = FieldFill.INSERT)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
 
@@ -43,7 +44,7 @@ public class Role implements Serializable {
 
     private String createBy;
 
-    private String updateBy;
+    private String updateBy;*/
 
     @ApiModelProperty(value = "子路由数组（修改角色时使用）")
     private String childrenMenuId;

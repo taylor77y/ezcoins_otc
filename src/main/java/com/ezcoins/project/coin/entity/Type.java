@@ -7,6 +7,8 @@ import java.math.BigDecimal;
 import java.util.Date;
 import com.baomidou.mybatisplus.annotation.TableId;
 import java.io.Serializable;
+
+import com.ezcoins.base.BaseEntity;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -24,7 +26,7 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = false)
 @TableName("coin_type")
 @ApiModel(value="Type对象", description="币种类型表")
-public class Type implements Serializable {
+public class Type extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -53,7 +55,7 @@ public class Type implements Serializable {
     @ApiModelProperty(value = "币种状态（0启用 1禁用 ）")
     private String status;
 
-    @ApiModelProperty(value = "创建时间")
+    /*@ApiModelProperty(value = "创建时间")
     private Date createTime;
 
     @ApiModelProperty(value = "修改时间")
@@ -63,7 +65,7 @@ public class Type implements Serializable {
     private String createBy;
 
     @ApiModelProperty(value = "更新者")
-    private String updateBy;
+    private String updateBy;*/
 
 
 }

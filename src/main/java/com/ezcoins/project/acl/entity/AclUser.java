@@ -1,6 +1,7 @@
 package com.ezcoins.project.acl.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.ezcoins.base.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -24,7 +25,7 @@ import java.util.Date;
 @Accessors(chain = true)
 @TableName("acl_user")
 @ApiModel(value="User对象", description="用户表")
-public class AclUser implements Serializable {
+public class AclUser extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -51,7 +52,7 @@ public class AclUser implements Serializable {
     @TableLogic(value = "0",delval = "1")
     private String isDeleted;
 
-    @ApiModelProperty(value = "创建者")
+    /*@ApiModelProperty(value = "创建者")
     private String createBy;
 
     @ApiModelProperty(value = "更新者")
@@ -65,7 +66,7 @@ public class AclUser implements Serializable {
     @ApiModelProperty(value = "更新时间")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @TableField(fill = FieldFill.INSERT_UPDATE)
-    private Date updateTime;
+    private Date updateTime;*/
 
 
 }

@@ -1,6 +1,7 @@
 package com.ezcoins.project.app.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.ezcoins.base.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -22,7 +23,7 @@ import java.util.Date;
 @EqualsAndHashCode(callSuper = false)
 @TableName("ez_app_announcement")
 @ApiModel(value="EzAppAnnouncement对象", description="平台公告表")
-public class EzAppAnnouncement implements Serializable {
+public class EzAppAnnouncement extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -62,11 +63,11 @@ public class EzAppAnnouncement implements Serializable {
     @TableLogic(value = "0",delval = "1")
     private String isDeleted;
 
-    @ApiModelProperty(value = "创建时间")
+    /*@ApiModelProperty(value = "创建时间")
     @TableField(fill = FieldFill.INSERT)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
 
     @ApiModelProperty(value = "创建者")
-    private String createBy;
+    private String createBy;*/
 }

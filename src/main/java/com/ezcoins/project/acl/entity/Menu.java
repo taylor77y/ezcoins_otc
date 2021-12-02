@@ -1,6 +1,7 @@
 package com.ezcoins.project.acl.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.ezcoins.base.BaseEntity;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -22,7 +23,7 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = false)
 @TableName("acl_menu")
 @ApiModel(value="Menu对象", description="")
-public class Menu implements Serializable {
+public class Menu extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -54,7 +55,7 @@ public class Menu implements Serializable {
     @ApiModelProperty(value = "父级id")
     private Integer parentId;
 
-    @ApiModelProperty(value = "创建时间")
+    /*@ApiModelProperty(value = "创建时间")
     @TableField(fill = FieldFill.INSERT)
     private Date createTime;
 
@@ -66,7 +67,7 @@ public class Menu implements Serializable {
     private String createBy;
 
     @ApiModelProperty(value = "更新者")
-    private String updateBy;
+    private String updateBy;*/
 
     @TableField(exist = false)
     @ApiModelProperty(value = "子节点")

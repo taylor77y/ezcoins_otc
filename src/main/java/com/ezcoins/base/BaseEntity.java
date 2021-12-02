@@ -1,6 +1,9 @@
 package com.ezcoins.base;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.annotations.ApiModelProperty;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -12,42 +15,52 @@ import java.util.Map;
  * 
  * 
  */
-public class BaseEntity implements Serializable
+public abstract class BaseEntity implements Serializable
 {
     private static final long serialVersionUID = 1L;
 
     /** 搜索值 */
-    private String searchValue;
+//    private String searchValue;
 
     /** 创建者 */
+    @ApiModelProperty(value = "创建者")
+    @TableField(fill = FieldFill.INSERT)
     private String createBy;
 
     /** 创建时间 */
+    @ApiModelProperty(value = "创建时间")
+    @TableField(fill = FieldFill.INSERT)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
 
     /** 更新者 */
+    @ApiModelProperty(value = "更新者")
+    @TableField(fill = FieldFill.INSERT)
     private String updateBy;
 
     /** 更新时间 */
+    @ApiModelProperty(value = "更新时间")
+    @TableField(fill = FieldFill.INSERT)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date updateTime;
 
     /** 备注 */
+    @ApiModelProperty(value = "备注")
+    @TableField(fill = FieldFill.INSERT)
     private String remark;
 
     /** 请求参数 */
-    private Map<String, Object> params;
+//    private Map<String, Object> params;
 
-    public String getSearchValue()
-    {
-        return searchValue;
-    }
+//    public String getSearchValue()
+//    {
+//        return searchValue;
+//    }
 
-    public void setSearchValue(String searchValue)
-    {
-        this.searchValue = searchValue;
-    }
+//    public void setSearchValue(String searchValue)
+//    {
+//        this.searchValue = searchValue;
+//    }
 
     public String getCreateBy()
     {
@@ -99,7 +112,7 @@ public class BaseEntity implements Serializable
         this.remark = remark;
     }
 
-    public Map<String, Object> getParams()
+    /*public Map<String, Object> getParams()
     {
         if (params == null)
         {
@@ -111,18 +124,18 @@ public class BaseEntity implements Serializable
     public void setParams(Map<String, Object> params)
     {
         this.params = params;
-    }
+    }*/
 
     @Override
     public String toString() {
         return "BaseEntity{" +
-                "searchValue='" + searchValue + '\'' +
+//                "searchValue='" + searchValue + '\'' +
                 ", createBy='" + createBy + '\'' +
                 ", createTime=" + createTime +
                 ", updateBy='" + updateBy + '\'' +
                 ", updateTime=" + updateTime +
                 ", remark='" + remark + '\'' +
-                ", params=" + params +
+//                ", params=" + params +
                 '}';
     }
 }
