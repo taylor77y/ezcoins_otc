@@ -1,23 +1,28 @@
 package com.ezcoins.project.otc.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ezcoins.context.ContextHandler;
 import com.ezcoins.project.otc.entity.EzAdvertisingBusiness;
 import com.ezcoins.project.otc.entity.req.OtcSettingReqDto;
 import com.ezcoins.project.otc.mapper.EzAdvertisingBusinessMapper;
 import com.ezcoins.project.otc.service.EzAdvertisingBusinessService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.ezcoins.response.Response;
 import com.ezcoins.response.Response;
 import com.ezcoins.utils.EncoderUtil;
 import com.ezcoins.utils.MessageUtils;
-import com.ezcoins.utils.StringUtils;
+import com.google.common.base.Stopwatch;
+import lombok.extern.slf4j.Slf4j;
 import lombok.var;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * <p>
@@ -27,8 +32,12 @@ import java.util.List;
  * @author wanglei
  * @since 2021-06-16
  */
+@Slf4j
 @Service
 public class EzAdvertisingBusinessServiceImpl extends ServiceImpl<EzAdvertisingBusinessMapper, EzAdvertisingBusiness> implements EzAdvertisingBusinessService {
+
+    @Autowired
+    private EzAdvertisingBusinessMapper ezAdvertisingBusinessMapper;
 
     /***
      * @Description: 完善otc交易信息
@@ -39,6 +48,7 @@ public class EzAdvertisingBusinessServiceImpl extends ServiceImpl<EzAdvertisingB
      * @param otcSettingReqDto
      */
     @Override
+    @Transactional(value="transactionManager2", isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public Response otcSetting(OtcSettingReqDto otcSettingReqDto) {
         String name = otcSettingReqDto.getAdvertisingName();
         String securityPassword = otcSettingReqDto.getSecurityPassword();
@@ -50,13 +60,26 @@ public class EzAdvertisingBusinessServiceImpl extends ServiceImpl<EzAdvertisingB
         if (advertisingBusiness.getSecurityPassword() != null) {
             return Response.error(MessageUtils.message("OTC信息不能进行修改"));
         }
+        Stopwatch stopwatch = Stopwatch.createStarted();
         advertisingBusiness.setSecurityPassword(EncoderUtil.encode(securityPassword));
-        LambdaQueryWrapper<EzAdvertisingBusiness> queryWrapper1 = new LambdaQueryWrapper<>();
-        queryWrapper1.eq(EzAdvertisingBusiness::getAdvertisingName, name);// 判断昵称是否纯在
-        Integer count = baseMapper.selectCount(queryWrapper1);
-        if (count > 0) {
+        stopwatch.stop(); // optional
+        long millis = stopwatch.elapsed(TimeUnit.MILLISECONDS);
+        log.info("time: " + stopwatch); // formatted string like "12.3 ms"
+
+//        LambdaQueryWrapper<EzAdvertisingBusiness> queryWrapper1 = new LambdaQueryWrapper<>();
+//        queryWrapper1.eq(EzAdvertisingBusiness::getAdvertisingName, name);// 判断昵称是否纯在
+//        Integer count = baseMapper.selectCount(queryWrapper1);
+        Integer exist = ezAdvertisingBusinessMapper.existByAdvertisingName(name);
+//        if (count > 0) {
+//            return Response.error(MessageUtils.message("昵称重复，请重新输入"));
+//        }
+        if(exist != null){
+            // 当存在时，执行这里的代码
             return Response.error(MessageUtils.message("昵称重复，请重新输入"));
         }
+//        else{
+//            // 当不存在时，执行这里的代码
+//        }
         advertisingBusiness.setAdvertisingName(name);
         baseMapper.updateById(advertisingBusiness);
         return Response.success();
