@@ -1,9 +1,8 @@
 package com.ezcoins.project.otc.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.ezcoins.base.BaseException;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ezcoins.constant.SysOrderConstants;
 import com.ezcoins.constant.SysTipsConstants;
 import com.ezcoins.constant.enums.otc.MatchOrderStatus;
@@ -16,11 +15,8 @@ import com.ezcoins.project.otc.entity.req.AppealReqDto;
 import com.ezcoins.project.otc.entity.req.DoAppealReqDto;
 import com.ezcoins.project.otc.entity.req.DoOrderReqDto;
 import com.ezcoins.project.otc.mapper.EzOtcOrderAppealMapper;
-import com.ezcoins.project.otc.service.EzAdvertisingBusinessService;
 import com.ezcoins.project.otc.service.EzOtcOrderAppealService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ezcoins.project.otc.service.EzOtcOrderMatchService;
-import com.ezcoins.response.Response;
 import com.ezcoins.response.Response;
 import com.ezcoins.utils.BeanUtils;
 import com.ezcoins.utils.MessageUtils;
@@ -29,9 +25,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Date;
-import java.util.List;
 
 /**
  * <p>
@@ -53,7 +46,7 @@ public class EzOtcOrderAppealServiceImpl extends ServiceImpl<EzOtcOrderAppealMap
      * @return
      */
     @Override
-    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @Transactional(value="transactionManager1", isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public Response appeal(AppealReqDto appealReqDto) {
         //通过订单号查询到订单
         EzOtcOrderMatch orderMatch = matchService.getById(appealReqDto.getOrderMatchNo());
