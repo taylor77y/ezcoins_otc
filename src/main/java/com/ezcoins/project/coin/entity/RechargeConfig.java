@@ -1,15 +1,15 @@
 package com.ezcoins.project.coin.entity;
 
-import com.baomidou.mybatisplus.annotation.*;
-
-import java.util.Date;
-import java.io.Serializable;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.ezcoins.base.BaseEntity;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import java.io.Serializable;
 
 /**
  * <p>
@@ -23,7 +23,7 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = false)
 @TableName("coin_recharge_config")
 @ApiModel(value="RechargeConfig对象", description="充值配置表")
-public class RechargeConfig implements Serializable {
+public class RechargeConfig extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -46,7 +46,7 @@ public class RechargeConfig implements Serializable {
     @ApiModelProperty(value = "充币类型 0开放 1 关闭")
     private String status;
 
-    @ApiModelProperty(value = "创建时间")
+   /* @ApiModelProperty(value = "创建时间")
     @TableField(fill = FieldFill.INSERT)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
@@ -61,7 +61,7 @@ public class RechargeConfig implements Serializable {
     private String createBy;
 
     @ApiModelProperty(value = "更新者")
-    private String updateBy;
+    private String updateBy;*/
 
 
 }
