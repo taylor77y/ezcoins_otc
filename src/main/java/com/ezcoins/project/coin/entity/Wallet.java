@@ -1,15 +1,14 @@
 package com.ezcoins.project.coin.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
-
-import java.util.Date;
-import java.io.Serializable;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import java.io.Serializable;
+import java.util.Date;
 
 /**
  * <p>
@@ -45,6 +44,9 @@ public class Wallet implements Serializable {
 
     @ApiModelProperty(value = "创建者")
     private String createBy;
+
+    @ApiModelProperty(value = "更新者")
+    private String updateBy;
 
     @ApiModelProperty(value = "创建时间")
     @TableField(fill = FieldFill.INSERT)
