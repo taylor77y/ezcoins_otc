@@ -1,18 +1,16 @@
 package com.ezcoins.project.otc.entity;
 
-import com.baomidou.mybatisplus.annotation.*;
-
-import java.util.Date;
-
-import java.io.Serializable;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.ezcoins.base.BaseEntity;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import javax.validation.constraints.NotBlank;
+import java.io.Serializable;
 
 /**
  * <p>
@@ -26,7 +24,7 @@ import javax.validation.constraints.NotBlank;
 @EqualsAndHashCode(callSuper = false)
 @TableName("ez_payment_info")
 @ApiModel(value="EzPaymentInfo", description="支付方式详情")
-public class EzPaymentInfo implements Serializable {
+public class EzPaymentInfo extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @ApiModelProperty(value = "支付方式详情编号")
@@ -58,7 +56,7 @@ public class EzPaymentInfo implements Serializable {
     @ApiModelProperty(value = "状态(0:已激活 1：未激活)")
     private String status;
 
-    @ApiModelProperty(value = "创建时间")
+    /*@ApiModelProperty(value = "创建时间")
     @TableField(fill = FieldFill.INSERT)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
@@ -66,6 +64,6 @@ public class EzPaymentInfo implements Serializable {
     @ApiModelProperty(value = "更新时间")
     @TableField(fill = FieldFill.INSERT_UPDATE)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date updateTime;
+    private Date updateTime;*/
 
 }
