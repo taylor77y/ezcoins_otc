@@ -1,9 +1,12 @@
 package com.ezcoins.project.otc.service;
 
-import com.ezcoins.project.otc.entity.EzOtcOrder;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.ezcoins.project.otc.entity.EzOtcOrder;
 import com.ezcoins.project.otc.entity.req.*;
-import com.ezcoins.project.otc.entity.resp.*;
+import com.ezcoins.project.otc.entity.resp.NewOrderRespDto;
+import com.ezcoins.project.otc.entity.resp.OrderInfo;
+import com.ezcoins.project.otc.entity.resp.OtcOrderRespDto;
+import com.ezcoins.project.otc.entity.resp.PaymentDetails;
 import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponseList;
 
@@ -18,6 +21,8 @@ import com.ezcoins.response.ResponseList;
 public interface EzOtcOrderService extends IService<EzOtcOrder> {
 
     Response releaseAdvertisingOrder(OtcOrderReqDto otcOrderReqDto);
+
+    Response cancelAdvertisingOrder(String adId);
 
     /**
     * @Description: 下单

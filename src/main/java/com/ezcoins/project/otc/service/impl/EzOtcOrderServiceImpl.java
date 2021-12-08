@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ezcoins.base.BaseException;
 import com.ezcoins.constant.CoinConstant;
 import com.ezcoins.constant.RecordSonType;
@@ -11,17 +12,13 @@ import com.ezcoins.constant.SysOrderConstants;
 import com.ezcoins.constant.SystemOrderTips;
 import com.ezcoins.constant.enums.coin.CoinConstants;
 import com.ezcoins.constant.enums.otc.MatchOrderStatus;
-import com.ezcoins.constant.enums.user.KycStatus;
-import com.ezcoins.constant.enums.user.UserKycStatus;
 import com.ezcoins.constant.interf.IndexOrderNoKey;
-import com.ezcoins.constant.interf.RedisConstants;
 import com.ezcoins.context.ContextHandler;
 import com.ezcoins.exception.CheckException;
 import com.ezcoins.exception.coin.AccountOperationBusyException;
 import com.ezcoins.manager.AsyncManager;
 import com.ezcoins.manager.factory.AsyncFactory;
 import com.ezcoins.project.coin.entity.Type;
-import com.ezcoins.project.coin.entity.resp.AccountRespDto;
 import com.ezcoins.project.coin.entity.vo.BalanceChange;
 import com.ezcoins.project.coin.service.AccountService;
 import com.ezcoins.project.coin.service.TypeService;
@@ -32,16 +29,19 @@ import com.ezcoins.project.consumer.entity.EzUser;
 import com.ezcoins.project.consumer.service.EzUserService;
 import com.ezcoins.project.otc.entity.*;
 import com.ezcoins.project.otc.entity.req.*;
-import com.ezcoins.project.otc.entity.resp.*;
+import com.ezcoins.project.otc.entity.resp.NewOrderRespDto;
+import com.ezcoins.project.otc.entity.resp.OrderInfo;
+import com.ezcoins.project.otc.entity.resp.OtcOrderRespDto;
+import com.ezcoins.project.otc.entity.resp.PaymentDetails;
 import com.ezcoins.project.otc.mapper.EzOtcOrderMapper;
 import com.ezcoins.project.otc.service.*;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.ezcoins.project.system.entity.EzSysTips;
-import com.ezcoins.project.system.service.EzSysTipsService;
 import com.ezcoins.redis.RedisCache;
 import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponseList;
-import com.ezcoins.utils.*;
+import com.ezcoins.utils.BeanUtils;
+import com.ezcoins.utils.DateUtils;
+import com.ezcoins.utils.MessageUtils;
+import com.ezcoins.utils.StringUtils;
 import com.ezcoins.websocket.WebSocketHandle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -105,7 +105,7 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
     private AccountService accountService;
 
     @Override
-    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @Transactional(value="transactionManager2", isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public Response releaseAdvertisingOrder(OtcOrderReqDto otcOrderReqDto) {
         String coinName = otcOrderReqDto.getCoinName();
         //查看otc信息是否有过修改
@@ -182,6 +182,26 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         return Response.success();
     }
 
+    @Override
+    public Response cancelAdvertisingOrder(String adId) {
+        String userId = ContextHandler.getUserId();
+        /*ArrayList<NewOrderRespDto> newOrderRespDtos = new ArrayList<>();
+        IPage<EzOtcOrder> page = new Page<EzOtcOrder>(pageQuery.getPage(), pageQuery.getLimit());
+        LambdaQueryWrapper<EzOtcOrder> otcOrderLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        otcOrderLambdaQueryWrapper.eq(EzOtcOrder::getStatus, "0");//订单状态（0：正常 1：已下架）
+        otcOrderLambdaQueryWrapper.orderByDesc(EzOtcOrder::getCreateTime);
+        baseMapper.selectPage(page, otcOrderLambdaQueryWrapper).getRecords().forEach(e -> {
+            if ( StringUtils.isEmpty(userId) || !e.getUserId().equals(userId) ) {
+                NewOrderRespDto newOrderRespDto = new NewOrderRespDto();
+                BeanUtils.copyBeanProp(newOrderRespDto, e);
+                newOrderRespDto.setLastAmount(e.getTotalAmount().subtract(e.getQuotaAmount()));
+                if (newOrderRespDto.getLastAmount().compareTo(e.getMinimumLimit()) >= 0) {
+                    newOrderRespDtos.add(newOrderRespDto);
+                }
+            }
+        });*/
+        return Response.success();
+    }
 
     /**
      * @param placeOrderReqDto
@@ -576,7 +596,7 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
      * @Date: 2021/6/18
      */
     @Override
-    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @Transactional(value = "transactionManager1", isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public Response merchantOrder(OrderOperateReqDto orderOperateReqDto) {
         //根据订单号查询订单
         EzOtcOrderMatch orderMatch = orderMatchService.getById(orderOperateReqDto.getMatchOrderNo());
