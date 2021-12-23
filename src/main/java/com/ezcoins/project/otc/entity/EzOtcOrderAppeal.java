@@ -1,17 +1,15 @@
 package com.ezcoins.project.otc.entity;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
-import java.util.Date;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableField;
-import java.io.Serializable;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.ezcoins.base.BaseEntity;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import java.io.Serializable;
 
 /**
  * <p>
@@ -23,8 +21,9 @@ import lombok.EqualsAndHashCode;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
+@TableName("ez_otc_order_appeal")
 @ApiModel(value="EzOtcOrderAppeal对象", description="订单申诉")
-public class EzOtcOrderAppeal implements Serializable {
+public class EzOtcOrderAppeal extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @ApiModelProperty(value = "申诉id")
@@ -55,7 +54,7 @@ public class EzOtcOrderAppeal implements Serializable {
     @ApiModelProperty(value = "处理结果")
     private String memo;
 
-    @ApiModelProperty(value = "更新时间")
+/*    @ApiModelProperty(value = "更新时间")
     @TableField(fill = FieldFill.INSERT_UPDATE)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date updateTime;
@@ -66,7 +65,7 @@ public class EzOtcOrderAppeal implements Serializable {
     private Date createTime;
 
     @ApiModelProperty(value = "创建z")
-    private String createBy;
+    private String createBy;*/
 
 
 }
