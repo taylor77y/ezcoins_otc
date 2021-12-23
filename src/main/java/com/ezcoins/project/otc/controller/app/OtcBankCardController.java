@@ -85,12 +85,20 @@ public class OtcBankCardController extends BaseController {
         return ezPaymentBankService.addOrUpdateUserBankCard(bankCardReqDto);
     }
 
+
+    @ApiOperation(value = "修改用户 银行卡 状态")
+    @AuthToken
+    @PostMapping("updateUserBankCardStatus")
+    @Log(title = "修改用户 银行卡 状态", businessType = BusinessType.INSERT, operatorType = OperatorType.MOBILE)
+    public Response updateUserBankCardStatus(@RequestBody UserBankCardAddrReqDto bankCardReqDto){
+        return ezPaymentBankService.updateUserBankCardStatus(bankCardReqDto);
+    }
+
     @ApiOperation(value = "查询所有可用 coin 信息")
     @AuthToken
     @GetMapping("queryAllCoins")// 交易类型：在线购买、卖出
     public ResponseList<EzOtcCoinInfo> queryAllCoins(){
-//        LambdaQueryWrapper<EzOtcCoinConfig> queryWrapper=new LambdaQueryWrapper<>();
-//        queryWrapper.eq(EzOtcCoinConfig::getTransactionType,transactionType);
+
         return ResponseList.success(ezOtcCoinInfoService.queryAllCoins());
     }
 
