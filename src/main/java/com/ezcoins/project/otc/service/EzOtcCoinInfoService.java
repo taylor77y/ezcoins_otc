@@ -13,4 +13,6 @@ public interface EzOtcCoinInfoService extends IService<EzOtcCoinInfo> {
      * @return
      */
     List<EzOtcCoinInfo> queryAllCoins();
+
+    List<EzOtcCoinInfo> queryAllCoinsFromHuobi();
 }
