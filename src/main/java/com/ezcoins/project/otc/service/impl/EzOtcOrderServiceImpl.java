@@ -212,7 +212,7 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
      * @Date: 2021/6/18
      */
     @Override
-    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @Transactional(value="transactionManager1", isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public Response<PaymentDetails> placeAnOrder(PlaceOrderReqDto placeOrderReqDto) {
         String userId = ContextHandler.getUserId();
         //通过订单号查询到购买的订单
@@ -398,7 +398,7 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
      * @Date: 2021/6/18
      */
     @Override
-    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @Transactional(value="transactionManager1", isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public Response offShelfOrder(String orderNo) {
         //根据订单号查询到是否存在未完成的订单
         LambdaQueryWrapper<EzOtcOrderMatch> queryWrapper = new LambdaQueryWrapper<>();
@@ -575,7 +575,8 @@ public class EzOtcOrderServiceImpl extends ServiceImpl<EzOtcOrderMapper, EzOtcOr
         //查询所有支付方式
         LambdaQueryWrapper<EzOtcOrderPayment> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(EzOtcOrderPayment::getOrderNo, otcOrderNo);
-        paymentService.list(queryWrapper);
+        paymentService.list(queryWrapper); // 有问题
+//        List<EzOtcOrderPayment> lists = paymentService.list(queryWrapper);
         List<Integer> paymentMethods = new ArrayList<>();
         paymentMethods.add(ezOtcOrder.getPaymentMethod1());
         paymentMethods.add(ezOtcOrder.getPaymentMethod2());
