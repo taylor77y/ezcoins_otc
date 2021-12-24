@@ -1,13 +1,21 @@
 package com.ezcoins.project.otc.controller.app;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.ezcoins.aspectj.lang.annotation.AuthToken;
 import com.ezcoins.aspectj.lang.annotation.Log;
 import com.ezcoins.base.BaseController;
 import com.ezcoins.constant.enums.BusinessType;
 import com.ezcoins.constant.enums.OperatorType;
+import com.ezcoins.project.otc.entity.OtcMerchant;
+import com.ezcoins.project.otc.entity.OtcOrder;
+import com.ezcoins.project.otc.entity.req.OtcTransactionReqDto;
 import com.ezcoins.project.otc.entity.req.UserInternetAccountReqDto;
 import com.ezcoins.project.otc.entity.resp.InternetAccountRespDto;
+import com.ezcoins.project.otc.entity.resp.OtcTransactionRespDto;
 import com.ezcoins.project.otc.service.EzInternetAccountService;
+import com.ezcoins.project.otc.service.OtcMerchantService;
+import com.ezcoins.project.otc.service.OtcOrderService;
+import com.ezcoins.project.otc.service.OtcTransactionOrderService;
 import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponseList;
 import io.swagger.annotations.Api;
@@ -26,19 +34,82 @@ public class OtcInternetAccountController  extends BaseController {
     @Autowired
     private EzInternetAccountService ezInternetAccountService;
 
-    @ApiOperation(value = "用户 网络账号列表")
+    @Autowired
+    private OtcTransactionOrderService otcTransactionOrderService;
+
+    @Autowired
+    private OtcOrderService otcOrderService;
+
+    @Autowired
+    private OtcMerchantService otcMerchantService;
+
+    @ApiOperation(value = "网络账号列表")
     @AuthToken
-    @GetMapping("userInternetAccountList")
-    public ResponseList<InternetAccountRespDto> userInternetAccountList(){
-        return ResponseList.success(ezInternetAccountService.userInternetAccountList(getUserId()));
+    @GetMapping("internetAccountList")
+    public ResponseList<InternetAccountRespDto> internetAccountList(){
+        return ResponseList.success(ezInternetAccountService.internetAccountList(getUserId()));
     }
 
 
-    @ApiOperation(value = "添加/修改 用户网络账号信息")
+    @ApiOperation(value = "添加/修改 网络账号信息")
     @AuthToken
-    @PostMapping("addOrUpdateUserInternetAccount")
+    @PostMapping("addOrUpdateInternetAccount")
     @Log(title = "添加/修改 用户网络账号信息", businessType = BusinessType.INSERT, operatorType = OperatorType.MOBILE)
-    public Response addOrUpdateUserInternetAccount(@RequestBody UserInternetAccountReqDto internetAccountReqDto){
-        return ezInternetAccountService.addOrUpdateUserInternetAccount(internetAccountReqDto);
+    public Response addOrUpdateInternetAccount(@RequestBody UserInternetAccountReqDto internetAccountReqDto){
+        return ezInternetAccountService.addOrUpdateInternetAccount(internetAccountReqDto);
+    }
+
+    @ApiOperation(value = "修改 网络账号状态")
+    @AuthToken
+    @PostMapping("updateUserInternetAccountStatus")
+    @Log(title = "添加/修改 网络账号信息状态", businessType = BusinessType.INSERT, operatorType = OperatorType.MOBILE)
+    public Response updateUserInternetAccountStatus(@RequestBody UserInternetAccountReqDto internetAccountReqDto){
+        return ezInternetAccountService.updateUserInternetAccountStatus(internetAccountReqDto);
+    }
+
+    // TODO: 2021/12/21
+//    @ApiOperation(value = "放币")
+//    @AuthToken
+//    @GetMapping("userOrderPaymentMoney")
+//    public ResponseList<OtcTransactionOrderRespDto> userOrderPaymentMoney(){
+//        return ResponseList.success(otcTransactionOrderService.otcTransactionOrderList());
+//    }
+
+
+    @ApiOperation(value = "次级菜单-OTC订单列表 页面展示")
+    @AuthToken
+    @GetMapping("otcTransactionOrderList")
+    public ResponseList<OtcTransactionRespDto> otcTransactionOrderList(@RequestBody OtcTransactionReqDto otcTransactionReqDto){
+        return otcTransactionOrderService.otcTransactionOrderList(otcTransactionReqDto);
+    }
+
+
+    @ApiOperation(value = "次级菜单-根据交易 id 查询 订单详情")
+    @AuthToken
+    @GetMapping("findOrderDetailsByTxid")
+    public Response<OtcOrder> findOrderDetailsByTxid(@PathVariable String txid){
+//        return otcTransactionOrderService.findOrderDetailsByTxid(txid);
+
+        LambdaQueryWrapper<OtcOrder> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(OtcOrder::getTransactionId, txid);
+        return Response.success(otcOrderService.getOne(lambdaQueryWrapper));
+    }
+
+
+    // TODO: 2021/12/22
+//    @ApiOperation(value = "對話內容(點擊彈出雙方於訂單內的留言)")
+//    @AuthToken
+//    @GetMapping("userOrderPaymentMoney")
+//    public ResponseList<OtcTransactionOrderRespDto> userOrderPaymentMoney(){
+//        return ResponseList.success(otcTransactionOrderService.otcTransactionOrderList());
+//    }
+
+
+    @ApiOperation(value = "次级菜单-商家列表")
+    @AuthToken
+    @GetMapping("otcMerchantList")
+    public ResponseList<OtcMerchant> otcMerchantList(){
+        LambdaQueryWrapper<OtcMerchant> otcQueryWrapper = new LambdaQueryWrapper<>();
+        return ResponseList.success(otcMerchantService.list(otcQueryWrapper));
     }
 }
