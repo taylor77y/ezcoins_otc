@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -73,7 +74,7 @@ public class EzAdvertisingBusinessServiceImpl extends ServiceImpl<EzAdvertisingB
 //        if (count > 0) {
 //            return Response.error(MessageUtils.message("昵称重复，请重新输入"));
 //        }
-        if(exist != null){
+        if(!ObjectUtils.isEmpty(exist)){
             // 当存在时，执行这里的代码
             return Response.error(MessageUtils.message("昵称重复，请重新输入"));
         }
