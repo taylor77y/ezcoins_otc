@@ -1,10 +1,15 @@
 package com.ezcoins.websocket;
 
+import lombok.Data;
+import lombok.experimental.Accessors;
+
+@Data
+@Accessors(chain = true)
 public class HelloMessage {
 
 	private String name;
 
-	public HelloMessage() {
+	/*public HelloMessage() {
 	}
 
 	public HelloMessage(String name) {
@@ -17,5 +22,6 @@ public class HelloMessage {
 
 	public void setName(String name) {
 		this.name = name;
-	}
+	}*/
+
 }
