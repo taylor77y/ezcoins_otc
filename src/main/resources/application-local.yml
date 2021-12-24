@@ -25,18 +25,23 @@ bipay:
   host: http://Hotelmillionaire.com
   supported-coins: BTC,ETH,TRX
 
+huobi:
+  restapi:
+    gateway: https://api.huobi.pro/v1/common/currencys
+
 logging:
   level:
-    com.ezcoins: debug
-    org.springframework: warn
-    io.lettuce.core.protocol: error
-    
+    ROOT: DEBUG
+    com.ezcoins: warn
+    org.springframework: DEBUG
+    io.lettuce.core.protocol: warn
+
 spring:
   redis:
     host: 127.0.0.1
     port: 6379
     database: 9
-    password: wanglei
+    password: 123456
     timeout: 15s
     lettuce:
       pool:
@@ -47,8 +52,12 @@ spring:
   rabbitmq:
     host: 127.0.0.1
     port: 5672
-    username: admin
-    password: wanglei
+    username: guest
+    password: guest
+  data:
+    mongodb:
+      uri : mongodb://test:123456@localhost:27017/db_ezcoins
+
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
     driverClassName: com.mysql.cj.jdbc.Driver
@@ -56,7 +65,7 @@ spring:
       master:
         url: jdbc:mysql://127.0.0.1:3306/db_ezcoins?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=Asia/Shanghai
         username: root
-        password: wanglei
+        password: root
       initialSize: 5
       minIdle: 10
       maxActive: 30
@@ -85,6 +94,21 @@ spring:
         wall:
           config:
             multi-statement-allow: true
+
+    jpa:
+      # CREATE DATABASE `aipay` DEFAULT CHARACTER SET = utf8;
+      database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+      database: MYSQL
+      show-sql: true
+      properties:
+        hibernate.id.new_generator_mappings: true
+        hibernate.connection.provider_disables_autocommit: true
+        hibernate.cache.use_second_level_cache: false
+        hibernate.cache.use_query_cache: false
+        hibernate.generate_statistics: true
+      hibernate:
+        ddl-auto: update
+
   mail:
     #服务器
     host: smtpout.secureserver.net
@@ -120,13 +144,17 @@ mybatis-plus:
     cache-enabled: true
     use-generated-keys: true
     default-executor-type: reuse
-    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+    #log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+    #开启SQL语句打印
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    #自动驼峰命名
     map-underscore-to-camel-case: true
   mapper-locations: classpath*:mybatis/**/*Mapper.xml
   global-config:
     db-config:
       logic-delete-value: 1 # 逻辑已删除值(默认为 1)
       logic-not-delete-value: 0 # 逻辑未删除值(默认为 0)
+  # 配置mybatis 数据返回类型别名（默认别名为类名）
   type-aliases-package: com.ezcoins.project.**.domain
 
 pagehelper:
@@ -143,3 +171,54 @@ aliyun:
       keyid: LTAI5tLymnkxKkzbnu6Jpdmh
       bucketname: hotel-app-static
 
+
+management:
+  endpoints:
+    web:
+      base-path: /management
+      exposure:
+        include:
+          ['configprops', 'env', 'health', 'info', 'jhimetrics', 'logfile', 'loggers', 'prometheus', 'threaddump', 'caches', 'liquibase']
+  endpoint:
+    health:
+      show-details: when_authorized
+      roles: 'ROLE_ADMIN'
+      probes:
+        enabled: true
+    jhimetrics:
+      enabled: true
+  info:
+    git:
+      mode: full
+  health:
+    group:
+      liveness:
+        include: livenessState
+      readiness:
+        include: readinessState,db
+    mail:
+      enabled: false # When using the MailService, configure an SMTP server and set this to true
+  metrics:
+    export:
+      # Prometheus is the default metrics backend
+      prometheus:
+        enabled: true
+        step: 60
+    enable:
+      http: true
+      jvm: true
+      logback: true
+      process: true
+      system: true
+    distribution:
+      percentiles-histogram:
+        all: true
+      percentiles:
+        all: 0, 0.5, 0.75, 0.95, 0.99, 1.0
+    tags:
+      application: ${spring.application.name}
+    web:
+      server:
+        request:
+          autotime:
+            enabled: true
