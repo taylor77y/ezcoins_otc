@@ -16,7 +16,7 @@ import java.util.Date;
  */
 @Data
 public class AdvertisingBusinessInfoRespDto {
-    @ApiModelProperty(value = "昵称")
+    @ApiModelProperty(value = "商户OTC昵称")
     private String advertisingName;
 
     @ApiModelProperty(value = "卖单数量")
