@@ -17,12 +17,22 @@ public interface EzInternetAccountService extends IService<EzInternetAccount> {
      * @Author: Wanglei
      * @Date: 2021/7/8
      */
-    Response addOrUpdateUserInternetAccount(UserInternetAccountReqDto internetAccountReqDto);
+    Response addOrUpdateInternetAccount(UserInternetAccountReqDto internetAccountReqDto);
+
+
+    /***
+     * @Description: 增加用户 网络账号
+     * @Param: [addrReqDto]
+     * @return: com.ezcoins.response.Response
+     * @Author: Wanglei
+     * @Date: 2021/7/8
+     */
+    Response updateUserInternetAccountStatus(UserInternetAccountReqDto internetAccountReqDto);
 
     /**
      * 用户 网络账号列表
      * @param userId
      * @return
      */
-    List<InternetAccountRespDto> userInternetAccountList(String userId);
+    List<InternetAccountRespDto> internetAccountList(String userId);
 }

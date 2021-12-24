@@ -27,7 +27,7 @@ public class EzInternetAccountServiceImpl extends ServiceImpl<EzInternetAccountM
      * @param internetAccountReqDto
      */
     @Override
-    public Response addOrUpdateUserInternetAccount(UserInternetAccountReqDto internetAccountReqDto) {
+    public Response addOrUpdateInternetAccount(UserInternetAccountReqDto internetAccountReqDto) {
         String userId = ContextHandler.getUserId();
         EzInternetAccount internetAccount = new EzInternetAccount();
         BeanUtils.copyBeanProp(internetAccount,internetAccountReqDto);
@@ -43,6 +43,28 @@ public class EzInternetAccountServiceImpl extends ServiceImpl<EzInternetAccountM
     }
 
 
+    /***
+     * @Description: 增加提币地址
+     * @Param: [addrReqDto]
+     * @return: com.ezcoins.response.Response
+     * @Author: taylor
+     * @Date: 2021/12/3
+     * @param internetAccountReqDto
+     */
+    @Override
+    public Response updateUserInternetAccountStatus(UserInternetAccountReqDto internetAccountReqDto) {
+        String userId = ContextHandler.getUserId();
+        EzInternetAccount internetAccount = new EzInternetAccount();
+        BeanUtils.copyBeanProp(internetAccount,internetAccountReqDto);
+//        internetAccount.setUserId(userId);
+        if (StringUtils.isNotEmpty(internetAccountReqDto.getId())){
+//            userWalletAddr.setUpdateBy(userId);
+            baseMapper.updateById(internetAccount);
+        }
+        return Response.success();
+    }
+
+
     /**
      * 提币地址列表
      *
@@ -50,7 +72,7 @@ public class EzInternetAccountServiceImpl extends ServiceImpl<EzInternetAccountM
      * @return
      */
     @Override
-    public List<InternetAccountRespDto> userInternetAccountList(String userId) {
+    public List<InternetAccountRespDto> internetAccountList(String userId) {
         LambdaQueryWrapper<EzInternetAccount> lambdaQueryWrapper=new LambdaQueryWrapper<>();
 //        lambdaQueryWrapper.eq(EzPaymentBank::getBankName,withdrawalConfigId);
         lambdaQueryWrapper.eq(EzInternetAccount::getUserId, ContextHandler.getUserId());
