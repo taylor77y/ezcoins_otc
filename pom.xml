@@ -66,6 +66,21 @@
         </dependency>
 
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-core</artifactId>
             <version>5.2.8.RELEASE</version>
@@ -186,6 +201,11 @@
 
         <!--     工具   ===========================================-->
 
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>19.0</version>
+        </dependency>
 
         <!--        lombok 工具-->
         <dependency>
@@ -218,12 +238,12 @@
             <artifactId>spring-boot-starter-amqp</artifactId>
         </dependency>
 
-        <!--  mongodb 依赖
+        <!--  mongodb 依赖 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-mongodb</artifactId>
         </dependency>
-        -->
+
 
         <dependency>
             <groupId>org.webjars</groupId>
