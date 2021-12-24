@@ -2,34 +2,29 @@ package com.ezcoins.project.coin.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ezcoins.base.BaseException;
 import com.ezcoins.constant.RecordSonType;
 import com.ezcoins.constant.enums.coin.CoinConstants;
 import com.ezcoins.constant.enums.coin.WithdrawOrderStatus;
 import com.ezcoins.context.ContextHandler;
 import com.ezcoins.exception.coin.AccountOperationBusyException;
-import com.ezcoins.exception.user.ParameterException;
-import com.ezcoins.exception.user.SystemBusyException;
 import com.ezcoins.project.coin.entity.Record;
-import com.ezcoins.project.coin.entity.Type;
 import com.ezcoins.project.coin.entity.WithdrawConfig;
 import com.ezcoins.project.coin.entity.WithdrawOrder;
 import com.ezcoins.project.coin.entity.req.CheckWithdrewOrderReqDto;
 import com.ezcoins.project.coin.entity.req.WithdrawReqDto;
 import com.ezcoins.project.coin.entity.vo.BalanceChange;
 import com.ezcoins.project.coin.mapper.WithdrawOrderMapper;
-import com.ezcoins.project.coin.service.*;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.ezcoins.project.coin.udun.BiPayService;
-import com.ezcoins.project.coin.udun.CoinType;
-import com.ezcoins.project.coin.udun.ResponseMessage;
+import com.ezcoins.project.coin.service.AccountService;
+import com.ezcoins.project.coin.service.RecordService;
+import com.ezcoins.project.coin.service.WithdrawConfigService;
+import com.ezcoins.project.coin.service.WithdrawOrderService;
 import com.ezcoins.project.coin.wallet.cc.ChainCoinType;
 import com.ezcoins.project.coin.wallet.cc.CoinTypeUtils;
 import com.ezcoins.project.coin.wallet.cc.WalletClientService;
 import com.ezcoins.response.Response;
-import com.ezcoins.utils.BeanUtils;
 import com.ezcoins.utils.MessageUtils;
-import com.ezcoins.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,7 +32,6 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.beans.beancontext.BeanContext;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -125,7 +119,7 @@ public class WithdrawOrderServiceImpl extends ServiceImpl<WithdrawOrderMapper, W
      * @return
      */
     @Override
-    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @Transactional(value="transactionManager1", isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public Response withdraw(WithdrawReqDto withdrawReqDto) {
         String userId = ContextHandler.getUserId();
         LambdaQueryWrapper<WithdrawConfig> lambdaQueryWrapper = new LambdaQueryWrapper<>();
