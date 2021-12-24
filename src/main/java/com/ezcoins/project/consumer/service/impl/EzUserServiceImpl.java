@@ -4,12 +4,9 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ezcoins.base.BaseException;
-import com.ezcoins.constant.UserConstants;
 import com.ezcoins.constant.enums.LimitType;
 import com.ezcoins.constant.enums.LoginType;
-import com.ezcoins.constant.enums.user.UserStatus;
 import com.ezcoins.constant.interf.RedisConstants;
-import com.ezcoins.context.ContextHandler;
 import com.ezcoins.exception.CheckException;
 import com.ezcoins.exception.user.UserException;
 import com.ezcoins.exception.user.UserPasswordNotMatchException;
@@ -17,14 +14,12 @@ import com.ezcoins.project.acl.entity.req.JwtAuthenticationRequest;
 import com.ezcoins.project.coin.service.AccountService;
 import com.ezcoins.project.common.mq.producer.LoginProducer;
 import com.ezcoins.project.common.service.EmailService;
-import com.ezcoins.project.common.service.MailBean;
 import com.ezcoins.project.common.service.PhoneService;
 import com.ezcoins.project.consumer.entity.EzUser;
 import com.ezcoins.project.consumer.entity.EzUserLimit;
 import com.ezcoins.project.consumer.entity.EzUserLimitLog;
 import com.ezcoins.project.consumer.entity.req.CheckCodeReqDto;
 import com.ezcoins.project.consumer.entity.req.EzUserReqDto;
-import com.ezcoins.project.consumer.entity.req.UserLimitReqDto;
 import com.ezcoins.project.consumer.entity.req.VerificationCodeReqDto;
 import com.ezcoins.project.consumer.mapper.EzUserMapper;
 import com.ezcoins.project.consumer.service.EzUserLimitLogService;
@@ -44,7 +39,6 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -260,7 +254,7 @@ public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> impleme
             ezUser.setCreateBy(email);
             rmKey = RedisConstants.EMAIL_REGISTER_SMS_KEY + email;
         }
-        String redisCode = redisCache.getCacheObject(rmKey);
+        String redisCode = redisCache.getCacheObject(rmKey).toString();
         if (!isAdmin) {
             if (StringUtils.isEmpty(redisCode)) {
                 throw new BaseException("验证码已过期");
@@ -304,7 +298,7 @@ public class EzUserServiceImpl extends ServiceImpl<EzUserMapper, EzUser> impleme
      * @return
      */
     @Override
-    @Transactional
+    @Transactional(value="transactionManager1")
     public Map<String, String> login(JwtAuthenticationRequest authenticationRequest) {
         //登录的时候 如果绑定了邮箱/电话号码 都可以用来登录
         LambdaQueryWrapper<EzUser> lambdaQueryWrapper = new LambdaQueryWrapper<>();
