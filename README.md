@@ -1,2 +1,2 @@
-# ezcoions_otc
+# ezcoins_otc
 Over-The-Counter
