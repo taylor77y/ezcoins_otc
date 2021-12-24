@@ -11,18 +11,28 @@ import java.util.List;
 public interface EzPaymentBankService extends IService<EzPaymentBank> {
 
     /***
-     * @Description: 增加提币地址
-     * @Param: [addrReqDto]
+     * @Description: 添加/修改 用户银行卡信息
+     * @Param: [bankCardReqDto]
      * @return: com.ezcoins.response.Response
-     * @Author: Wanglei
-     * @Date: 2021/7/8
+     * @Author: taylor
+     * @Date: 2021/12/8
      */
     Response addOrUpdateUserBankCard(UserBankCardAddrReqDto bankCardReqDto);
 
+    /***
+     * @Description: 修改用户 银行卡 状态
+     * @Param: [bankCardReqDto]
+     * @return: com.ezcoins.response.Response
+     * @Author: taylor
+     * @Date: 2021/12/8
+     */
+    Response updateUserBankCardStatus(UserBankCardAddrReqDto bankCardReqDto);
+
     /**
-     * 提币地址列表
+     * 用户银行卡列表
      * @param userId
      * @return
      */
     List<PaymentBankRespDto> userBankCardList(String userId);
+
 }

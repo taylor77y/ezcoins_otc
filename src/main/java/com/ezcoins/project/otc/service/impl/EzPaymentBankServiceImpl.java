@@ -18,8 +18,9 @@ import java.util.List;
 @Service
 public class EzPaymentBankServiceImpl extends ServiceImpl<EzPaymentBankMapper, EzPaymentBank> implements EzPaymentBankService {
 
+
     /***
-     * @Description: 增加提币地址
+     * @Description: 添加/修改 用户银行卡信息
      * @Param: [addrReqDto]
      * @return: com.ezcoins.response.Response
      * @Author: taylor
@@ -37,6 +38,28 @@ public class EzPaymentBankServiceImpl extends ServiceImpl<EzPaymentBankMapper, E
             baseMapper.insert(paymentBank);
         }else {
 //            userWalletAddr.setUpdateBy(userId);
+            baseMapper.updateById(paymentBank);
+        }
+        return Response.success();
+    }
+
+
+    /***
+     * @Description: 修改用户 银行卡 状态
+     * @Param: [addrReqDto]
+     * @return: com.ezcoins.response.Response
+     * @Author: taylor
+     * @Date: 2021/12/3
+     * @param bankCardReqDto
+     */
+    @Override
+    public Response updateUserBankCardStatus(UserBankCardAddrReqDto bankCardReqDto) {
+        String userId = ContextHandler.getUserId();
+        EzPaymentBank paymentBank = new EzPaymentBank();
+        BeanUtils.copyBeanProp(paymentBank,bankCardReqDto);
+        paymentBank.setUserId(userId);
+        if (StringUtils.isNotEmpty(bankCardReqDto.getId())){
+//            userWalletAddr.setCreateBy(userId);
             baseMapper.updateById(paymentBank);
         }
         return Response.success();

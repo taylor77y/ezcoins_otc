@@ -2,6 +2,7 @@ package com.ezcoins.project.otc.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.ezcoins.project.otc.entity.EzPaymentBank;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * <p>
@@ -12,4 +13,6 @@ import com.ezcoins.project.otc.entity.EzPaymentBank;
  * @since 2021-12-03
  */
 public interface EzPaymentBankMapper extends BaseMapper<EzPaymentBank> {
+
+    int updateStatusById(@Param("id")String id, @Param("status")String status);
 }
