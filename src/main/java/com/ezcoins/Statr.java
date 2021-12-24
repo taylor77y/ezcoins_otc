@@ -1,26 +1,15 @@
 package com.ezcoins;
 
-import com.ezcoins.aspectj.lang.annotation.Log;
 import com.ezcoins.handler.AuthenticationInterceptor;
-import com.ezcoins.project.common.service.EmailService;
 import com.ezcoins.project.otc.task.ScheduledTasks;
-import com.ezcoins.project.otc.task.ToUsdtPrice;
 import com.ezcoins.utils.MoneyChangeUtils;
-import com.ezcoins.websocket.WebSocketHandle;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import net.bytebuddy.implementation.bytecode.Throw;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
-
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.concurrent.Executors;
 
 /**
  * @Author: WangLei
@@ -49,7 +38,7 @@ public class Statr implements CommandLineRunner {
         if (ScheduledTasks.rmbPrice!=null){
             log.info("启动成功");
         }
-        taskExecutor.submit(new Runnable() {
+        /*taskExecutor.submit(new Runnable() {
             @Override
             public void run() {
                 while (true) {
@@ -66,6 +55,6 @@ public class Statr implements CommandLineRunner {
                     }
                 }
             }
-        });
+        });*/
     }
 }
