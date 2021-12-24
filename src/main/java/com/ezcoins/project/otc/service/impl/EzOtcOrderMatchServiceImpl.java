@@ -1,14 +1,13 @@
 package com.ezcoins.project.otc.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ezcoins.base.BaseException;
 import com.ezcoins.constant.RecordSonType;
 import com.ezcoins.constant.SysOrderConstants;
 import com.ezcoins.constant.SysTipsConstants;
-import com.ezcoins.constant.SystemOrderTips;
 import com.ezcoins.constant.enums.coin.CoinConstants;
 import com.ezcoins.constant.enums.otc.MatchOrderStatus;
 import com.ezcoins.constant.interf.IndexOrderNoKey;
@@ -33,8 +32,6 @@ import com.ezcoins.project.otc.entity.resp.OtcInfoOrder;
 import com.ezcoins.project.otc.entity.resp.PaymentDetails;
 import com.ezcoins.project.otc.mapper.EzOtcOrderMatchMapper;
 import com.ezcoins.project.otc.service.*;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.ezcoins.project.system.entity.EzSysTips;
 import com.ezcoins.redis.RedisCache;
 import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponseList;
@@ -50,10 +47,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.text.Format;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -230,7 +224,7 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
      * @Date: 2021/6/19
      */
     @Override
-    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @Transactional(value="transactionManager1", isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public Response sellerPut(String matchOrderNo, boolean isAdmin) {
         String userId = ContextHandler.getUserId();
         Date nowDate = DateUtils.getNowDate();
@@ -470,7 +464,7 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
      */
     @Override
     public Response<OtcInfoOrder> otcOrderListBy(String userId) {
-        return null;
+        return (Response<OtcInfoOrder>)null;
     }
 
     @Autowired
@@ -708,7 +702,7 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
             OrderRecordRespDto orderRespDto = new OrderRecordRespDto();
             LambdaQueryWrapper<EzOtcOrderPayment> lambdaQueryWrapper = new LambdaQueryWrapper<>();
             BeanUtils.copyBeanProp(orderRespDto, e);
-            orderRespDto.setAdvertisingName(e.getMatchAdvertisingName());
+//            orderRespDto.setAdvertisingName(e.getMatchAdvertisingName());
             if (orderRespDto.getStatus().equals(MatchOrderStatus.COMPLETED.getCode()) || orderRespDto.getStatus().equals(MatchOrderStatus.PAID.getCode())
                     || orderRespDto.getStatus().equals(MatchOrderStatus.APPEALING.getCode()) ) {
                 ArrayList<EzOtcOrderPayment> list = new ArrayList<>();
@@ -720,7 +714,7 @@ public class EzOtcOrderMatchServiceImpl extends ServiceImpl<EzOtcOrderMatchMappe
                 } else {
                     lambdaQueryWrapper.eq(EzOtcOrderPayment::getOrderMatchNo, e.getOrderMatchNo());
                 }
-                lambdaQueryWrapper.eq(EzOtcOrderPayment::getOrderMatchNo, e.getOrderMatchNo());
+                lambdaQueryWrapper.eq(EzOtcOrderPayment::getOrderMatchNo, e.getOrderMatchNo());//有问题
                 orderRespDto.setEzOtcOrderPayments(orderPaymentService.list(lambdaQueryWrapper));
             }
             orderRespDto.setNowTime(nowDate);
