@@ -52,6 +52,7 @@ public class EzAppController extends BaseController {
         queryWrapper.eq(EzAppVersion::getIsRacking, AppUpdateType.ONSHELF.getCode());
         queryWrapper.eq(EzAppVersion::getPlatform, versionReqDto.getPlatform());
         queryWrapper.eq(EzAppVersion::getThisVersion,versionReqDto.getThisVersion());
+//        Optional<EzAppVersion>
         EzAppVersion one = ezAppVersionService.getOne(queryWrapper);
         //如果当前版本已下架
         if (one==null || CompareVersion.compareVersion(one.getThisVersion(),one.getMinVersion())<0){
