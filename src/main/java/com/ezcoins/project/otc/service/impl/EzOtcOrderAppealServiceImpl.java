@@ -91,7 +91,7 @@ public class EzOtcOrderAppealServiceImpl extends ServiceImpl<EzOtcOrderAppealMap
      * @return
      */
     @Override
-    @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    @Transactional(value="transactionManager1", isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public Response cancelAppeal(String id) {
         String userId=ContextHandler.getUserId();
         //通过id查询到申诉信息
