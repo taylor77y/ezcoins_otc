@@ -2,7 +2,7 @@ package com.ezcoins.project.coin.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ezcoins.constant.RecordSonType;
 import com.ezcoins.constant.enums.coin.CoinConstants;
 import com.ezcoins.constant.enums.coin.CoinStatus;
@@ -18,7 +18,6 @@ import com.ezcoins.project.coin.entity.resp.AccountRespDto;
 import com.ezcoins.project.coin.entity.vo.BalanceChange;
 import com.ezcoins.project.coin.mapper.AccountMapper;
 import com.ezcoins.project.coin.service.AccountService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ezcoins.project.coin.service.RecordService;
 import com.ezcoins.project.coin.service.SysAirportService;
 import com.ezcoins.project.coin.service.TypeService;
@@ -98,8 +97,7 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
                 boolean isLock = cacheUtils.getLock(lockName, CacheUtils.LOCK_WAITTIME_SECONDS);//获得锁
                 try {
                     if (isLock) { //获取锁成功
-                        DataSourceTransactionManager transactionManager =  SpringUtils
-                                .getBean("transactionManager");
+                        DataSourceTransactionManager transactionManager =  SpringUtils.getBean("transactionManager2");
                         DefaultTransactionDefinition def = new DefaultTransactionDefinition();
                         def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
                         TransactionStatus status = transactionManager.getTransaction(def);
@@ -144,6 +142,7 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
             }
         }
         return new ArrayList<Account>(); //无启用币种时候
+//        return Collections.EMPTY_LIST;
     }
 
 
@@ -160,6 +159,8 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
         lambdaQueryWrapper.eq(Account::getCoinName, coinName);
         lambdaQueryWrapper.eq(Account::getUserId, userId);
         Account account = baseMapper.selectOne(lambdaQueryWrapper);
+//        Optional<Account> accountOpt = Optional.of(account);
+//        Account account1 =  accountOpt.orElse(null);
         if (account == null) {
             //没有查到就去创建
             List<Account> accountList = processCoinAccount(userId,userName);
