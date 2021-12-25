@@ -9,6 +9,7 @@ import com.ezcoins.constant.enums.OperatorType;
 import com.ezcoins.project.consumer.entity.EzUser;
 import com.ezcoins.project.consumer.service.EzUserService;
 import com.ezcoins.project.otc.entity.OtcConfig;
+import com.ezcoins.project.otc.entity.OtcFiatCurrency;
 import com.ezcoins.project.otc.entity.OtcMerchant;
 import com.ezcoins.project.otc.entity.OtcOrder;
 import com.ezcoins.project.otc.entity.req.OtcConfigReqDto;
@@ -45,6 +46,9 @@ public class OtcInternetAccountController  extends BaseController {
 
     @Autowired
     private OtcConfigService otcConfigService;
+
+    @Autowired
+    private OtcFiatCurrencyService otcFiatCurrencyService;
 
     @Autowired
     private OtcMerchantService otcMerchantService;
@@ -90,13 +94,12 @@ public class OtcInternetAccountController  extends BaseController {
         return otcConfigService.addOrUpdateOtcConfig(otcConfigReqDto);
     }
 
-    // TODO: 2021/12/24
-//    @ApiOperation(value = "法币币种（抓取系统参数配置的法币）")
-//    @AuthToken
-//    @GetMapping("findUserDetailsByUserName")
-//    public ResponseList<OtcTransactionOrderRespDto> findUserDetailsByUserName(@PathVariable String userName){
-//        return ResponseList.success(otcTransactionOrderService.otcTransactionOrderList());
-//    }
+    @ApiOperation(value = "法币币种（抓取系统参数配置的法币）")
+    @AuthToken
+    @GetMapping("fiatList")
+    public ResponseList<OtcFiatCurrency> fiatList(){
+        return ResponseList.success(otcFiatCurrencyService.fiatList());
+    }
 
     @ApiOperation(value = "次级菜单-OTC订单列表 页面展示")
     @AuthToken
