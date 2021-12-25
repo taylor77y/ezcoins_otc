@@ -6,6 +6,8 @@ import com.ezcoins.aspectj.lang.annotation.Log;
 import com.ezcoins.base.BaseController;
 import com.ezcoins.constant.enums.BusinessType;
 import com.ezcoins.constant.enums.OperatorType;
+import com.ezcoins.project.consumer.entity.EzUser;
+import com.ezcoins.project.consumer.service.EzUserService;
 import com.ezcoins.project.otc.entity.OtcConfig;
 import com.ezcoins.project.otc.entity.OtcMerchant;
 import com.ezcoins.project.otc.entity.OtcOrder;
@@ -29,6 +31,8 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/otc/app/internetaccount")
 public class OtcInternetAccountController  extends BaseController {
 
+    @Autowired
+    private EzUserService ezUserService;
 
     @Autowired
     private EzInternetAccountService ezInternetAccountService;
@@ -113,13 +117,12 @@ public class OtcInternetAccountController  extends BaseController {
         return Response.success(otcOrderService.getOne(lambdaQueryWrapper));
     }
 
-    // TODO: 2021/12/24
-//    @ApiOperation(value = "用户名（可点击跳转至用户详情）")
-//    @AuthToken
-//    @GetMapping("findUserDetailsByUserName")
-//    public ResponseList<OtcTransactionOrderRespDto> findUserDetailsByUserName(@PathVariable String userName){
-//        return ResponseList.success(otcTransactionOrderService.otcTransactionOrderList());
-//    }
+    @ApiOperation(value = "用户名（可点击跳转至用户详情）")
+    @AuthToken
+    @GetMapping("findUserDetailsByUserName")
+    public Response<EzUser> findUserDetailsByUserName(@PathVariable String userName){
+        return Response.success(ezUserService.selectUserBy(userName,"","","",""));
+    }
 
 
     // TODO: 2021/12/22
