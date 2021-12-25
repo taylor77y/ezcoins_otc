@@ -98,7 +98,7 @@ public class OtcInternetAccountController  extends BaseController {
     @AuthToken
     @GetMapping("fiatList")
     public ResponseList<OtcFiatCurrency> fiatList(){
-        return ResponseList.success(otcFiatCurrencyService.fiatList());
+        return ResponseList.success(otcFiatCurrencyService.fiatListFromBinance());
     }
 
     @ApiOperation(value = "次级菜单-OTC订单列表 页面展示")

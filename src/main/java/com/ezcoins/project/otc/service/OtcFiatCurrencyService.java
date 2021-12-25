@@ -8,4 +8,6 @@ import java.util.List;
 public interface OtcFiatCurrencyService extends IService<OtcFiatCurrency> {
 
     List<OtcFiatCurrency> fiatList();
+
+    List<OtcFiatCurrency> fiatListFromBinance();
 }

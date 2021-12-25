@@ -29,6 +29,10 @@ huobi:
   restapi:
     gateway: https://api.huobi.pro/v1/common/currencys
 
+binance:
+  restapi:
+    gateway: https://p2p.binance.com/bapi/c2c/v1/public/c2c/trade-rule/fiat-list
+
 logging:
   level:
     ROOT: DEBUG
