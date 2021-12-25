@@ -6,16 +6,15 @@ import com.ezcoins.aspectj.lang.annotation.Log;
 import com.ezcoins.base.BaseController;
 import com.ezcoins.constant.enums.BusinessType;
 import com.ezcoins.constant.enums.OperatorType;
+import com.ezcoins.project.otc.entity.OtcConfig;
 import com.ezcoins.project.otc.entity.OtcMerchant;
 import com.ezcoins.project.otc.entity.OtcOrder;
+import com.ezcoins.project.otc.entity.req.OtcConfigReqDto;
 import com.ezcoins.project.otc.entity.req.OtcTransactionReqDto;
 import com.ezcoins.project.otc.entity.req.UserInternetAccountReqDto;
 import com.ezcoins.project.otc.entity.resp.InternetAccountRespDto;
 import com.ezcoins.project.otc.entity.resp.OtcTransactionRespDto;
-import com.ezcoins.project.otc.service.EzInternetAccountService;
-import com.ezcoins.project.otc.service.OtcMerchantService;
-import com.ezcoins.project.otc.service.OtcOrderService;
-import com.ezcoins.project.otc.service.OtcTransactionOrderService;
+import com.ezcoins.project.otc.service.*;
 import com.ezcoins.response.Response;
 import com.ezcoins.response.ResponseList;
 import io.swagger.annotations.Api;
@@ -41,6 +40,9 @@ public class OtcInternetAccountController  extends BaseController {
     private OtcOrderService otcOrderService;
 
     @Autowired
+    private OtcConfigService otcConfigService;
+
+    @Autowired
     private OtcMerchantService otcMerchantService;
 
     @ApiOperation(value = "网络账号列表")
@@ -62,7 +64,7 @@ public class OtcInternetAccountController  extends BaseController {
     @ApiOperation(value = "修改 网络账号状态")
     @AuthToken
     @PostMapping("updateUserInternetAccountStatus")
-    @Log(title = "添加/修改 网络账号信息状态", businessType = BusinessType.INSERT, operatorType = OperatorType.MOBILE)
+    @Log(title = "修改 网络账号状态", businessType = BusinessType.INSERT, operatorType = OperatorType.MOBILE)
     public Response updateUserInternetAccountStatus(@RequestBody UserInternetAccountReqDto internetAccountReqDto){
         return ezInternetAccountService.updateUserInternetAccountStatus(internetAccountReqDto);
     }
@@ -75,6 +77,22 @@ public class OtcInternetAccountController  extends BaseController {
 //        return ResponseList.success(otcTransactionOrderService.otcTransactionOrderList());
 //    }
 
+
+    @ApiOperation(value = "新增 次级菜单-OTC 配置")//sellUserId   buyUserId
+    @AuthToken
+    @PostMapping("addOrUpdateOtcConfig")
+    @Log(title = "添加/修改 网络账号信息状态", businessType = BusinessType.INSERT, operatorType = OperatorType.MOBILE)
+    public Response<OtcConfig> addOrUpdateOtcConfig(@RequestBody OtcConfigReqDto otcConfigReqDto){
+        return otcConfigService.addOrUpdateOtcConfig(otcConfigReqDto);
+    }
+
+    // TODO: 2021/12/24
+//    @ApiOperation(value = "法币币种（抓取系统参数配置的法币）")
+//    @AuthToken
+//    @GetMapping("findUserDetailsByUserName")
+//    public ResponseList<OtcTransactionOrderRespDto> findUserDetailsByUserName(@PathVariable String userName){
+//        return ResponseList.success(otcTransactionOrderService.otcTransactionOrderList());
+//    }
 
     @ApiOperation(value = "次级菜单-OTC订单列表 页面展示")
     @AuthToken
@@ -94,6 +112,14 @@ public class OtcInternetAccountController  extends BaseController {
         lambdaQueryWrapper.eq(OtcOrder::getTransactionId, txid);
         return Response.success(otcOrderService.getOne(lambdaQueryWrapper));
     }
+
+    // TODO: 2021/12/24
+//    @ApiOperation(value = "用户名（可点击跳转至用户详情）")
+//    @AuthToken
+//    @GetMapping("findUserDetailsByUserName")
+//    public ResponseList<OtcTransactionOrderRespDto> findUserDetailsByUserName(@PathVariable String userName){
+//        return ResponseList.success(otcTransactionOrderService.otcTransactionOrderList());
+//    }
 
 
     // TODO: 2021/12/22
