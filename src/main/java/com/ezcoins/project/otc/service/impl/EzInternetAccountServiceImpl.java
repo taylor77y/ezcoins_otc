@@ -19,7 +19,7 @@ import java.util.List;
 public class EzInternetAccountServiceImpl extends ServiceImpl<EzInternetAccountMapper, EzInternetAccount> implements EzInternetAccountService {
 
     /***
-     * @Description: 增加提币地址
+     * @Description: 添加/修改 网络账号信息
      * @Param: [addrReqDto]
      * @return: com.ezcoins.response.Response
      * @Author: taylor
@@ -44,7 +44,7 @@ public class EzInternetAccountServiceImpl extends ServiceImpl<EzInternetAccountM
 
 
     /***
-     * @Description: 增加提币地址
+     * @Description: 修改 网络账号状态
      * @Param: [addrReqDto]
      * @return: com.ezcoins.response.Response
      * @Author: taylor
@@ -66,7 +66,7 @@ public class EzInternetAccountServiceImpl extends ServiceImpl<EzInternetAccountM
 
 
     /**
-     * 提币地址列表
+     * 用户 网络账号列表
      *
      * @param
      * @return
