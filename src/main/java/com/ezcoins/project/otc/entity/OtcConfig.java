@@ -43,10 +43,10 @@ public class OtcConfig extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "买方KYC等级 0:无认证 1：基础认证 2：高级认证")
     private short buyKycLevel;
 
-    @ApiModelProperty(value = "数字币币种")
+    @ApiModelProperty(value = "支持的数字币币种",required = true)
     private String digitalCurrency;
 
-    @ApiModelProperty(value = "法币币种")
+    @ApiModelProperty(value = "法币币种",required = true)
     private String fiatCurrency;
 
     @ApiModelProperty(value = "平台处理费用")

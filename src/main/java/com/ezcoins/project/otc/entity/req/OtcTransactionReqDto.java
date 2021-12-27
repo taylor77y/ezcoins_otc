@@ -23,7 +23,7 @@ public class OtcTransactionReqDto {
     @ApiModelProperty(value = "发起时间")
     private String launchTime;
 
-    @ApiModelProperty(value = "状态")
+    @ApiModelProperty(value = "状态 0订单已发起 1已付款 2确认中 3已取消 4确认完成 5完成交易")
     private String status;
 
     @ApiModelProperty(value = "更新时间")

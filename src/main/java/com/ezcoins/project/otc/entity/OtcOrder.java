@@ -3,10 +3,13 @@ package com.ezcoins.project.otc.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.ezcoins.base.BaseEntity;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import java.io.Serializable;
 
 /**
  * <p>
@@ -20,7 +23,7 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = false)
 @TableName("otc_order")
 @ApiModel(value="OtcOrder对象", description="次级菜单-OTC订单")
-public class OtcOrder {
+public class OtcOrder extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -49,8 +52,8 @@ public class OtcOrder {
     @ApiModelProperty(value = "状态")
     private String status;
 
-    @ApiModelProperty(value = "更新时间")
-    private String updateTime;
+//    @ApiModelProperty(value = "更新时间")
+//    private String updateTime;
 
     @ApiModelProperty(value = "对话内容")//点击弹出双方于订单内的留言
     private String dialogueContent;
