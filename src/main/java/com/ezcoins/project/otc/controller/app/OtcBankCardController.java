@@ -34,6 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.Collections;
 import java.util.Date;
 
@@ -81,7 +82,7 @@ public class OtcBankCardController extends BaseController {
     @AuthToken
     @PostMapping("addOrUpdateUserBankCard")
     @Log(title = "添加/修改 用户银行卡信息", businessType = BusinessType.INSERT, operatorType = OperatorType.MOBILE)
-    public Response addOrUpdateUserBankCard(@RequestBody UserBankCardAddrReqDto bankCardReqDto){
+    public Response addOrUpdateUserBankCard(@RequestBody @Valid UserBankCardAddrReqDto bankCardReqDto){
         return ezPaymentBankService.addOrUpdateUserBankCard(bankCardReqDto);
     }
 
@@ -90,7 +91,7 @@ public class OtcBankCardController extends BaseController {
     @AuthToken
     @PostMapping("updateUserBankCardStatus")
     @Log(title = "修改用户 银行卡 状态", businessType = BusinessType.INSERT, operatorType = OperatorType.MOBILE)
-    public Response updateUserBankCardStatus(@RequestBody UserBankCardAddrReqDto bankCardReqDto){
+    public Response updateUserBankCardStatus(@RequestBody @Valid UserBankCardAddrReqDto bankCardReqDto){
         return ezPaymentBankService.updateUserBankCardStatus(bankCardReqDto);
     }
 
@@ -99,7 +100,7 @@ public class OtcBankCardController extends BaseController {
     @GetMapping("queryAllCoins")// 交易类型：在线购买、卖出
     public ResponseList<EzOtcCoinInfo> queryAllCoins(){
 
-        return ResponseList.success(ezOtcCoinInfoService.queryAllCoins());
+        return ResponseList.success(ezOtcCoinInfoService.queryAllCoinsFromHuobi());
     }
 
     /*

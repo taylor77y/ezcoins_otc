@@ -26,6 +26,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+
 @Slf4j
 @RestController
 @Api(tags = "APP-OTC模块 网络账号")
@@ -65,7 +67,7 @@ public class OtcInternetAccountController  extends BaseController {
     @AuthToken
     @PostMapping("addOrUpdateInternetAccount")
     @Log(title = "添加/修改 用户网络账号信息", businessType = BusinessType.INSERT, operatorType = OperatorType.MOBILE)
-    public Response addOrUpdateInternetAccount(@RequestBody UserInternetAccountReqDto internetAccountReqDto){
+    public Response addOrUpdateInternetAccount(@RequestBody @Valid UserInternetAccountReqDto internetAccountReqDto){
         return ezInternetAccountService.addOrUpdateInternetAccount(internetAccountReqDto);
     }
 
@@ -73,7 +75,7 @@ public class OtcInternetAccountController  extends BaseController {
     @AuthToken
     @PostMapping("updateUserInternetAccountStatus")
     @Log(title = "修改 网络账号状态", businessType = BusinessType.INSERT, operatorType = OperatorType.MOBILE)
-    public Response updateUserInternetAccountStatus(@RequestBody UserInternetAccountReqDto internetAccountReqDto){
+    public Response updateUserInternetAccountStatus(@RequestBody @Valid UserInternetAccountReqDto internetAccountReqDto){
         return ezInternetAccountService.updateUserInternetAccountStatus(internetAccountReqDto);
     }
 
@@ -90,7 +92,7 @@ public class OtcInternetAccountController  extends BaseController {
     @AuthToken
     @PostMapping("addOrUpdateOtcConfig")
     @Log(title = "添加/修改 网络账号信息状态", businessType = BusinessType.INSERT, operatorType = OperatorType.MOBILE)
-    public Response<OtcConfig> addOrUpdateOtcConfig(@RequestBody OtcConfigReqDto otcConfigReqDto){
+    public Response<OtcConfig> addOrUpdateOtcConfig(@RequestBody @Valid OtcConfigReqDto otcConfigReqDto){
         return otcConfigService.addOrUpdateOtcConfig(otcConfigReqDto);
     }
 
@@ -129,7 +131,8 @@ public class OtcInternetAccountController  extends BaseController {
 
 
     // TODO: 2021/12/22
-//    @ApiOperation(value = "對話內容(點擊彈出雙方於訂單內的留言)")
+    //根据匹配订单id查询聊天记录
+//    @ApiOperation(value = "对话内容（点击弹出双方于订单内的留言）")
 //    @AuthToken
 //    @GetMapping("userOrderPaymentMoney")
 //    public ResponseList<OtcTransactionOrderRespDto> userOrderPaymentMoney(){
